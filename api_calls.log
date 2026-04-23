@@ -1,0 +1,14 @@
+2026-04-18 17:50:23,339 [API-Football] INFO 127.0.0.1 - - [18/Apr/2026 17:50:23] "POST /chat HTTP/1.1" 200 -
+2026-04-18 17:50:31,012 [API-Football] INFO 127.0.0.1 - - [18/Apr/2026 17:50:31] "GET / HTTP/1.1" 200 -
+2026-04-18 17:51:55,806 [API-Football] INFO GET /teams {'search': 'Minnesota United FC'} (intento 1)
+2026-04-18 17:51:56,273 [API-Football] INFO OK /teams → 0 resultados
+2026-04-18 17:51:56,275 [API-Football] INFO GET /teams {'search': 'Portland Timbers'} (intento 1)
+2026-04-18 17:51:57,111 [API-Football] INFO OK /teams → 0 resultados
+2026-04-18 17:51:57,123 [API-Football] INFO 127.0.0.1 - - [18/Apr/2026 17:51:57] "POST /chat HTTP/1.1" 200 -
+2026-04-18 17:53:22,524 [API-Football] INFO GET /teams {'search': 'Monterrey'} (intento 1)
+2026-04-18 17:53:22,961 [API-Football] INFO OK /teams → 0 resultados
+2026-04-18 17:53:22,962 [API-Football] INFO GET /teams {'search': 'Pachuca'} (intento 1)
+2026-04-18 17:53:23,386 [API-Football] INFO OK /teams → 0 resultados
+2026-04-18 17:53:23,393 [API-Football] INFO 127.0.0.1 - - [18/Apr/2026 17:53:23] "POST /chat HTTP/1.1" 200 -
+2026-04-18 17:55:59,652 [API-Football] INFO 127.0.0.1 - - [18/Apr/2026 17:55:59] "GET / HTTP/1.1" 200 -
+2026-04-18 17:57:27,147 [API-Football] INFO 127.0.0.1 - - [18/Apr/2026 17:57:27] "POST /chat HTTP/1.1" 200 -

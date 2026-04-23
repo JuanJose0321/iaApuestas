@@ -1,0 +1,6 @@
+id,fecha_registro,fecha_partido,liga,local,visitante,pick_tipo,pick_descripcion,cuota,stake,prob_predicha,ev_predicho,confianza_score,confianza_badge,resultado,ganancia_neta,bankroll_antes,bankroll_despues,fixture_id_api,notas
+1,18/04/2026 14:01,,Liga MX,Necaxa,Tigres UANL,DIRECTA,Menos de 2.5,1.96,28.73,0.5665,0.1102,1.0,alta,ganada,27.58,800.0,827.58,,
+2,18/04/2026 18:31,,MLS,Seattle Sounders,St. Louis City,DIRECTA,Menos de 2.5,2.2,34.72,0.5303,0.1667,1.0,alta,perdida,-34.72,827.58,792.86,,
+3,18/04/2026 18:31,,MLS,FC Dallas,LA Galaxy,DIRECTA,Menos de 2.5,2.31,38.88,0.5211,0.2037,1.0,alta,perdida,-38.88,827.58,788.7,,
+4,18/04/2026 18:31,,MLS,FC Dallas,LA Galaxy,DIRECTA,Menos de 2.5,2.31,38.88,0.5211,0.2037,1.0,alta,perdida,-38.88,827.58,788.7,,
+5,18/04/2026 20:18,,Liga MX,Club America,Toluca,DIRECTA,Menos de 2.5,1.88,29.37,0.5869,0.1034,1.0,alta,perdida,-29.37,788.7,759.33,,

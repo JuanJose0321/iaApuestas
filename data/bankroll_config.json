@@ -1,0 +1,9 @@
+{
+  "bankroll_inicial": 800,
+  "bankroll_actual": 759.33,
+  "stake_modo": "conservador",
+  "stake_fijo": 20,
+  "max_stake_pct": 0.03,
+  "racha_negativa_alerta": 5,
+  "fecha_inicio": "2026-04-18"
+}

@@ -1,0 +1,443 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>BetBrain — Historial</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<style>
+  :root {
+    --bg: #0e1014; --bg2: #181b22; --bg3: #21252f;
+    --fg: #e7e9ee; --muted: #8b93a3;
+    --cyan: #6ee7ff; --green: #3ddc97;
+    --yellow: #ffd23f; --red: #ff6b6b;
+    --border: #2a2f3a;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--fg);
+         font-family: -apple-system,"Segoe UI",Roboto,sans-serif; min-height: 100vh; }
+  header {
+    padding: 12px 20px; background: var(--bg2);
+    border-bottom: 1px solid var(--border);
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .brand { font-weight: 700; }
+  .brand span { color: var(--cyan); }
+  nav a {
+    color: var(--muted); text-decoration: none; font-size: 14px;
+    padding: 6px 12px; border-radius: 6px; margin-left: 6px;
+  }
+  nav a:hover { color: var(--fg); }
+  nav a.active { color: var(--cyan); background: rgba(110,231,255,.08); }
+
+  .alert {
+    padding: 12px 20px; font-size: 14px; font-weight: 600;
+    display: none; align-items: center; gap: 10px;
+  }
+  .alert.red    { background: #3a1010; border-bottom: 1px solid var(--red);   color: var(--red); }
+  .alert.yellow { background: #2b2200; border-bottom: 1px solid var(--yellow); color: var(--yellow); }
+
+  main { max-width: 1100px; margin: 0 auto; padding: 24px 20px; }
+
+  .metrics-grid {
+    display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; margin-bottom: 24px;
+  }
+  @media(max-width:800px) { .metrics-grid { grid-template-columns: repeat(3,1fr); } }
+  .metric-card {
+    background: var(--bg2); border: 1px solid var(--border);
+    border-radius: 12px; padding: 14px 16px;
+  }
+  .metric-card .label { font-size: 11px; color: var(--muted); text-transform: uppercase;
+                         letter-spacing: .5px; margin-bottom: 6px; }
+  .metric-card .value { font-size: 24px; font-weight: 700; }
+  .metric-card .sub   { font-size: 12px; color: var(--muted); margin-top: 4px; }
+  .cyan   { color: var(--cyan); }
+  .green  { color: var(--green); }
+  .yellow { color: var(--yellow); }
+  .red    { color: var(--red); }
+
+  .chart-card {
+    background: var(--bg2); border: 1px solid var(--border);
+    border-radius: 12px; padding: 16px; margin-bottom: 24px;
+  }
+  .chart-card h3 { font-size: 13px; color: var(--muted); margin-bottom: 12px;
+                   text-transform: uppercase; letter-spacing: .5px; }
+  .chart-wrap { height: 200px; position: relative; }
+
+  .toolbar {
+    display: flex; gap: 10px; flex-wrap: wrap;
+    align-items: center; margin-bottom: 16px;
+  }
+  .toolbar select, .toolbar input[type=date] {
+    background: var(--bg2); border: 1px solid var(--border);
+    color: var(--fg); padding: 8px 10px; border-radius: 8px; font-size: 13px;
+  }
+  .toolbar select:focus, .toolbar input:focus { outline: none; border-color: var(--cyan); }
+  .btn {
+    background: var(--bg3); border: 1px solid var(--border);
+    color: var(--fg); padding: 8px 14px; border-radius: 8px;
+    cursor: pointer; font-size: 13px;
+  }
+  .btn:hover { border-color: var(--cyan); color: var(--cyan); }
+  .btn.primary { background: var(--cyan); color: #002028; border-color: var(--cyan); font-weight: 700; }
+  .btn.primary:hover { opacity: .9; }
+  .btn:disabled { opacity: .5; cursor: wait; }
+  .spacer { flex: 1; }
+
+  .table-wrap { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th { text-align: left; padding: 8px 10px; color: var(--muted);
+       font-size: 11px; text-transform: uppercase; letter-spacing: .5px;
+       border-bottom: 1px solid var(--border); white-space: nowrap; }
+  td { padding: 10px 10px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: var(--bg2); }
+
+  .badge {
+    display: inline-block; font-size: 11px; font-weight: 700;
+    padding: 2px 8px; border-radius: 999px; white-space: nowrap;
+  }
+  .badge.ganada   { background: #1a4d32; color: var(--green); border: 1px solid var(--green); }
+  .badge.perdida  { background: #3a1010; color: var(--red);   border: 1px solid var(--red); }
+  .badge.pendiente{ background: #162030; color: var(--cyan);  border: 1px solid var(--cyan); }
+  .badge.void, .badge.cashout { background: #2a2f3a; color: var(--muted); border: 1px solid var(--border); }
+
+  .action-btns { display: flex; gap: 4px; }
+  .action-btns button {
+    font-size: 11px; padding: 3px 8px; border-radius: 6px; cursor: pointer;
+    border: 1px solid var(--border); background: var(--bg3); color: var(--fg);
+  }
+  .action-btns button:hover { border-color: var(--cyan); color: var(--cyan); }
+
+  .empty { text-align: center; color: var(--muted); padding: 40px; }
+
+  .ganancia.pos { color: var(--green); font-weight: 600; }
+  .ganancia.neg { color: var(--red);   font-weight: 600; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brand">Bet<span>Brain</span></div>
+  <nav>
+    <a href="/">Chat</a>
+    <a href="/historial" class="active">Historial</a>
+  </nav>
+</header>
+
+<div id="alertBankroll" class="alert red">
+  ⚠ ALERTA: El bankroll ha caído más del 20% desde el inicio. Considera pausar las apuestas.
+</div>
+<div id="alertRacha" class="alert yellow">
+  ⚠ RACHA NEGATIVA: 5 o más pérdidas consecutivas. Revisa tu estrategia antes de continuar.
+</div>
+
+<main>
+  <div class="metrics-grid">
+    <div class="metric-card">
+      <div class="label">Total apuestas</div>
+      <div class="value cyan" id="mTotal">—</div>
+      <div class="sub" id="mPendientes">pendientes: —</div>
+    </div>
+    <div class="metric-card">
+      <div class="label">Ganadas / Perdidas</div>
+      <div class="value" id="mGP">—</div>
+      <div class="sub" id="mTasa">win rate: —</div>
+    </div>
+    <div class="metric-card">
+      <div class="label">ROI</div>
+      <div class="value" id="mRoi">—</div>
+      <div class="sub">sobre stake total</div>
+    </div>
+    <div class="metric-card">
+      <div class="label">Profit neto</div>
+      <div class="value" id="mProfit">—</div>
+      <div class="sub" id="mStakeTotal">stake total: —</div>
+    </div>
+    <div class="metric-card">
+      <div class="label">Bankroll actual</div>
+      <div class="value green" id="mBankroll">—</div>
+      <div class="sub" id="mVariacion">vs inicio: —</div>
+    </div>
+  </div>
+
+  <div class="chart-card">
+    <h3>Evolución del bankroll</h3>
+    <div class="chart-wrap">
+      <canvas id="bankrollChart"></canvas>
+    </div>
+  </div>
+
+  <div class="toolbar">
+    <select id="filtroResultado">
+      <option value="">Todos los resultados</option>
+      <option value="pendiente">Pendientes</option>
+      <option value="ganada">Ganadas</option>
+      <option value="perdida">Perdidas</option>
+      <option value="void">Void / Cashout</option>
+    </select>
+    <select id="filtroLiga">
+      <option value="">Todas las ligas</option>
+      <option value="LaLiga">LaLiga</option>
+      <option value="Premier League">Premier League</option>
+      <option value="Bundesliga">Bundesliga</option>
+      <option value="Serie A">Serie A</option>
+      <option value="Ligue 1">Ligue 1</option>
+      <option value="Champions League">Champions League</option>
+      <option value="Europa League">Europa League</option>
+      <option value="Liga MX">Liga MX</option>
+      <option value="MLS">MLS</option>
+    </select>
+    <input type="date" id="filtroDesde" title="Desde fecha">
+    <button class="btn" id="filtrarBtn">Filtrar</button>
+    <div class="spacer"></div>
+    <button class="btn primary" id="verificarBtn">Actualizar automáticos</button>
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Fecha</th>
+          <th>Partido</th>
+          <th>Pick</th>
+          <th>Cuota</th>
+          <th>Stake</th>
+          <th>EV</th>
+          <th>Confianza</th>
+          <th>Resultado</th>
+          <th>P/G</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody id="tablaBody">
+        <tr><td colspan="11" class="empty">Cargando...</td></tr>
+      </tbody>
+    </table>
+  </div>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+let allRows = [];
+let bankrollChart = null;
+
+function safeText(t) {
+  const d = document.createElement("div");
+  d.textContent = String(t || "");
+  return d.innerHTML;
+}
+
+function fmtNum(v, decimals) {
+  if (v === null || v === undefined || v === "") return "—";
+  return parseFloat(v).toFixed(decimals !== undefined ? decimals : 2);
+}
+
+/* ── Métricas ── */
+async function cargarMetricas() {
+  try {
+    const r = await fetch("/api/metricas");
+    const m = await r.json();
+
+    document.getElementById("mTotal").textContent    = m.total;
+    document.getElementById("mPendientes").textContent = "pendientes: " + m.pendientes;
+
+    const gp = (m.ganadas || 0) + " / " + (m.perdidas || 0);
+    document.getElementById("mGP").textContent = gp;
+    const tasa = m.tasa_acierto !== null ? m.tasa_acierto + "%" : "—";
+    document.getElementById("mTasa").textContent = "win rate: " + tasa;
+
+    const roiEl = document.getElementById("mRoi");
+    roiEl.textContent = (m.roi !== null ? m.roi : 0) + "%";
+    roiEl.className = "value " + (m.roi > 0 ? "green" : m.roi < 0 ? "red" : "");
+
+    const profitEl = document.getElementById("mProfit");
+    const profit = m.profit_neto || 0;
+    profitEl.textContent = (profit >= 0 ? "+" : "") + profit.toFixed(2);
+    profitEl.className = "value " + (profit > 0 ? "green" : profit < 0 ? "red" : "");
+    document.getElementById("mStakeTotal").textContent = "stake total: " + fmtNum(m.stake_total);
+
+    document.getElementById("mBankroll").textContent = fmtNum(m.bankroll_actual);
+    const varPct = m.variacion_pct || 0;
+    const varEl = document.getElementById("mVariacion");
+    varEl.textContent = "vs inicio: " + (varPct >= 0 ? "+" : "") + varPct + "%";
+    varEl.style.color = varPct < 0 ? "var(--red)" : varPct > 0 ? "var(--green)" : "";
+
+    // Alertas
+    if (m.alerta_bankroll) {
+      document.getElementById("alertBankroll").style.display = "flex";
+    }
+    if (m.alerta_racha) {
+      document.getElementById("alertRacha").style.display = "flex";
+    }
+
+    // Gráfica bankroll
+    if (m.grafica_bankroll && m.grafica_bankroll.length > 1) {
+      renderChart(m.grafica_bankroll, m.bankroll_inicial);
+    }
+  } catch (e) {
+    console.error("Error cargando métricas:", e);
+  }
+}
+
+/* ── Chart.js ── */
+function renderChart(puntos, br_inicial) {
+  const labels = puntos.map(function(p) { return p.x === 0 ? "Inicio" : "#" + p.x; });
+  const values = puntos.map(function(p) { return p.y; });
+
+  if (bankrollChart) bankrollChart.destroy();
+
+  const ctx = document.getElementById("bankrollChart").getContext("2d");
+  bankrollChart = new Chart(ctx, {
+    type: "line",
+    data: {
+      labels: labels,
+      datasets: [{
+        label: "Bankroll",
+        data: values,
+        borderColor: "#6ee7ff",
+        backgroundColor: "rgba(110,231,255,.08)",
+        tension: 0.3,
+        fill: true,
+        pointRadius: 3,
+        pointBackgroundColor: values.map(function(v) {
+          return v >= br_inicial ? "#3ddc97" : "#ff6b6b";
+        }),
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { ticks: { color: "#8b93a3", font: { size: 11 } }, grid: { color: "#2a2f3a" } },
+        y: { ticks: { color: "#8b93a3" }, grid: { color: "#2a2f3a" } },
+      },
+    }
+  });
+}
+
+/* ── Tabla ── */
+async function cargarHistorial() {
+  const resultado = document.getElementById("filtroResultado").value;
+  const liga      = document.getElementById("filtroLiga").value;
+  const desde     = document.getElementById("filtroDesde").value;
+
+  let url = "/api/historial?";
+  if (resultado) url += "resultado=" + encodeURIComponent(resultado) + "&";
+  if (liga)      url += "liga="      + encodeURIComponent(liga)      + "&";
+  if (desde)     url += "fecha_desde=" + encodeURIComponent(desde)   + "&";
+
+  try {
+    const r = await fetch(url);
+    const j = await r.json();
+    allRows = j.apuestas || [];
+    renderTabla(allRows);
+  } catch (e) {
+    document.getElementById("tablaBody").innerHTML =
+      '<tr><td colspan="11" class="empty">Error cargando historial</td></tr>';
+  }
+}
+
+function renderTabla(rows) {
+  const tbody = document.getElementById("tablaBody");
+  if (!rows.length) {
+    tbody.innerHTML = '<tr><td colspan="11" class="empty">Sin apuestas registradas</td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = rows.slice().reverse().map(function(r) {
+    const resBadge = '<span class="badge ' + safeText(r.resultado) + '">' +
+                     safeText(r.resultado) + '</span>';
+
+    const ganancia = r.ganancia_neta !== "" && r.ganancia_neta !== null
+      ? '<span class="ganancia ' + (parseFloat(r.ganancia_neta) >= 0 ? "pos" : "neg") + '">' +
+        (parseFloat(r.ganancia_neta) >= 0 ? "+" : "") + parseFloat(r.ganancia_neta).toFixed(2) + '</span>'
+      : "—";
+
+    const confianza = r.confianza_badge
+      ? '<span style="font-size:11px;color:' +
+        (r.confianza_badge === "alta" ? "var(--green)" : "var(--yellow)") + '">' +
+        safeText(r.confianza_badge) + '</span>'
+      : "—";
+
+    const ev = r.ev_predicho !== "" && r.ev_predicho !== null
+      ? (parseFloat(r.ev_predicho) * 100).toFixed(1) + "%"
+      : "—";
+
+    let acciones = "";
+    if (r.resultado === "pendiente") {
+      acciones = '<div class="action-btns">' +
+        '<button onclick="actualizarRes(' + r.id + ',\'ganada\')">Ganada</button>' +
+        '<button onclick="actualizarRes(' + r.id + ',\'perdida\')">Perdida</button>' +
+        '<button onclick="actualizarRes(' + r.id + ',\'void\')">Void</button>' +
+        '</div>';
+    }
+
+    return '<tr>' +
+      '<td style="color:var(--muted)">' + safeText(r.id) + '</td>' +
+      '<td style="color:var(--muted);white-space:nowrap">' + safeText(r.fecha_registro || "") + '</td>' +
+      '<td><b>' + safeText(r.local || "") + '</b> vs <b>' + safeText(r.visitante || "") + '</b>' +
+        '<div style="font-size:11px;color:var(--muted)">' + safeText(r.liga || "") + '</div></td>' +
+      '<td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="' +
+        safeText(r.pick_descripcion || "") + '">' + safeText(r.pick_descripcion || "") + '</td>' +
+      '<td style="color:var(--cyan)">' + fmtNum(r.cuota) + '</td>' +
+      '<td>' + fmtNum(r.stake) + '</td>' +
+      '<td>' + ev + '</td>' +
+      '<td>' + confianza + '</td>' +
+      '<td>' + resBadge + '</td>' +
+      '<td>' + ganancia + '</td>' +
+      '<td>' + acciones + '</td>' +
+    '</tr>';
+  }).join("");
+}
+
+/* ── Actualizar resultado ── */
+async function actualizarRes(id, resultado) {
+  try {
+    const r = await fetch("/api/actualizar_resultado", {
+      method: "POST",
+      headers: {"Content-Type": "application/json"},
+      body: JSON.stringify({id, resultado}),
+    });
+    const j = await r.json();
+    if (j.error) { alert("Error: " + j.error); return; }
+    await cargarMetricas();
+    await cargarHistorial();
+  } catch (e) {
+    alert("Error de red: " + e.message);
+  }
+}
+
+/* ── Verificar automáticos ── */
+document.getElementById("verificarBtn").addEventListener("click", async function() {
+  const btn = this;
+  btn.disabled = true;
+  btn.textContent = "Verificando...";
+  try {
+    const r = await fetch("/api/verificar_resultados");
+    const j = await r.json();
+    alert("Revisadas: " + j.pendientes_revisadas + " pendientes.\nActualizadas: " + j.actualizadas);
+    if (j.actualizadas > 0) {
+      await cargarMetricas();
+      await cargarHistorial();
+    }
+  } catch (e) {
+    alert("Error: " + e.message);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = "Actualizar automáticos";
+  }
+});
+
+/* ── Filtros ── */
+document.getElementById("filtrarBtn").addEventListener("click", async function() {
+  await cargarMetricas();
+  await cargarHistorial();
+});
+
+/* ── Init ── */
+cargarMetricas();
+cargarHistorial();
+</script>
+</body>
+</html>

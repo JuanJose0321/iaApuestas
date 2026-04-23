@@ -1,0 +1,1 @@
+{"_ts": 1776556317.1114244, "data": {"get": "teams", "parameters": {"search": "Portland Timbers"}, "errors": {"access": "Your account is suspended, check on https://dashboard.api-football.com."}, "results": 0, "paging": {"current": 1, "total": 1}, "response": []}}

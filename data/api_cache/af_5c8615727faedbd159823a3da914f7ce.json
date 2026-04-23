@@ -1,0 +1,1 @@
+{"_ts": 1776565988.4867973, "data": {"get": "teams", "parameters": {"search": "1. FC Heidenheim"}, "errors": {"search": "The Search field may only contain alpha-numeric characters and spaces."}, "results": 0, "paging": {"current": 1, "total": 1}, "response": []}}

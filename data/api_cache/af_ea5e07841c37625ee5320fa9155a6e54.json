@@ -1,0 +1,1 @@
+{"_ts": 1776542466.2797055, "data": {"get": "injuries", "parameters": {"team": "2291"}, "errors": {"season": "The Season field is required."}, "results": 0, "paging": {"current": 1, "total": 1}, "response": []}}

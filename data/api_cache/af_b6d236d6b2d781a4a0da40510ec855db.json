@@ -1,0 +1,1 @@
+{"_ts": 1776886727.147135, "data": {"get": "teams", "parameters": {"search": "Cruz Azul"}, "errors": {"access": "Your account is suspended, check on https://dashboard.api-football.com."}, "results": 0, "paging": {"current": 1, "total": 1}, "response": []}}

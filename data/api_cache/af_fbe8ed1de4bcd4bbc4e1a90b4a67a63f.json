@@ -1,0 +1,1 @@
+{"_ts": 1776556402.9607866, "data": {"get": "teams", "parameters": {"search": "Monterrey"}, "errors": {"access": "Your account is suspended, check on https://dashboard.api-football.com."}, "results": 0, "paging": {"current": 1, "total": 1}, "response": []}}

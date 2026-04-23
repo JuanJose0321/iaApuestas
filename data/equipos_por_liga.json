@@ -1,0 +1,106 @@
+{
+  "_meta": {
+    "temporada": "2025-26",
+    "nota": "Nombres exactos como los conoce API-Football (api-sports.io). Editar aquí para añadir o corregir equipos.",
+    "actualizado": "2026-04-18"
+  },
+  "LaLiga": [
+    "Real Madrid", "Barcelona", "Atletico Madrid", "Athletic Club",
+    "Real Sociedad", "Real Betis", "Villarreal", "Valencia",
+    "Sevilla", "Getafe", "Girona", "Rayo Vallecano",
+    "Osasuna", "Celta Vigo", "Mallorca", "Alaves",
+    "Espanyol", "Elche", "Levante", "Oviedo"
+  ],
+  "Premier League": [
+    "Manchester United", "Manchester City", "Liverpool", "Arsenal",
+    "Chelsea", "Tottenham", "Newcastle", "Aston Villa",
+    "West Ham", "Brighton", "Crystal Palace", "Fulham",
+    "Brentford", "Bournemouth", "Everton", "Wolves",
+    "Nottingham Forest", "Burnley", "Leeds", "Sunderland"
+  ],
+  "Bundesliga": [
+    "Bayern Munich", "Bayer Leverkusen", "Borussia Dortmund", "RB Leipzig",
+    "Eintracht Frankfurt", "VfB Stuttgart", "VfL Wolfsburg", "FSV Mainz 05",
+    "Borussia Monchengladbach", "SC Freiburg", "1899 Hoffenheim", "FC Augsburg",
+    "Werder Bremen", "Union Berlin", "1. FC Heidenheim", "1. FC Koln",
+    "Hamburger SV", "FC St. Pauli"
+  ],
+  "Serie A": [
+    "Inter", "AC Milan", "Juventus", "Napoli",
+    "Atalanta", "Roma", "Lazio", "Fiorentina",
+    "Bologna", "Torino", "Udinese", "Genoa",
+    "Hellas Verona", "Lecce", "Cagliari", "Parma",
+    "Como", "Sassuolo", "Pisa", "Cremonese"
+  ],
+  "Ligue 1": [
+    "Paris Saint Germain", "Marseille", "Monaco", "Lille",
+    "Nice", "Lyon", "Lens", "Strasbourg",
+    "Rennes", "Toulouse", "Nantes", "Angers",
+    "Brest", "Le Havre", "Paris FC", "Metz",
+    "Lorient", "Auxerre"
+  ],
+  "Champions League": [
+    "Real Madrid", "Barcelona", "Manchester City", "Liverpool",
+    "Arsenal", "Chelsea", "Bayern Munich", "Borussia Dortmund",
+    "Bayer Leverkusen", "Paris Saint Germain", "Marseille",
+    "Inter", "Juventus", "Napoli", "AC Milan", "Atalanta",
+    "Atletico Madrid", "Athletic Club", "Villarreal",
+    "Sporting CP", "Benfica", "Porto", "Ajax", "PSV Eindhoven",
+    "Feyenoord", "Club Brugge", "Celtic", "Rangers"
+  ],
+  "Europa League": [
+    "Real Betis", "Sevilla", "Tottenham", "West Ham",
+    "Roma", "Lazio", "Fiorentina", "Lyon",
+    "Nice", "Eintracht Frankfurt", "Union Berlin",
+    "Porto", "Braga", "AZ Alkmaar", "PSV Eindhoven",
+    "Olympiacos", "Panathinaikos", "Fenerbahce", "Galatasaray",
+    "Ferencvaros", "Dinamo Zagreb", "Bodo/Glimt"
+  ],
+  "Liga MX": [
+    "Club America", "Cruz Azul", "Guadalajara Chivas", "UNAM - Pumas",
+    "Tigres UANL", "Monterrey", "Leon", "Pachuca",
+    "Toluca", "Atlas", "Puebla", "Mazatlan",
+    "FC Juarez", "Santos Laguna", "Necaxa", "Tijuana",
+    "Atletico San Luis", "Queretaro"
+  ],
+  "MLS": [
+    "Inter Miami", "LAFC", "LA Galaxy", "Atlanta United",
+    "Seattle Sounders", "Portland Timbers", "New York City",
+    "New York Red Bulls", "Philadelphia Union", "Columbus Crew",
+    "Orlando City", "Chicago Fire", "Nashville SC", "Houston Dynamo",
+    "DC United", "Austin", "FC Cincinnati", "Charlotte",
+    "Toronto FC", "CF Montreal", "New England Revolution",
+    "Minnesota United", "Colorado Rapids", "Real Salt Lake",
+    "Vancouver Whitecaps", "San Jose Earthquakes", "St. Louis City",
+    "FC Dallas", "Sporting Kansas City"
+  ],
+  "Brasileirao": [
+    "Palmeiras", "Flamengo", "Botafogo", "Corinthians",
+    "Sao Paulo", "Fluminense", "Atletico Mineiro", "Gremio",
+    "Internacional", "Cruzeiro", "Bahia", "Fortaleza",
+    "Vasco DA Gama", "Santos", "Bragantino", "Mirassol",
+    "Sport Recife", "Juventude", "Ceara", "Vitoria"
+  ],
+  "Eredivisie": [
+    "Ajax", "PSV Eindhoven", "Feyenoord", "AZ Alkmaar",
+    "Utrecht", "Twente", "NEC Nijmegen", "Go Ahead Eagles",
+    "Heerenveen", "Groningen", "Sparta Rotterdam", "Heracles",
+    "Fortuna Sittard", "PEC Zwolle", "NAC Breda", "Telstar",
+    "Volendam", "Excelsior"
+  ],
+  "Primeira Liga": [
+    "Benfica", "Porto", "Sporting CP", "Braga",
+    "Vitoria de Guimaraes", "Famalicao", "Casa Pia", "Moreirense",
+    "Rio Ave", "Gil Vicente", "Estoril", "Nacional",
+    "Santa Clara", "Estrela da Amadora", "Arouca", "Tondela",
+    "Alverca", "AFS"
+  ],
+  "Championship": [
+    "Leicester", "Southampton", "Ipswich", "Sheffield United",
+    "West Bromwich Albion", "Middlesbrough", "Coventry", "Sunderland",
+    "Hull City", "Derby", "Bristol City", "Stoke",
+    "Swansea", "Cardiff", "Norwich", "QPR",
+    "Watford", "Millwall", "Blackburn", "Preston",
+    "Portsmouth", "Oxford", "Sheffield Wednesday", "Luton"
+  ]
+}

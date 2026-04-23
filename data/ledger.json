@@ -1,0 +1,17 @@
+{
+  "bankroll_inicial": 1000.0,
+  "apuestas": [
+    {
+      "fecha": "2026-04-18T13:10:44",
+      "partido": "Chelsea vs Manchester United",
+      "mercado": "DIRECTA",
+      "seleccion": "Menos de 2.5",
+      "cuota": 2.43,
+      "stake": 32.28,
+      "prob_modelo": 0.4875,
+      "ev": 0.1846,
+      "resultado": "pendiente",
+      "pnl": 0.0
+    }
+  ]
+}

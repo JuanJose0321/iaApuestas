@@ -1,0 +1,1 @@
+{"_ts": 1776886721.378112, "data": {"get": "teams", "parameters": {"search": "Equipo_XYZ_Desconocido"}, "errors": {"access": "Your account is suspended, check on https://dashboard.api-football.com."}, "results": 0, "paging": {"current": 1, "total": 1}, "response": []}}
