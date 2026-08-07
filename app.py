@@ -32,14 +32,19 @@ from config import (
 
 ensure_dirs()
 
+_handlers: list[logging.Handler] = [logging.StreamHandler()]
+try:
+    _handlers.append(
+        RotatingFileHandler(LOGS_DIR / "betbrain.log", maxBytes=5 * 1024 * 1024,
+                            backupCount=3, encoding="utf-8")
+    )
+except OSError:
+    pass  # filesystem de solo lectura (Vercel/serverless): log solo a stdout/stderr
+
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s [%(name)s] %(levelname)s: %(message)s",
-    handlers=[
-        logging.StreamHandler(),
-        RotatingFileHandler(LOGS_DIR / "betbrain.log", maxBytes=5 * 1024 * 1024,
-                            backupCount=3, encoding="utf-8"),
-    ],
+    handlers=_handlers,
 )
 _log = logging.getLogger("betbrain.app")
 from src.core.confidence import (

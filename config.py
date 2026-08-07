@@ -29,9 +29,18 @@ def ensure_dirs() -> None:
     No se llama al importar el módulo (evita efectos secundarios en tests
     y entornos de solo lectura) — se invoca explícitamente en el arranque
     de app.py / src/cli.py.
+
+    Filesystems de solo lectura (Vercel/serverless: todo excepto /tmp) no
+    dejan crear directorios nuevos — se ignora silenciosamente en ese caso;
+    los directorios que ya vienen en el repo (data/raw, models) igual
+    funcionan, y el resto (caché en disco, logs a archivo) ya degradan con
+    gracia si no se pueden escribir (ver providers/*.py, app.py).
     """
     for d in (RAW_DATA_DIR, MODELS_DIR, NBA_DIR, CACHE_DIR, LOGS_DIR):
-        d.mkdir(parents=True, exist_ok=True)
+        try:
+            d.mkdir(parents=True, exist_ok=True)
+        except OSError:
+            pass
 
 
 # ---- API keys (NUNCA hardcodear) ----
@@ -46,6 +55,13 @@ SPORTMONKS_TOKEN = os.getenv("SPORTMONKS_TOKEN", "")
 
 # Caché de API-Football en disco (evita quemar quota)
 CACHE_TTL_HORAS = int(os.getenv("CACHE_TTL_HORAS", "12"))
+
+# ---- Supabase (persistencia en despliegues serverless / Vercel) ----
+# Sin estas 3 variables, tracking.py sigue usando CSV/JSON local (comportamiento
+# actual, usado en dev y en los tests). Nunca hardcodear valores aquí.
+SUPABASE_URL = os.getenv("SUPABASE_URL", "")
+SUPABASE_ANON_KEY = os.getenv("SUPABASE_ANON_KEY", "")
+SUPABASE_SERVICE_ROLE_KEY = os.getenv("SUPABASE_SERVICE_ROLE_KEY", "")
 
 # ---- Flask ----
 FLASK_DEBUG = os.getenv("FLASK_DEBUG", "0") == "1"

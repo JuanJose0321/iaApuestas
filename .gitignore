@@ -3,7 +3,10 @@ Scripts/
 Include/
 venv/
 .env
+.env.local
+.env.*.local
 pyvenv.cfg
+.vercel/
 
 __pycache__/
 *.pyc

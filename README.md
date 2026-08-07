@@ -54,6 +54,33 @@ Los endpoints que escriben datos o llaman APIs externas (`/chat`,
 (Flask-Limiter). Sigue pensado para uso local/personal, no para exponerse
 públicamente sin añadir autenticación (ver `AUDIT_REPORT.md`).
 
+## Despliegue en Vercel + Supabase
+
+Vercel detecta automáticamente la instancia `Flask` llamada `app` en
+`app.py` en la raíz y la despliega como una única función — no hace falta
+reescribir rutas a mano. Lo único que cambia es la persistencia de
+apuestas: el filesystem de Vercel es de solo lectura fuera de `/tmp`, así
+que `src/services/tracking.py` usa Supabase en vez de CSV/JSON local
+cuando detecta `SUPABASE_URL` + `SUPABASE_SERVICE_ROLE_KEY` configurados
+(si no están, sigue usando CSV local — no rompe el flujo de desarrollo).
+
+Pasos:
+1. Crea un proyecto en [supabase.com](https://supabase.com) y corre
+   `supabase/schema.sql` en **SQL Editor** (no se puede automatizar con
+   solo la API key — hace falta un token de acceso personal de Supabase).
+2. En [vercel.com](https://vercel.com) → Import Project → conecta el repo.
+3. En Project Settings → Environment Variables, agrega `SUPABASE_URL`,
+   `SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY` (ver `.env.local`,
+   nunca commiteado) y las que uses de fútbol/tenis (`GROQ_API_KEY`, etc.).
+4. Deploy.
+
+**Riesgos conocidos de esta ruta**: el bundle incluye `xgboost` +
+`scikit-learn` + `pandas` + `numpy` (pesados) — cerca del límite de 500MB
+del plan gratuito, revisa el log de build si falla por tamaño. El plan
+Hobby limita cada función a 10s por defecto (`vercel.json` pide 30s vía
+`maxDuration`, pero el techo real depende del plan) — `/chat` encadena
+llamadas a APIs externas y puede tardar más que eso en el peor caso.
+
 ## Tests
 
 ```bash

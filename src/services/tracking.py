@@ -1,6 +1,13 @@
 """
 Sistema de tracking de apuestas.
 Gestiona CSV de historial, bankroll_config.json, backups y métricas.
+
+Si hay credenciales de Supabase configuradas (SUPABASE_URL +
+SUPABASE_SERVICE_ROLE_KEY), la persistencia usa Supabase en su lugar —
+necesario en despliegues serverless (Vercel), donde el filesystem local
+no sobrevive entre invocaciones. El cálculo de métricas (calcular_metricas)
+es idéntico en ambos casos: opera sobre la misma lista de dicts sin
+importar de dónde vinieron las filas.
 """
 import csv
 import json
@@ -10,6 +17,8 @@ from datetime import datetime
 from pathlib import Path
 
 sys.path.append(str(Path(__file__).resolve().parent.parent.parent))
+
+from src.services import supabase_client as _sb
 
 ROOT     = Path(__file__).resolve().parent.parent
 DATA_DIR = ROOT / "data"
@@ -43,27 +52,39 @@ def _init():
             csv.DictWriter(f, fieldnames=COLUMNS).writeheader()
 
 
+_CONFIG_DEFAULT = {
+    "bankroll_inicial": 800.0,
+    "bankroll_actual":  800.0,
+    "stake_modo":       "conservador",
+    "stake_fijo":       20.0,
+    "max_stake_pct":    0.03,
+    "racha_negativa_alerta": 5,
+    "fecha_inicio":     datetime.now().strftime("%Y-%m-%d"),
+}
+
+
 def leer_config() -> dict:
-    """Lee bankroll_config.json. Lo crea con valores por defecto si no existe."""
-    default = {
-        "bankroll_inicial": 800.0,
-        "bankroll_actual":  800.0,
-        "stake_modo":       "conservador",
-        "stake_fijo":       20.0,
-        "max_stake_pct":    0.03,
-        "racha_negativa_alerta": 5,
-        "fecha_inicio":     datetime.now().strftime("%Y-%m-%d"),
-    }
+    """Config de bankroll (Supabase si está configurado, si no bankroll_config.json)."""
+    if _sb.disponible():
+        cfg = _sb.leer_config()
+        if cfg is None:
+            _sb.guardar_config(_CONFIG_DEFAULT)
+            return dict(_CONFIG_DEFAULT)
+        return cfg
+
     if not CONFIG_PATH.exists():
-        guardar_config(default)
-        return default
+        guardar_config(dict(_CONFIG_DEFAULT))
+        return dict(_CONFIG_DEFAULT)
     try:
         return json.loads(CONFIG_PATH.read_text(encoding="utf-8"))
     except Exception:
-        return default
+        return dict(_CONFIG_DEFAULT)
 
 
 def guardar_config(cfg: dict):
+    if _sb.disponible():
+        _sb.guardar_config(cfg)
+        return
     CONFIG_PATH.parent.mkdir(parents=True, exist_ok=True)
     CONFIG_PATH.write_text(
         json.dumps(cfg, indent=2, ensure_ascii=False), encoding="utf-8"
@@ -71,7 +92,10 @@ def guardar_config(cfg: dict):
 
 
 def leer_historial(csv_path: Path | None = None) -> list[dict]:
-    """Lee todas las apuestas del CSV. Devuelve lista vacía si no hay datos."""
+    """Lee todas las apuestas (Supabase si está configurado y no se fuerza csv_path)."""
+    if csv_path is None and _sb.disponible():
+        return _sb.leer_apuestas()
+
     path = csv_path or CSV_PATH
     _init()
     # Intentar leer; si falla, usar el último backup
@@ -129,14 +153,10 @@ def registrar_apuesta(data: dict, csv_path: Path | None = None) -> dict:
     Registra una nueva apuesta como 'pendiente'.
     Devuelve {id, mensaje, total_apuestas}.
     """
-    _init()
-    rows   = leer_historial(csv_path)
-    cfg    = leer_config()
-    nid    = _siguiente_id(rows)
+    cfg = leer_config()
     bankroll_antes = round(float(cfg.get("bankroll_actual", 800)), 2)
 
     fila: dict = {
-        "id":               nid,
         "fecha_registro":   datetime.now().strftime("%d/%m/%Y %H:%M"),
         "fecha_partido":    data.get("fecha_partido", ""),
         "liga":             data.get("liga", ""),
@@ -158,6 +178,16 @@ def registrar_apuesta(data: dict, csv_path: Path | None = None) -> dict:
         "notas":            data.get("notas", ""),
     }
 
+    if csv_path is None and _sb.disponible():
+        creada = _sb.insertar_apuesta(fila)
+        nid = creada["id"]
+        total = len(_sb.leer_apuestas())
+        return {"id": nid, "mensaje": f"Apuesta #{nid} registrada", "total_apuestas": total}
+
+    _init()
+    rows = leer_historial(csv_path)
+    nid  = _siguiente_id(rows)
+    fila["id"] = nid
     rows.append(fila)
 
     # Backup automático cada BACKUP_CADA apuestas
@@ -214,7 +244,16 @@ def actualizar_resultado(id_apuesta: int, resultado: str,
     if notas:
         target["notas"] = notas
 
-    _escribir_todas(rows, csv_path)
+    if csv_path is None and _sb.disponible():
+        _sb.actualizar_apuesta(int(id_apuesta), {
+            "resultado":        resultado,
+            "ganancia_neta":    ganancia_neta,
+            "bankroll_despues": br_despues,
+            **({"notas": notas} if notas else {}),
+        })
+    else:
+        _escribir_todas(rows, csv_path)
+
     return {
         "id":             int(id_apuesta),
         "resultado":      resultado,
