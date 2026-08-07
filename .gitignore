@@ -1,3 +1,13 @@
-Lib/ 
-venv/ 
-.env 
+Lib/
+Scripts/
+Include/
+venv/
+.env
+pyvenv.cfg
+
+__pycache__/
+*.pyc
+.pytest_cache/
+
+data/api_cache/
+*.log

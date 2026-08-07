@@ -3,6 +3,7 @@ Configuración central del proyecto.
 Lee variables de entorno desde .env si existe.
 """
 import os
+import secrets
 from pathlib import Path
 
 # Cargar .env si python-dotenv está disponible (no es obligatorio)
@@ -41,6 +42,9 @@ CACHE_TTL_HORAS = int(os.getenv("CACHE_TTL_HORAS", "12"))
 # ---- Flask ----
 FLASK_DEBUG = os.getenv("FLASK_DEBUG", "0") == "1"
 FLASK_PORT = int(os.getenv("FLASK_PORT", "5000"))
+# Sin SECRET_KEY en el entorno, se genera una aleatoria por proceso (válida
+# solo para desarrollo local: invalida sesiones/cookies firmadas al reiniciar).
+SECRET_KEY = os.getenv("SECRET_KEY") or secrets.token_hex(32)
 
 # ---- Bankroll y reglas de apuesta ----
 BANKROLL_INICIAL = float(os.getenv("BANKROLL_INICIAL", "1000"))

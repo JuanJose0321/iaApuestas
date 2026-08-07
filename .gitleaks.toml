@@ -1,0 +1,13 @@
+title = "BetBrain gitleaks config"
+
+[extend]
+useDefault = true
+
+[allowlist]
+paths = [
+  '''Lib/.*''',
+  '''Scripts/.*''',
+  '''Include/.*''',
+  '''__pycache__/.*''',
+  '''data/api_cache/.*''',
+]

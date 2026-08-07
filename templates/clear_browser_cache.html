@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Limpiar Caché - BetBrain</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #0e1014;
+            color: #e7e9ee;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .container {
+            background: #181b22;
+            padding: 40px;
+            border-radius: 12px;
+            max-width: 500px;
+            text-align: center;
+            border: 1px solid #2a2f3a;
+        }
+        h1 {
+            color: #6ee7ff;
+            margin-top: 0;
+        }
+        p {
+            color: #8b93a3;
+            line-height: 1.6;
+        }
+        button {
+            background: #6ee7ff;
+            color: #0e1014;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            margin: 20px 0;
+            transition: all 0.3s ease;
+        }
+        button:hover {
+            background: #3ddc97;
+            transform: scale(1.05);
+        }
+        .status {
+            margin-top: 20px;
+            padding: 16px;
+            border-radius: 8px;
+            display: none;
+        }
+        .status.success {
+            background: #1a4d32;
+            color: #3ddc97;
+            border: 1px solid #3ddc97;
+        }
+        .status.error {
+            background: #3a1010;
+            color: #ff6b6b;
+            border: 1px solid #ff6b6b;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧹 Limpiar Caché BetBrain</h1>
+        <p>Este formulario limpiará todo el caché del navegador para BetBrain.</p>
+        <p>Después, verás los equipos correctos de la Premier League (20 equipos).</p>
+        
+        <button onclick="limpiarCache()">LIMPIAR CACHÉ AHORA</button>
+        
+        <div class="status" id="status"></div>
+    </div>
+
+    <script>
+        function limpiarCache() {
+            const statusDiv = document.getElementById('status');
+            statusDiv.className = 'status';
+            statusDiv.textContent = 'Limpiando...';
+            statusDiv.style.display = 'block';
+
+            try {
+                // Limpiar localStorage
+                const keysToRemove = [];
+                for (let i = 0; i < localStorage.length; i++) {
+                    const key = localStorage.key(i);
+                    if (key && (key.includes('equipo') || key.includes('liga') || key.includes('teams'))) {
+                        keysToRemove.push(key);
+                    }
+                }
+                keysToRemove.forEach(key => localStorage.removeItem(key));
+
+                // Limpiar sessionStorage
+                const sessionKeysToRemove = [];
+                for (let i = 0; i < sessionStorage.length; i++) {
+                    const key = sessionStorage.key(i);
+                    if (key && (key.includes('equipo') || key.includes('liga') || key.includes('teams'))) {
+                        sessionKeysToRemove.push(key);
+                    }
+                }
+                sessionKeysToRemove.forEach(key => sessionStorage.removeItem(key));
+
+                // Limpiar cookies
+                document.cookie.split(";").forEach(function(c) {
+                    const cname = c.split("=")[0];
+                    if (cname.includes('equipo') || cname.includes('liga') || cname.includes('teams')) {
+                        document.cookie = encodeURIComponent(cname) + "=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+                    }
+                });
+
+                statusDiv.className = 'status success';
+                statusDiv.innerHTML = `
+                    <strong>✅ ¡Caché limpiado exitosamente!</strong><br><br>
+                    <p>Recargando en 2 segundos...</p>
+                `;
+
+                setTimeout(() => {
+                    window.location.href = '/';
+                }, 2000);
+
+            } catch (e) {
+                statusDiv.className = 'status error';
+                statusDiv.innerHTML = `
+                    <strong>⚠️ Hubo un problema:</strong><br>
+                    ${e.message}<br><br>
+                    <p style="font-size: 12px;">Intenta hacer esto manualmente:</p>
+                    <ol style="text-align: left; display: inline-block;">
+                        <li>Presiona F12 para abrir DevTools</li>
+                        <li>Application → Clear Storage</li>
+                        <li>Selecciona "Local Storage", "Cookies", "Cache"</li>
+                        <li>Click en "Clear Site Data"</li>
+                        <li>Recarga la página</li>
+                    </ol>
+                `;
+            }
+        }
+
+        // Auto-limpiar al cargar
+        window.addEventListener('load', () => {
+            console.log('Página cargada. Limpiando caché automáticamente...');
+            limpiarCache();
+        });
+    </script>
+</body>
+</html>

@@ -26,6 +26,38 @@
     display: flex;
     flex-direction: column;
   }
+
+  /* ── Toast notifications ── */
+  .toast-container {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    max-width: 400px;
+  }
+  .toast {
+    padding: 12px 16px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    animation: slideIn 0.3s ease;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  }
+  @keyframes slideIn {
+    from { transform: translateX(400px); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+  }
+  .toast.success { background: #1a4d32; color: var(--green); border: 1px solid var(--green); }
+  .toast.error { background: #3a1010; color: var(--red); border: 1px solid var(--red); }
+  .toast.warning { background: #2b2200; color: var(--yellow); border: 1px solid var(--yellow); }
+  .toast.info { background: #162030; color: var(--cyan); border: 1px solid var(--cyan); }
+
   header {
     padding: 14px 20px;
     background: var(--bg2);
@@ -33,11 +65,64 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
+    flex-wrap: wrap;
+    gap: 16px;
   }
   header .brand { font-weight: 700; letter-spacing: .5px; }
   header .brand span { color: var(--cyan); }
   header .bank { font-size: 13px; color: var(--muted); }
   header .bank b { color: var(--green); }
+
+  /* ── Sport tabs ── */
+  .sport-tabs {
+    display: flex;
+    gap: 4px;
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 3px;
+    align-self: flex-start;
+  }
+  .sport-tab {
+    padding: 6px 14px;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+    background: transparent;
+    color: var(--muted);
+    transition: all 0.2s;
+  }
+  .sport-tab.active {
+    background: var(--cyan);
+    color: #002028;
+  }
+  .sport-tab:hover:not(.active) { color: var(--fg); }
+
+  /* ── Tennis form extras ── */
+  .tennis-pick-card {
+    align-self: flex-start;
+    width: 100%;
+    max-width: 88%;
+    background: linear-gradient(180deg, var(--bg2), #14171d);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 14px 16px;
+    border-bottom-left-radius: 4px;
+  }
+  .tennis-pick-card.verde  { border-left: 4px solid var(--green); }
+  .tennis-pick-card.amarillo { border-left: 4px solid var(--yellow); }
+  .tennis-pick-card.rojo   { border-left: 4px solid var(--red); }
+  .tennis-pick-card.dupla  { border-left: 4px solid var(--cyan); }
+  .tennis-tag {
+    font-size: 11px; padding: 3px 9px; border-radius: 999px;
+    font-weight: 700; letter-spacing: .4px;
+  }
+  .tennis-tag.verde   { background: #1a4d32; color: var(--green); border: 1px solid var(--green); }
+  .tennis-tag.amarillo{ background: #4a3a00; color: var(--yellow); border: 1px solid var(--yellow); }
+  .tennis-tag.rojo    { background: #3a1010; color: var(--red); border: 1px solid var(--red); }
+  .tennis-tag.dupla   { background: #162030; color: var(--cyan); border: 1px solid var(--cyan); }
   main {
     flex: 1;
     overflow-y: auto;
@@ -45,7 +130,7 @@
     display: flex;
     flex-direction: column;
     gap: 14px;
-    max-width: 820px;
+    max-width: 900px;
     width: 100%;
     margin: 0 auto;
   }
@@ -72,7 +157,7 @@
   .bubble.bot.error { border-color: var(--red); color: var(--red); }
   .bubble b { color: var(--cyan); }
 
-  /* ── Pick card ── */
+  /* ── Pick card mejorada ── */
   .pick-card {
     align-self: flex-start;
     width: 100%;
@@ -83,6 +168,10 @@
     padding: 14px 16px;
     border-bottom-left-radius: 4px;
   }
+  .pick-card.risk-low { border-left: 4px solid var(--green); }
+  .pick-card.risk-med { border-left: 4px solid var(--yellow); }
+  .pick-card.risk-high { border-left: 4px solid var(--red); }
+
   .pick-card .head {
     display: flex;
     justify-content: space-between;
@@ -90,41 +179,61 @@
     border-bottom: 1px dashed var(--border);
     padding-bottom: 8px;
     margin-bottom: 10px;
+    flex-wrap: wrap;
+    gap: 8px;
   }
-  .pick-card .head-left { display: flex; align-items: center; gap: 8px; }
+  .pick-card .head-left { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
   .pick-card .tag {
     font-size: 11px;
     background: var(--cyan);
     color: #002028;
-    padding: 2px 8px;
+    padding: 4px 10px;
     border-radius: 999px;
     font-weight: 700;
     letter-spacing: .5px;
   }
-  .pick-card .tag.dupla    { background: var(--yellow); color: #4a3a00; }
-  .pick-card .tag.tripleta { background: var(--green);  color: #00301d; }
-  /* ── Badge de confianza ── */
+  .pick-card .tag.dupla { background: var(--yellow); color: #4a3a00; }
+  .pick-card .tag.tripleta { background: var(--green); color: #00301d; }
+
   .badge-conf {
     font-size: 10px;
-    padding: 2px 7px;
+    padding: 3px 8px;
     border-radius: 999px;
     font-weight: 700;
     letter-spacing: .4px;
   }
-  .badge-conf.alta  { background: #1a4d32; color: var(--green);  border: 1px solid var(--green); }
-  .badge-conf.media { background: #4a3a00; color: var(--yellow); border: 1px solid var(--yellow); }
+  .badge-conf.alta, .badge-conf.verde { background: #1a4d32; color: var(--green); border: 1px solid var(--green); }
+  .badge-conf.media, .badge-conf.amarillo { background: #4a3a00; color: var(--yellow); border: 1px solid var(--yellow); }
+  .badge-conf.baja, .badge-conf.rojo { background: #3a1010; color: var(--red); border: 1px solid var(--red); }
+  .badge-conf.muy-baja { background: #2a0a0a; color: #888; border: 1px solid #555; }
+
+  .risk-indicator {
+    font-size: 11px;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-weight: 600;
+  }
+  .risk-low-ind { background: rgba(61, 220, 151, 0.15); color: var(--green); }
+  .risk-med-ind { background: rgba(255, 210, 63, 0.15); color: var(--yellow); }
+  .risk-high-ind { background: rgba(255, 107, 107, 0.15); color: var(--red); }
+
   .pick-card .partido { color: var(--muted); font-size: 13px; }
   .leg {
     display: flex;
     justify-content: space-between;
-    padding: 6px 0;
+    align-items: center;
+    padding: 8px 0;
     font-size: 14px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
   }
-  .leg .name  { color: var(--fg); }
-  .leg .cuota { color: var(--cyan); font-variant-numeric: tabular-nums; }
+  .leg:last-child { border-bottom: none; }
+  .leg .icon { font-size: 16px; margin-right: 6px; }
+  .leg .name { color: var(--fg); flex: 1; }
+  .leg .cuota { color: var(--cyan); font-variant-numeric: tabular-nums; font-weight: 600; }
+
   .stats {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
     gap: 8px;
     margin-top: 10px;
     padding-top: 10px;
@@ -133,34 +242,125 @@
   .stat { background: var(--bg3); padding: 8px; border-radius: 8px; text-align: center; }
   .stat .l { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: .5px; }
   .stat .v { font-size: 16px; font-weight: 700; margin-top: 2px; }
-  .stat .v.green  { color: var(--green); }
+  .stat .v.green { color: var(--green); }
   .stat .v.yellow { color: var(--yellow); }
-  .stat .v.cyan   { color: var(--cyan); }
+  .stat .v.cyan { color: var(--cyan); }
+  .stat .v.red { color: var(--red); }
+
   .pick-actions {
-    display: flex; gap: 8px; margin-top: 10px;
+    display: flex;
+    gap: 8px;
+    margin-top: 10px;
+    flex-wrap: wrap;
   }
   .pick-actions button {
     flex: 1;
+    min-width: 120px;
     background: var(--bg3);
     border: 1px solid var(--border);
     color: var(--fg);
-    padding: 8px;
+    padding: 10px;
     border-radius: 8px;
     cursor: pointer;
     font-size: 13px;
+    font-weight: 500;
+    transition: all 0.2s;
   }
-  .pick-actions button:hover { border-color: var(--cyan); color: var(--cyan); }
+  .pick-actions button:hover {
+    border-color: var(--cyan);
+    color: var(--cyan);
+    background: rgba(110, 231, 255, 0.1);
+  }
+  .pick-actions button:disabled { opacity: 0.5; cursor: wait; }
+
+  /* ── Picks Rechazados ── */
+  .rejected-picks {
+    margin-top: 20px;
+    padding: 16px;
+    background: rgba(30, 30, 50, 0.8);
+    border: 1px solid #444;
+    border-radius: 12px;
+  }
+  .rejected-picks h3 {
+    margin-top: 0;
+    margin-bottom: 12px;
+    color: var(--muted);
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .rejected-picks-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .rejected-pick-item {
+    padding: 12px;
+    border-radius: 8px;
+    border-left: 4px solid;
+    background: rgba(255, 255, 255, 0.02);
+    font-size: 13px;
+  }
+  .rejected-pick-item.red {
+    border-left-color: #ff6b6b;
+    background: rgba(255, 107, 107, 0.1);
+  }
+  .rejected-pick-item.red .conf-pct {
+    color: #ff6b6b;
+    font-weight: 600;
+  }
+  .rejected-pick-item.yellow {
+    border-left-color: #ffd23f;
+    background: rgba(255, 210, 63, 0.1);
+  }
+  .rejected-pick-item.yellow .conf-pct {
+    color: #ffd23f;
+    font-weight: 600;
+  }
+  .rejected-pick-item.green {
+    border-left-color: #3ddc97;
+    background: rgba(61, 220, 151, 0.1);
+  }
+  .rejected-pick-item.green .conf-pct {
+    color: #3ddc97;
+    font-weight: 600;
+  }
+  .rejected-pick-title {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 6px;
+  }
+  .rejected-pick-title strong {
+    color: var(--fg);
+  }
+  .rejected-pick-motivo {
+    font-size: 12px;
+    color: var(--muted);
+    margin-bottom: 4px;
+  }
+  .rejected-pick-detail {
+    font-size: 12px;
+    color: var(--muted);
+    padding: 6px 0;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+    margin-top: 6px;
+  }
+
   .warn-box {
     font-size: 12px;
     color: var(--yellow);
     background: #2b2200;
     border: 1px solid #4a3a00;
     border-radius: 6px;
-    padding: 6px 10px;
+    padding: 8px 10px;
     margin-top: 8px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
   }
 
-  /* ── Contexto del partido ── */
+  /* ── Contexto card ── */
   .ctx-card {
     align-self: flex-start;
     width: 100%;
@@ -179,26 +379,77 @@
     letter-spacing: .5px;
     list-style: none;
     user-select: none;
+    display: flex;
+    align-items: center;
+    gap: 6px;
   }
-  .ctx-card summary::before { content: "▶ "; font-size: 10px; }
-  details[open] summary::before { content: "▼ "; }
+  .ctx-card summary::before { content: "▶"; font-size: 10px; transition: transform 0.2s; }
+  details[open] .ctx-card summary::before { transform: rotate(90deg); }
+
+  .ctx-content {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 10px;
+    padding: 10px;
+    background: rgba(110, 231, 255, 0.05);
+    border-radius: 8px;
+  }
+
+  .ctx-section {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .ctx-section:last-child {
+    border-bottom: none;
+  }
+
+  .ctx-team {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--cyan);
+    text-transform: uppercase;
+    letter-spacing: .5px;
+    margin-bottom: 4px;
+  }
+
+  .ctx-stat {
+    display: flex;
+    justify-content: space-between;
+    padding: 4px 0;
+    color: var(--muted);
+    font-size: 12px;
+  }
+
+  .ctx-stat .label {
+    color: var(--muted);
+  }
+
+  .ctx-stat .value {
+    color: var(--fg);
+    font-weight: 500;
+  }
+
   .ctx-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 10px;
     margin-top: 10px;
   }
+  @media(max-width: 600px) {
+    .ctx-grid { grid-template-columns: 1fr; }
+  }
   .ctx-col h4 { margin: 0 0 6px; color: var(--cyan); font-size: 12px; }
   .ctx-col .seq { font-weight: 700; letter-spacing: 2px; font-size: 15px; }
   .ctx-col .seq .W { color: var(--green); }
   .ctx-col .seq .D { color: var(--yellow); }
   .ctx-col .seq .L { color: var(--red); }
-  .ctx-col .kv { display: flex; justify-content: space-between;
-                 padding: 2px 0; color: var(--muted); font-size: 12px; }
+  .ctx-col .kv { display: flex; justify-content: space-between; padding: 2px 0; color: var(--muted); font-size: 12px; }
   .ctx-col .kv span { color: var(--fg); }
-  .h2h-row { display: flex; gap: 6px; align-items: center; margin-top: 8px; }
-  .h2h-bar { flex: 1; height: 8px; border-radius: 4px; background: var(--bg3); overflow: hidden; }
-  .h2h-fill { height: 100%; background: var(--cyan); }
 
   /* ── Narrativa ── */
   .narrativa-card {
@@ -217,7 +468,10 @@
     color: var(--muted);
     text-transform: uppercase;
     letter-spacing: .6px;
-    margin-bottom: 6px;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
   }
 
   /* ── Input zone ── */
@@ -227,7 +481,7 @@
     padding: 12px 16px;
   }
   .input-inner {
-    max-width: 820px;
+    max-width: 900px;
     margin: 0 auto;
     display: flex;
     flex-direction: column;
@@ -237,157 +491,593 @@
     background: transparent;
     border: 1px solid var(--border);
     color: var(--muted);
-    padding: 6px 10px;
+    padding: 8px 12px;
     border-radius: 8px;
     cursor: pointer;
-    font-size: 12px;
+    font-size: 13px;
     align-self: flex-start;
+    font-weight: 500;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 6px;
   }
-  .form-toggle:hover { color: var(--cyan); border-color: var(--cyan); }
+  .form-toggle:hover {
+    color: var(--cyan);
+    border-color: var(--cyan);
+    background: rgba(110, 231, 255, 0.05);
+  }
+  .form-toggle::before { content: "+" ; font-weight: 700; }
+  .form-toggle.open::before { content: "−"; }
+
   .quick-form {
     display: none;
     background: var(--bg3);
     border: 1px solid var(--border);
     border-radius: 10px;
-    padding: 12px;
-    gap: 10px;
+    padding: 16px;
+    gap: 12px;
     flex-direction: column;
   }
   .quick-form.open { display: flex; }
-  .row  { display: grid; grid-template-columns: 1fr 1fr;     gap: 8px; }
+
+  .form-section {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .form-section-title {
+    font-size: 12px;
+    color: var(--cyan);
+    text-transform: uppercase;
+    letter-spacing: .5px;
+    font-weight: 600;
+    margin-bottom: 4px;
+  }
+
+  .row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
   .row3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
-  .field { display: flex; flex-direction: column; gap: 3px; }
+  .row-full { display: grid; grid-template-columns: 1fr; gap: 8px; }
+
+  .field {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    position: relative;
+  }
   .field label {
     font-size: 11px;
     color: var(--muted);
     text-transform: uppercase;
     letter-spacing: .5px;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 4px;
   }
-  .field input, .field select {
+  .field .help-text {
+    font-size: 10px;
+    color: var(--muted);
+    font-weight: normal;
+    text-transform: none;
+    letter-spacing: normal;
+    margin-top: 2px;
+  }
+  .field input,
+  .field select {
     background: var(--bg);
     border: 1px solid var(--border);
     color: var(--fg);
-    padding: 8px;
+    padding: 10px;
     border-radius: 6px;
     font-size: 14px;
     width: 100%;
+    transition: all 0.2s;
   }
-  .field input:focus, .field select:focus { outline: none; border-color: var(--cyan); }
+  .field input:focus,
+  .field select:focus {
+    outline: none;
+    border-color: var(--cyan);
+    box-shadow: 0 0 0 3px rgba(110, 231, 255, 0.1);
+  }
+  .field input.error,
+  .field select.error {
+    border-color: var(--red);
+    background: rgba(255, 107, 107, 0.05);
+  }
+  .field input.valid {
+    border-color: var(--green);
+  }
+  .field .error-msg {
+    font-size: 11px;
+    color: var(--red);
+    margin-top: 2px;
+    display: none;
+  }
+  .field .error-msg.show { display: block; }
   .field select option { background: var(--bg2); }
-  .market-label {
-    font-size: 12px;
-    color: var(--cyan);
-    margin-top: 4px;
-    margin-bottom: -2px;
+
+  /* ── Custom Team Dropdown ── */
+  .team-dropdown-wrapper {
+    position: relative;
   }
+  .team-dropdown-input {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    color: var(--fg);
+    padding: 10px 10px 10px 10px;
+    border-radius: 6px;
+    font-size: 14px;
+    width: 100%;
+    transition: all 0.2s;
+    cursor: text;
+  }
+  .team-dropdown-input:focus {
+    outline: none;
+    border-color: var(--cyan);
+    box-shadow: 0 0 0 3px rgba(110, 231, 255, 0.1);
+  }
+  .team-dropdown-input.error {
+    border-color: var(--red);
+    background: rgba(255, 107, 107, 0.05);
+  }
+  .team-dropdown-input.valid {
+    border-color: var(--green);
+  }
+  .team-dropdown-menu {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: var(--bg2);
+    border: 1px solid var(--cyan);
+    border-top: none;
+    border-radius: 0 0 6px 6px;
+    max-height: 200px;
+    overflow-y: auto;
+    display: none;
+    z-index: 100;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  }
+  .team-dropdown-menu.open { display: block; }
+  .team-dropdown-item {
+    padding: 10px 12px;
+    color: var(--fg);
+    cursor: pointer;
+    font-size: 14px;
+    transition: background 0.15s;
+    border-bottom: 1px solid var(--border);
+  }
+  .team-dropdown-item:last-child { border-bottom: none; }
+  .team-dropdown-item:hover {
+    background: var(--bg3);
+    color: var(--cyan);
+  }
+  .team-dropdown-item.selected {
+    background: rgba(110, 231, 255, 0.1);
+    color: var(--cyan);
+    font-weight: 600;
+  }
+  .team-dropdown-empty {
+    padding: 10px 12px;
+    color: var(--muted);
+    text-align: center;
+    font-size: 13px;
+  }
+
+  /* ── Autocomplete list (tenis) ── */
+  .autocomplete-list {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: var(--bg2);
+    border: 1px solid var(--cyan);
+    border-top: none;
+    border-radius: 0 0 6px 6px;
+    max-height: 200px;
+    overflow-y: auto;
+    display: none;
+    z-index: 100;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  .autocomplete-list.visible { display: block; }
+  .autocomplete-list li {
+    padding: 10px 12px;
+    color: var(--fg);
+    cursor: pointer;
+    font-size: 14px;
+    transition: background 0.15s;
+    border-bottom: 1px solid var(--border);
+  }
+  .autocomplete-list li:last-child { border-bottom: none; }
+  .autocomplete-list li:hover {
+    background: var(--bg3);
+    color: var(--cyan);
+  }
+  .autocomplete-list li.selected {
+    background: rgba(110, 231, 255, 0.1);
+    color: var(--cyan);
+    font-weight: 600;
+  }
+
+  .toggle-section {
+    background: rgba(110, 231, 255, 0.05);
+    border: 1px solid rgba(110, 231, 255, 0.2);
+    border-radius: 8px;
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .toggle-section.visible { display: flex; }
+  .toggle-section-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--cyan);
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    user-select: none;
+    margin-bottom: 8px;
+  }
+  .toggle-section-header::before { content: "▼"; font-size: 10px; transition: transform 0.2s; }
+  .toggle-section.collapsed .toggle-section-header::before { transform: rotate(-90deg); }
+  .toggle-section.collapsed > :not(.toggle-section-header) { display: none; }
+
   .send-btn {
     background: var(--cyan);
     color: #002028;
     border: none;
-    padding: 10px 16px;
+    padding: 12px 20px;
     border-radius: 8px;
     cursor: pointer;
     font-weight: 700;
     font-size: 14px;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
   }
-  .send-btn:disabled { opacity: .5; cursor: wait; }
+  .send-btn:hover:not(:disabled) {
+    background: #5dd6ea;
+    transform: translateY(-2px);
+  }
+  .send-btn:disabled {
+    opacity: 0.5;
+    cursor: wait;
+  }
+  .send-btn.success {
+    background: var(--green);
+    color: #00301d;
+  }
+
+  /* ── Modal ── */
+  .modal {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.8);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+  .modal.show { display: flex; }
+  .modal-content {
+    background: var(--bg2);
+    border: 1px solid var(--red);
+    border-radius: 14px;
+    padding: 24px;
+    max-width: 400px;
+    width: 100%;
+  }
+  .modal-header {
+    font-weight: 700;
+    margin-bottom: 10px;
+    color: var(--red);
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .modal-body {
+    color: var(--muted);
+    font-size: 14px;
+    margin-bottom: 16px;
+    line-height: 1.5;
+  }
+  .modal-buttons {
+    display: flex;
+    gap: 10px;
+  }
+  .modal-buttons button {
+    flex: 1;
+    padding: 10px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 700;
+    border: none;
+    font-size: 13px;
+  }
+  .modal-buttons .confirm { background: var(--red); color: #fff; }
+  .modal-buttons .cancel { background: var(--bg3); border: 1px solid var(--border); color: var(--fg); }
+
+  /* ── Responsive ── */
+  @media(max-width: 768px) {
+    header { font-size: 13px; gap: 10px; }
+    main { padding: 12px; gap: 10px; }
+    .bubble, .pick-card, .ctx-card, .narrativa-card { max-width: 100%; }
+    .row { grid-template-columns: 1fr; }
+    .row3 { grid-template-columns: 1fr 1fr; }
+    .pick-actions { flex-direction: column; }
+    .pick-actions button { min-width: auto; }
+    .stats { grid-template-columns: repeat(2, 1fr); }
+    .quick-form { padding: 12px; }
+  }
+
+  @media(max-width: 480px) {
+    body { font-size: 14px; }
+    header { padding: 10px 12px; }
+    header .brand { font-size: 14px; }
+    header .bank { font-size: 12px; }
+    main { padding: 8px; max-width: 100%; }
+    .bubble, .pick-card, .ctx-card, .narrativa-card { max-width: 100%; padding: 10px 12px; }
+    .field input, .field select { padding: 8px; font-size: 16px; }
+    .row3 { grid-template-columns: 1fr; }
+    .toast-container { right: 10px; left: 10px; max-width: none; }
+    .pick-actions { flex-direction: column; gap: 6px; }
+    .stats { grid-template-columns: 1fr 1fr; }
+  }
 </style>
 </head>
 <body>
 
 <header>
   <div class="brand">Bet<span>Brain</span> · chat</div>
-  <div style="display:flex;align-items:center;gap:16px">
-    <a href="/historial" style="font-size:13px;color:var(--muted);text-decoration:none;padding:4px 10px;border:1px solid var(--border);border-radius:6px">Historial</a>
+  <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap">
+    <a href="/historial" style="font-size:13px;color:var(--muted);text-decoration:none;padding:6px 10px;border:1px solid var(--border);border-radius:6px;transition:all 0.2s" onmouseover="this.style.borderColor='var(--cyan)'" onmouseout="this.style.borderColor='var(--border)'">📊 Historial</a>
     <div class="bank">Bankroll: <b id="bankroll">{{ "%.2f"|format(bankroll) }}</b></div>
   </div>
 </header>
 
-<!-- Modal: stake > 3% del bankroll -->
-<div id="stakeModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:999;align-items:center;justify-content:center">
-  <div style="background:var(--bg2);border:1px solid var(--red);border-radius:14px;padding:24px;max-width:360px;width:90%">
-    <div style="color:var(--red);font-weight:700;margin-bottom:10px">Stake alto: <span id="modalStakePct"></span>% del bankroll</div>
-    <div style="color:var(--muted);font-size:14px;margin-bottom:16px">
-      El stake supera el 3% recomendado del bankroll. ¿Confirmas la apuesta de todas formas?
+<!-- Modal: Confirmación stake alto -->
+<div id="stakeModal" class="modal">
+  <div class="modal-content">
+    <div class="modal-header">⚠️ Stake muy alto</div>
+    <div class="modal-body">
+      El stake sugerido es <b id="modalStakePct">—</b>% de tu bankroll (recomendado: max 3%).
+      <br><br>¿Confirmas la apuesta de todas formas?
     </div>
-    <div style="display:flex;gap:10px">
-      <button id="modalConfirmar" style="flex:1;background:var(--red);color:#fff;border:none;padding:10px;border-radius:8px;cursor:pointer;font-weight:700">Confirmar</button>
-      <button id="modalCancelar" style="flex:1;background:var(--bg3);border:1px solid var(--border);color:var(--fg);padding:10px;border-radius:8px;cursor:pointer">Cancelar</button>
+    <div class="modal-buttons">
+      <button class="confirm" id="modalConfirmar">Confirmar apuesta</button>
+      <button class="cancel" id="modalCancelar">Cancelar</button>
     </div>
   </div>
 </div>
 
+<!-- Toast container -->
+<div class="toast-container" id="toastContainer"></div>
+
 <main id="chat">
   <div class="bubble bot">
-    Hola, soy <b>BetBrain</b>. Analizo las cuotas con Poisson + datos reales de
-    la API y te armo, si hay value, una <b>directa</b>, una <b>dupla x2</b> y una
-    <b>tripleta x3</b> del mismo partido. Solo muestro picks con confianza ≥ 70%.
-
-    Dale al botón <b>"+ Nueva apuesta"</b> abajo para empezar.
+    👋 Hola, soy <b>BetBrain</b>. Analizo cuotas con Poisson + datos reales de API y te armo picks de <b>valor</b> (directa, dupla, tripleta).
+    <br><br>✅ Solo muestro picks con <b>confianza ≥ 70%</b>
+    <br>✅ <b>Kelly fraccional</b> para gestión de riesgo
+    <br>✅ Sistema de <b>tracking</b> automático
+    <br><br>Dale al botón <b>"+ Nueva apuesta"</b> para empezar.
   </div>
 </main>
 
 <div class="input-zone">
   <div class="input-inner">
-    <button class="form-toggle" id="toggleForm">+ Nueva apuesta</button>
-
-    <div class="quick-form" id="quickForm">
-      <div class="field">
-        <label>Liga (para calibrar goles esperados)</label>
-        <select id="liga">
-          <option value="Default">— Selecciona la liga —</option>
-          <option value="LaLiga">LaLiga (España)</option>
-          <option value="Premier League">Premier League (Inglaterra)</option>
-          <option value="Bundesliga">Bundesliga (Alemania)</option>
-          <option value="Serie A">Serie A (Italia)</option>
-          <option value="Ligue 1">Ligue 1 (Francia)</option>
-          <option value="Champions League">Champions League</option>
-          <option value="Europa League">Europa League</option>
-          <option value="Liga MX">Liga MX (México)</option>
-          <option value="MLS">MLS (Estados Unidos)</option>
-          <option value="Brasileirao">Brasileirão (Brasil)</option>
-          <option value="Eredivisie">Eredivisie (Países Bajos)</option>
-          <option value="Primeira Liga">Primeira Liga (Portugal)</option>
-          <option value="Championship">Championship (Inglaterra 2ª)</option>
-        </select>
+    <!-- Sport selector -->
+    <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+      <button class="form-toggle" id="toggleForm">Nueva apuesta</button>
+      <div class="sport-tabs" id="sportTabs" style="display:none">
+        <button class="sport-tab active" data-sport="football" id="tabFoot">⚽ Fútbol</button>
+        <button class="sport-tab" data-sport="tennis" id="tabTennis">🎾 Tenis</button>
       </div>
-
-      <div class="row">
-        <div class="field">
-          <label>Local</label>
-          <input id="home" list="teams-list" placeholder="Selecciona una liga primero" autocomplete="off">
-        </div>
-        <div class="field">
-          <label>Visitante</label>
-          <input id="away" list="teams-list" placeholder="Selecciona una liga primero" autocomplete="off">
-        </div>
-      </div>
-      <datalist id="teams-list"></datalist>
-      <div id="teamsHint" style="font-size:11px;color:var(--muted);margin-top:-4px">
-        Elige la liga arriba para ver los equipos disponibles. También puedes escribir a mano si el equipo no aparece.
-      </div>
-
-      <div class="market-label">1X2 (obligatorio)</div>
-      <div class="row3">
-        <div class="field"><label>Local</label><input id="c1" type="number" step="0.01" min="1.01" placeholder="1.60"></div>
-        <div class="field"><label>Empate</label><input id="cX" type="number" step="0.01" min="1.01" placeholder="3.80"></div>
-        <div class="field"><label>Visitante</label><input id="c2" type="number" step="0.01" min="1.01" placeholder="5.00"></div>
-      </div>
-
-      <div class="market-label">Goles 2.5 (opcional)</div>
-      <div class="row">
-        <div class="field"><label>Más de 2.5</label><input id="cOver" type="number" step="0.01" min="1.01" placeholder="1.80"></div>
-        <div class="field"><label>Menos de 2.5</label><input id="cUnder" type="number" step="0.01" min="1.01" placeholder="2.00"></div>
-      </div>
-
-      <div class="market-label">Ambos anotan (opcional)</div>
-      <div class="row">
-        <div class="field"><label>Sí</label><input id="cBttsY" type="number" step="0.01" min="1.01" placeholder="1.75"></div>
-        <div class="field"><label>No</label><input id="cBttsN" type="number" step="0.01" min="1.01" placeholder="2.05"></div>
-      </div>
-
-      <button id="sendBtn" class="send-btn">Analizar partido →</button>
     </div>
+
+    <!-- ── FÚTBOL FORM ── -->
+    <div class="quick-form" id="quickForm">
+      <!-- Liga -->
+      <div class="form-section">
+        <div class="form-section-title">🏆 Liga</div>
+        <div class="field">
+          <label>Selecciona la liga para calibrar xG esperado</label>
+          <select id="liga">
+            <option value="Default">— Selecciona la liga —</option>
+            <option value="LaLiga">LaLiga (España)</option>
+            <option value="Premier League">Premier League (Inglaterra)</option>
+            <option value="Bundesliga">Bundesliga (Alemania)</option>
+            <option value="Serie A">Serie A (Italia)</option>
+            <option value="Ligue 1">Ligue 1 (Francia)</option>
+            <option value="Champions League">Champions League</option>
+            <option value="Europa League">Europa League</option>
+            <option value="Liga MX">Liga MX (México)</option>
+            <option value="MLS">MLS (Estados Unidos)</option>
+            <option value="Brasileirao">Brasileirão (Brasil)</option>
+            <option value="Eredivisie">Eredivisie (Países Bajos)</option>
+            <option value="Primeira Liga">Primeira Liga (Portugal)</option>
+            <option value="Championship">Championship (Inglaterra 2ª)</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Equipos -->
+      <div class="form-section">
+        <div class="form-section-title">⚽ Equipos</div>
+        <div class="row">
+          <div class="field">
+            <label>🏠 Local</label>
+            <div class="team-dropdown-wrapper" id="homeWrapper">
+              <input class="team-dropdown-input" id="home" placeholder="Ej: Real Madrid" autocomplete="off">
+              <div class="team-dropdown-menu" id="homeMenu"></div>
+            </div>
+            <div class="error-msg" id="homeErr"></div>
+          </div>
+          <div class="field">
+            <label>✈️ Visitante</label>
+            <div class="team-dropdown-wrapper" id="awayWrapper">
+              <input class="team-dropdown-input" id="away" placeholder="Ej: Barcelona" autocomplete="off">
+              <div class="team-dropdown-menu" id="awayMenu"></div>
+            </div>
+            <div class="error-msg" id="awayErr"></div>
+          </div>
+        </div>
+        <div id="teamsHint" style="font-size:11px;color:var(--muted);margin-top:4px">
+          Elige la liga arriba para ver equipos. También puedes escribir a mano.
+        </div>
+      </div>
+
+      <!-- Cuotas 1X2 -->
+      <div class="form-section">
+        <div class="form-section-title">🎲 Cuotas 1X2 (obligatorio)</div>
+        <div class="row3">
+          <div class="field">
+            <label>📍 Local (1)</label>
+            <input id="c1" type="number" step="0.01" min="1.01" placeholder="1.60" data-required="true">
+            <div class="error-msg" id="c1Err"></div>
+          </div>
+          <div class="field">
+            <label>🤝 Empate (X)</label>
+            <input id="cX" type="number" step="0.01" min="1.01" placeholder="3.80" data-required="true">
+            <div class="error-msg" id="cXErr"></div>
+          </div>
+          <div class="field">
+            <label>✈️ Visitante (2)</label>
+            <input id="c2" type="number" step="0.01" min="1.01" placeholder="5.00" data-required="true">
+            <div class="error-msg" id="c2Err"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Cuotas opcionales -->
+      <div class="toggle-section">
+        <div class="toggle-section-header" onclick="toggleSection(this)">Mercados opcionales (OU 2.5, BTTS)</div>
+
+        <div class="form-section">
+          <div class="form-section-title">⚽ Goles Over/Under 2.5</div>
+          <div class="row">
+            <div class="field">
+              <label>📈 Más de 2.5</label>
+              <input id="cOver" type="number" step="0.01" min="1.01" placeholder="1.80">
+              <div class="error-msg" id="cOverErr"></div>
+            </div>
+            <div class="field">
+              <label>📉 Menos de 2.5</label>
+              <input id="cUnder" type="number" step="0.01" min="1.01" placeholder="2.00">
+              <div class="error-msg" id="cUnderErr"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-section">
+          <div class="form-section-title">🎯 Ambos anotan (BTTS)</div>
+          <div class="row">
+            <div class="field">
+              <label>✅ Sí</label>
+              <input id="cBttsY" type="number" step="0.01" min="1.01" placeholder="1.75">
+              <div class="error-msg" id="cBttsYErr"></div>
+            </div>
+            <div class="field">
+              <label>❌ No</label>
+              <input id="cBttsN" type="number" step="0.01" min="1.01" placeholder="2.05">
+              <div class="error-msg" id="cBttsNErr"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <button id="sendBtn" class="send-btn">🚀 Analizar partido</button>
+    </div>
+
+    <!-- ── TENIS FORM ── -->
+    <div class="quick-form" id="tennisForm" style="display:none">
+
+      <!-- Género -->
+      <div class="form-section">
+        <div class="form-section-title">⚧️ Género</div>
+        <div class="row">
+          <div class="field">
+            <select id="tgenero">
+              <option value="">Selecciona género...</option>
+              <option value="masculino">🔵 Masculino (ATP)</option>
+              <option value="femenino">🟣 Femenino (WTA)</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- Jugadores -->
+      <div class="form-section">
+        <div class="form-section-title">🎾 Jugadores</div>
+        <div class="row">
+          <div class="field">
+            <label>Jugador 1</label>
+            <input id="tj1" type="text" placeholder="Selecciona género primero...">
+            <ul id="tj1Dropdown" class="autocomplete-list"></ul>
+            <div class="error-msg" id="tj1Err"></div>
+          </div>
+          <div class="field">
+            <label>Jugador 2</label>
+            <input id="tj2" type="text" placeholder="Selecciona género primero...">
+            <ul id="tj2Dropdown" class="autocomplete-list"></ul>
+            <div class="error-msg" id="tj2Err"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Cuotas obligatorias -->
+      <div class="form-section">
+        <div class="form-section-title">🎲 Cuotas — Ganador del partido (obligatorio)</div>
+        <div class="row">
+          <div class="field">
+            <label>J1 gana</label>
+            <input id="tmw1" type="number" step="0.01" min="1.01" placeholder="1.10" data-t-required="true">
+            <div class="error-msg" id="tmw1Err"></div>
+          </div>
+          <div class="field">
+            <label>J2 gana</label>
+            <input id="tmw2" type="number" step="0.01" min="1.01" placeholder="6.50" data-t-required="true">
+            <div class="error-msg" id="tmw2Err"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Total Games (opcional) -->
+      <div class="toggle-section collapsed">
+        <div class="toggle-section-header" onclick="toggleSection(this)">Juegos totales (opcional)</div>
+
+        <div class="form-section">
+          <div class="form-section-title">⚡ Total Games Over/Under</div>
+          <div class="row3">
+            <div class="field">
+              <label>Línea</label>
+              <input id="ttg_line" type="number" step="0.5" min="15" max="65" placeholder="18.5">
+            </div>
+            <div class="field">
+              <label>Over</label>
+              <input id="ttg_over" type="number" step="0.01" min="1.01" placeholder="1.94">
+            </div>
+            <div class="field">
+              <label>Under</label>
+              <input id="ttg_under" type="number" step="0.01" min="1.01" placeholder="1.82">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <button id="tSendBtn" class="send-btn">🎾 Analizar partido de tenis</button>
+    </div>
+
   </div>
 </div>
 
@@ -397,93 +1087,417 @@ const toggleBtn = document.getElementById("toggleForm");
 const quickForm = document.getElementById("quickForm");
 const sendBtn = document.getElementById("sendBtn");
 const bankrollEl = document.getElementById("bankroll");
+const toastContainer = document.getElementById("toastContainer");
 
+/* ── Toast notifications ── */
+function showToast(message, type = "info", duration = 4000) {
+  const toast = document.createElement("div");
+  toast.className = `toast ${type}`;
+  const icons = { success: "✅", error: "❌", warning: "⚠️", info: "ℹ️" };
+  toast.innerHTML = `${icons[type]} ${message}`;
+  toastContainer.appendChild(toast);
+  setTimeout(() => {
+    toast.style.animation = "slideOut 0.3s ease forwards";
+    setTimeout(() => toast.remove(), 300);
+  }, duration);
+}
+
+/* ── Toggle form ── */
 toggleBtn.addEventListener("click", function() {
   quickForm.classList.toggle("open");
+  toggleBtn.classList.toggle("open");
   if (quickForm.classList.contains("open")) {
     document.getElementById("liga").focus();
   }
 });
 
-/* ── Cargar equipos al seleccionar una liga ── */
-const ligaSelect  = document.getElementById("liga");
-const homeInput   = document.getElementById("home");
-const awayInput   = document.getElementById("away");
-const teamsList   = document.getElementById("teams-list");
-const teamsHint   = document.getElementById("teamsHint");
-const teamsCache  = {};  // cache por-sesión
+/* ── Toggle section helper ── */
+function toggleSection(header) {
+  const section = header.parentElement;
+  section.classList.toggle("collapsed");
+}
 
-async function cargarEquipos(liga) {
+/* ── Sistema NUEVO de equipos (simple y directo) ── */
+const ligaSelect = document.getElementById("liga");
+const homeInput = document.getElementById("home");
+const awayInput = document.getElementById("away");
+const homeMenu = document.getElementById("homeMenu");
+const awayMenu = document.getElementById("awayMenu");
+const teamsHint = document.getElementById("teamsHint");
+
+// Variable para almacenar equipos por liga (cacheada en el cliente)
+let equiposPorLiga = {};
+
+// Cargar equipos CUANDO SE SELECCIONA UNA LIGA
+async function cargarEquiposDesdeAPI(liga) {
+  console.log("🔄 Cargando equipos para:", liga);
+
   if (!liga || liga === "Default") {
-    teamsList.innerHTML = "";
-    homeInput.placeholder = "Selecciona una liga primero";
-    awayInput.placeholder = "Selecciona una liga primero";
-    homeInput.value = "";
-    awayInput.value = "";
-    teamsHint.textContent = "Elige la liga arriba para ver los equipos disponibles. También puedes escribir a mano si el equipo no aparece.";
+    equiposPorLiga = {};
+    teamsHint.textContent = "Selecciona una liga";
     return;
   }
-  if (teamsCache[liga]) {
-    renderEquipos(liga, teamsCache[liga]);
-    return;
-  }
-  teamsHint.textContent = "Cargando equipos...";
+
   try {
-    const r = await fetch("/api/teams?liga=" + encodeURIComponent(liga));
-    const j = await r.json();
-    if (j.error) {
-      teamsHint.textContent = "No hay equipos para " + liga + ". Escríbelos a mano.";
-      teamsList.innerHTML = "";
-      homeInput.placeholder = "Escribe el nombre del equipo";
-      awayInput.placeholder = "Escribe el nombre del equipo";
+    teamsHint.textContent = "⏳ Cargando...";
+    const response = await fetch("/api/teams?liga=" + encodeURIComponent(liga));
+    const data = await response.json();
+
+    console.log("📡 Respuesta API:", data);
+
+    if (data.error) {
+      console.error("❌ Error:", data.error);
+      teamsHint.textContent = "Error: " + data.error;
+      equiposPorLiga = {};
       return;
     }
-    teamsCache[liga] = j.equipos || [];
-    renderEquipos(liga, teamsCache[liga]);
-  } catch (e) {
-    teamsHint.textContent = "Error cargando equipos: " + e.message + ". Escríbelos a mano.";
-    teamsList.innerHTML = "";
-    homeInput.placeholder = "Escribe el nombre del equipo";
-    awayInput.placeholder = "Escribe el nombre del equipo";
+
+    equiposPorLiga[liga] = data.equipos || [];
+    teamsHint.textContent = equiposPorLiga[liga].length + " equipos cargados";
+    console.log("✅ " + equiposPorLiga[liga].length + " equipos de " + liga);
+
+  } catch (err) {
+    console.error("❌ Error en fetch:", err);
+    teamsHint.textContent = "Error: " + err.message;
   }
 }
 
-function renderEquipos(liga, equipos) {
-  teamsList.innerHTML = equipos
-    .map(function(t) { return '<option value="' + t.replace(/"/g, "&quot;") + '">'; })
-    .join("");
-  const placeholder = equipos[0] || "Escribe el nombre del equipo";
-  homeInput.placeholder = placeholder;
-  awayInput.placeholder = equipos[1] || placeholder;
-  teamsHint.textContent = equipos.length + " equipos de " + liga +
-    " cargados. Haz click en el campo para ver el dropdown.";
-  // Si el input actual no corresponde a la nueva liga, lo limpiamos
-  if (homeInput.value && equipos.indexOf(homeInput.value) === -1) homeInput.value = "";
-  if (awayInput.value && equipos.indexOf(awayInput.value) === -1) awayInput.value = "";
+// Mostrar dropdown con equipos filtranos
+function mostrarEquipos(inputEl, menuEl) {
+  const liga = ligaSelect.value;
+
+  console.log("🔍 mostrarEquipos llamado");
+  console.log("   Liga:", liga);
+  console.log("   equiposPorLiga:", equiposPorLiga);
+  console.log("   equiposPorLiga[liga]:", equiposPorLiga[liga]);
+
+  // LIMPIAR COMPLETAMENTE
+  menuEl.innerHTML = "";
+
+  // Validar que hay equipos cargados para esta liga
+  let equipos = equiposPorLiga[liga];
+  if (!equipos || equipos.length === 0) {
+    console.warn("⚠️ No hay equipos cargados para", liga);
+    menuEl.innerHTML = '<div class="team-dropdown-empty">Cargando equipos...</div>';
+    return;
+  }
+
+  // Filtrar por búsqueda
+  const query = inputEl.value.trim().toLowerCase();
+  if (query) {
+    equipos = equipos.filter(e => e.toLowerCase().includes(query));
+    console.log("   Filtrados por '" + query + "':", equipos.length);
+  } else {
+    console.log("   Mostrando todos:", equipos.length);
+  }
+
+  // Si no hay resultados
+  if (!equipos.length) {
+    menuEl.innerHTML = query
+      ? '<div class="team-dropdown-empty">Sin resultados para "' + query + '"</div>'
+      : '<div class="team-dropdown-empty">No hay equipos</div>';
+    return;
+  }
+
+  // Renderizar equipos
+  console.log("   Renderizando:", equipos.length);
+  equipos.slice(0, 30).forEach(team => {
+    const div = document.createElement("div");
+    div.className = "team-dropdown-item";
+    div.textContent = team;
+    div.onclick = () => {
+      inputEl.value = team;
+      menuEl.classList.remove("open");
+      inputEl.blur();
+    };
+    menuEl.appendChild(div);
+  });
 }
 
-ligaSelect.addEventListener("change", function() {
-  cargarEquipos(ligaSelect.value);
+// Event listeners
+homeInput.addEventListener("focus", () => {
+  homeMenu.classList.add("open");
+  mostrarEquipos(homeInput, homeMenu);
 });
 
-/* ── Render seguro: sin innerHTML para texto del servidor ── */
+homeInput.addEventListener("input", () => {
+  homeMenu.classList.add("open");
+  mostrarEquipos(homeInput, homeMenu);
+});
+
+homeInput.addEventListener("blur", () => {
+  setTimeout(() => homeMenu.classList.remove("open"), 150);
+});
+
+awayInput.addEventListener("focus", () => {
+  awayMenu.classList.add("open");
+  mostrarEquipos(awayInput, awayMenu);
+});
+
+awayInput.addEventListener("input", () => {
+  awayMenu.classList.add("open");
+  mostrarEquipos(awayInput, awayMenu);
+});
+
+awayInput.addEventListener("blur", () => {
+  setTimeout(() => awayMenu.classList.remove("open"), 150);
+});
+
+// CARGAR EQUIPOS CUANDO CAMBIA LA LIGA
+ligaSelect.addEventListener("change", async () => {
+  const liga = ligaSelect.value;
+  console.log("📌 Liga seleccionada:", liga);
+  homeInput.value = "";
+  awayInput.value = "";
+  homeMenu.innerHTML = "";
+  awayMenu.innerHTML = "";
+
+  if (liga && liga !== "Default") {
+    await cargarEquiposDesdeAPI(liga);
+  }
+});
+
+// CARGAR EQUIPOS AL INICIAR
+console.log("🚀 Inicializando dropdown de equipos");
+const ligaInicial = ligaSelect.value;
+if (ligaInicial && ligaInicial !== "Default") {
+  cargarEquiposDesdeAPI(ligaInicial);
+}
+
+/* ── TENIS: Sistema de jugadores por género ── */
+let tgeneroSelect, tj1Input, tj2Input, tj1Dropdown, tj2Dropdown;
+let jugadoresPorGenero = {};
+
+// Inicializar elementos cuando el DOM esté listo
+function inicializarTenis() {
+  console.log("🚀 [INIT] Inicializando tenis...");
+
+  tgeneroSelect = document.getElementById("tgenero");
+  tj1Input = document.getElementById("tj1");
+  tj2Input = document.getElementById("tj2");
+  tj1Dropdown = document.getElementById("tj1Dropdown");
+  tj2Dropdown = document.getElementById("tj2Dropdown");
+
+  console.log(`[INIT] Elementos encontrados:`);
+  console.log(`   tgeneroSelect: ${tgeneroSelect ? "✅" : "❌"}`);
+  console.log(`   tj1Input: ${tj1Input ? "✅" : "❌"}`);
+  console.log(`   tj2Input: ${tj2Input ? "✅" : "❌"}`);
+  console.log(`   tj1Dropdown: ${tj1Dropdown ? "✅" : "❌"}`);
+  console.log(`   tj2Dropdown: ${tj2Dropdown ? "✅" : "❌"}`);
+
+  if (!tgeneroSelect || !tj1Input || !tj2Input) {
+    console.error("❌ [INIT] FALTA ALGÚN ELEMENTO - ABORTANDO");
+    return;
+  }
+
+  console.log("✅ [INIT] Todos los elementos encontrados, agregando event listeners...");
+
+  // Agregar event listeners
+  tgeneroSelect.addEventListener("change", handleGeneroChange);
+  tj1Input.addEventListener("focus", () => handleFocusTenis("tj1"));
+  tj1Input.addEventListener("input", () => handleFocusTenis("tj1"));
+  tj1Input.addEventListener("blur", () => handleBlurTenis("tj1"));
+  tj2Input.addEventListener("focus", () => handleFocusTenis("tj2"));
+  tj2Input.addEventListener("input", () => handleFocusTenis("tj2"));
+  tj2Input.addEventListener("blur", () => handleBlurTenis("tj2"));
+
+  console.log("✅ [INIT] Tenis completamente inicializado");
+}
+
+// Cargar jugadores cuando se selecciona un género
+async function cargarJugadoresDesdeAPI(genero) {
+  console.log("🔄 [1] Cargando jugadores para género:", genero);
+  console.log("   jugadoresPorGenero antes:", jugadoresPorGenero);
+
+  if (!genero || genero === "Default") {
+    console.log("❌ [1] Género no válido");
+    return;
+  }
+
+  try {
+    const url = `/api/players?genero=${encodeURIComponent(genero)}&t=${Date.now()}`;
+    console.log("   [1] URL:", url);
+
+    const response = await fetch(url);
+    console.log("   [1] Response status:", response.status);
+
+    const data = await response.json();
+    console.log("   [1] Datos recibidos:", data);
+
+    if (data.error) {
+      console.log("❌ [1] Error API:", data.error);
+      jugadoresPorGenero[genero] = [];
+      return;
+    }
+
+    jugadoresPorGenero[genero] = data.jugadores || [];
+    console.log(`✅ [1] Cargados ${jugadoresPorGenero[genero].length} jugadores para ${genero}`);
+    console.log("   [1] jugadoresPorGenero después:", jugadoresPorGenero);
+  } catch (e) {
+    console.error("❌ [1] Error cargando jugadores:", e);
+    jugadoresPorGenero[genero] = [];
+  }
+}
+
+// Mostrar dropdown con jugadores filtrados
+function mostrarJugadores(inputEl, dropdownEl, genero) {
+  const filtro = inputEl.value.trim().toLowerCase();
+  const jugadores = jugadoresPorGenero[genero] || [];
+
+  console.log(`🔍 [2] mostrarJugadores llamado - genero=${genero}`);
+  console.log(`   jugadoresPorGenero:`, jugadoresPorGenero);
+  console.log(`   jugadores para genero "${genero}": ${jugadores.length}`);
+
+  dropdownEl.innerHTML = "";
+
+  if (!jugadores.length) {
+    console.log(`   ⚠️ SIN JUGADORES en jugadoresPorGenero[${genero}]`);
+    const li = document.createElement("li");
+    li.textContent = "Sin jugadores disponibles";
+    li.style.color = "var(--muted)";
+    dropdownEl.appendChild(li);
+    dropdownEl.classList.add("visible");
+    console.log(`   Dropdown visible: ${dropdownEl.classList.contains("visible")}`);
+    return;
+  }
+
+  const filtrados = jugadores.filter(j => j.toLowerCase().includes(filtro));
+  console.log(`   Filtrados: ${filtrados.length}`);
+
+  if (filtrados.length === 0) {
+    const li = document.createElement("li");
+    li.textContent = "No encontrado";
+    li.style.color = "var(--muted)";
+    dropdownEl.appendChild(li);
+    dropdownEl.classList.add("visible");
+    return;
+  }
+
+  filtrados.forEach(jugador => {
+    const li = document.createElement("li");
+    li.textContent = jugador;
+    li.addEventListener("click", () => {
+      inputEl.value = jugador;
+      dropdownEl.classList.remove("visible");
+    });
+    dropdownEl.appendChild(li);
+  });
+
+  dropdownEl.classList.add("visible");
+  console.log(`   ✅ ${filtrados.length} items agregados, visible: ${dropdownEl.classList.contains("visible")}`);
+}
+
+// Handlers para tenis
+async function handleGeneroChange() {
+  const genero = tgeneroSelect.value;
+  console.log("🎾 [0] Género cambió a:", genero);
+  console.log(`   tgeneroSelect:`, tgeneroSelect);
+
+  if (genero) {
+    console.log(`   [0] Cargando jugadores para ${genero}...`);
+    await cargarJugadoresDesdeAPI(genero);
+    console.log(`   [0] ✅ Cambié placeholders a: "Ej: X (${genero})"`);
+    tj1Input.placeholder = `Ej: Alcaraz (${genero})`;
+    tj2Input.placeholder = `Ej: Sinner (${genero})`;
+  } else {
+    tj1Input.placeholder = "Selecciona género primero...";
+    tj2Input.placeholder = "Selecciona género primero...";
+  }
+}
+
+function handleFocusTenis(player) {
+  console.log(`🔹 [FOCUS] ${player} - genero: ${tgeneroSelect.value}`);
+  const genero = tgeneroSelect.value;
+  const input = player === "tj1" ? tj1Input : tj2Input;
+  const dropdown = player === "tj1" ? tj1Dropdown : tj2Dropdown;
+  console.log(`   Input value: "${input.value}"`);
+  console.log(`   Dropdown element:`, dropdown);
+  if (genero) {
+    console.log(`   Llamando mostrarJugadores...`);
+    mostrarJugadores(input, dropdown, genero);
+  } else {
+    console.log(`   ❌ SIN GENERO SELECCIONADO`);
+  }
+}
+
+function handleBlurTenis(player) {
+  console.log(`🔸 [BLUR] ${player}`);
+  const dropdown = player === "tj1" ? tj1Dropdown : tj2Dropdown;
+  setTimeout(() => {
+    dropdown.classList.remove("visible");
+    console.log(`   Dropdown visible removida`);
+  }, 150);
+}
+
+/* ── Validación en tiempo real ── */
+function val(id) {
+  const v = document.getElementById(id).value.trim();
+  return v === "" ? null : parseFloat(v);
+}
+
+function validarCuota(id) {
+  const input = document.getElementById(id);
+  const errEl = document.getElementById(id + "Err");
+  const v = val(id);
+
+  if (input.dataset.required && (v === null || v === "")) {
+    input.classList.add("error");
+    errEl.textContent = "Campo obligatorio";
+    errEl.classList.add("show");
+    return false;
+  }
+  if (v !== null && v <= 1.0) {
+    input.classList.add("error");
+    errEl.textContent = "Debe ser > 1.00";
+    errEl.classList.add("show");
+    return false;
+  }
+  input.classList.remove("error");
+  if (v !== null) input.classList.add("valid");
+  errEl.classList.remove("show");
+  return true;
+}
+
+function validarEquipo(id) {
+  const input = document.getElementById(id);
+  const errEl = document.getElementById(id + "Err");
+  const v = input.value.trim();
+
+  if (!v) {
+    input.classList.add("error");
+    errEl.textContent = "Campo obligatorio";
+    errEl.classList.add("show");
+    return false;
+  }
+  input.classList.remove("error");
+  input.classList.add("valid");
+  errEl.classList.remove("show");
+  return true;
+}
+
+// Validar en tiempo real
+["c1", "cX", "c2", "cOver", "cUnder", "cBttsY", "cBttsN"].forEach(id => {
+  document.getElementById(id).addEventListener("blur", () => validarCuota(id));
+});
+["home", "away"].forEach(id => {
+  document.getElementById(id).addEventListener("blur", () => validarEquipo(id));
+});
+
+/* ── Helpers para renderizado seguro ── */
 function safeText(text) {
   const d = document.createElement("div");
   d.textContent = text;
-  return d.innerHTML; // solo escapa entidades HTML — NO ejecuta scripts
+  return d.innerHTML;
 }
 
 function renderMarkdown(text) {
-  /* Convierte **negrita** y saltos de línea a HTML seguro */
   const lines = text.split("\n");
-  return lines.map(function(line) {
-    /* Escapa el texto plano primero para evitar XSS */
+  return lines.map(line => {
     const safe = line
       .replace(/&/g, "&amp;")
       .replace(/</g, "&lt;")
       .replace(/>/g, "&gt;")
       .replace(/"/g, "&quot;");
-    /* Solo entonces aplicamos el formato de negrita */
     return safe.replace(/\*\*([^*]+)\*\*/g, "<b>$1</b>");
   }).join("<br>");
 }
@@ -493,10 +1507,8 @@ function bubble(text, who) {
   const div = document.createElement("div");
   div.className = "bubble " + who;
   if (who === "user") {
-    /* Texto del usuario: sólo texto plano */
     div.textContent = text;
   } else {
-    /* Texto del bot: renderizado seguro con negrita */
     div.innerHTML = renderMarkdown(text);
   }
   chat.appendChild(div);
@@ -513,70 +1525,107 @@ function bubbleErr(text) {
   return div;
 }
 
-/* ── Badge de confianza ── */
-function confBadge(nivel) {
-  if (nivel === "alta")  return '<span class="badge-conf alta">Alta confianza</span>';
-  if (nivel === "media") return '<span class="badge-conf media">Media confianza</span>';
-  return "";
-}
-
-/* ── Tarjeta de pick ── */
+/* ── Renderizar pick card mejorada ── */
 function pickCard(pick) {
-  const tag =
-    pick.tipo.startsWith("DUPLA")     ? "dupla" :
-    pick.tipo.startsWith("TRIPLETA")  ? "tripleta" : "directa";
+  const tag = pick.tipo.startsWith("DUPLA") ? "dupla" :
+              pick.tipo.startsWith("TRIPLETA") ? "tripleta" : "directa";
+
+  // Determinar riesgo basado en confianza y EV
+  let riskClass = "risk-low";
+  let riskInd = "risk-low-ind";
+  let riskText = "Bajo";
+  if (pick.confianza < 0.75) {
+    riskClass = "risk-med";
+    riskInd = "risk-med-ind";
+    riskText = "Medio";
+  }
+  if (pick.confianza < 0.70) {
+    riskClass = "risk-high";
+    riskInd = "risk-high-ind";
+    riskText = "Alto";
+  }
 
   const card = document.createElement("div");
-  card.className = "pick-card";
+  card.className = "pick-card " + riskClass;
 
-  const legsHtml = pick.legs.map(function(l) {
-    return '<div class="leg">' +
-      '<span class="name">' + safeText(l.texto) + '</span>' +
-      '<span class="cuota">' + l.cuota + '</span>' +
-      '</div>';
+  const legIcons = {
+    "1X2": pick.legs[0].texto.includes("Victoria") ? pick.legs[0].texto.includes("local") ? "🏠" : "✈️" :
+           pick.legs[0].texto.includes("Empate") ? "🤝" : "?",
+    "OU_2.5": pick.legs[0].texto.includes("Más") ? "📈" : "📉",
+    "BTTS": "🎯"
+  };
+
+  const legsHtml = pick.legs.map((l, i) => {
+    const mercado = l.mercado || "1X2";
+    const icon = legIcons[mercado] || "⚽";
+    return `<div class="leg">
+      <span class="icon">${icon}</span>
+      <span class="name">${safeText(l.texto)}</span>
+      <span class="cuota">${l.cuota}</span>
+    </div>`;
   }).join("");
 
   const warnHtml = (pick.contradicciones && pick.contradicciones.length)
-    ? '<div class="warn-box">⚠ ' + safeText(pick.contradicciones.join("; ")) + '</div>'
+    ? `<div class="warn-box">⚠️ ${safeText(pick.contradicciones.join("; "))}</div>`
     : "";
 
-  card.innerHTML =
-    '<div class="head">' +
-      '<div class="head-left">' +
-        '<span class="tag ' + tag + '">' + safeText(pick.tipo) + '</span>' +
-        confBadge(pick.confianza_nivel) +
-      '</div>' +
-      '<span class="partido">' + safeText(pick.partido) + '</span>' +
-    '</div>' +
-    legsHtml +
-    '<div class="stats">' +
-      '<div class="stat"><div class="l">Cuota total</div>' +
-        '<div class="v cyan">' + pick.cuota_total + '</div></div>' +
-      '<div class="stat"><div class="l">Prob real</div>' +
-        '<div class="v">' + (pick.prob * 100).toFixed(1) + '%</div></div>' +
-      '<div class="stat"><div class="l">EV</div>' +
-        '<div class="v ' + (pick.ev > 0 ? "green" : "") + '">' +
-        (pick.ev * 100).toFixed(1) + '%</div></div>' +
-      '<div class="stat"><div class="l">Stake</div>' +
-        '<div class="v yellow">' + pick.stake_sugerido.toFixed(2) + '</div></div>' +
-    '</div>' +
-    warnHtml +
-    '<div class="pick-actions">' +
-      '<button data-act="reg">Registrar apuesta</button>' +
-      '<button data-act="copy">Copiar</button>' +
-    '</div>';
+  const confNivel = pick.confianza_nivel || "amarillo";
+  const confBadgeHtml =
+    confNivel === "verde"   ? '<span class="badge-conf verde">✅ Verde</span>'  :
+    confNivel === "alta"    ? '<span class="badge-conf verde">✅ Verde</span>'  :
+    confNivel === "amarillo"? '<span class="badge-conf amarillo">⚠️ Amarillo</span>' :
+    confNivel === "media"   ? '<span class="badge-conf amarillo">⚠️ Amarillo</span>' :
+    confNivel === "rojo"    ? '<span class="badge-conf rojo">🔴 Rojo</span>'   :
+                              '<span class="badge-conf muy-baja">⬛ Muy baja</span>';
 
-  card.querySelector('[data-act="copy"]').addEventListener("click", function() {
+  card.innerHTML = `
+    <div class="head">
+      <div class="head-left">
+        <span class="tag ${tag}">${safeText(pick.tipo)}</span>
+        ${confBadgeHtml}
+        <span class="risk-indicator ${riskInd}">Riesgo: ${riskText}</span>
+      </div>
+      <span class="partido">${safeText(pick.partido)}</span>
+    </div>
+    ${legsHtml}
+    <div class="stats">
+      <div class="stat">
+        <div class="l">Cuota Total</div>
+        <div class="v cyan">${pick.cuota_total}</div>
+      </div>
+      <div class="stat">
+        <div class="l">Probabilidad</div>
+        <div class="v">${(pick.prob * 100).toFixed(1)}%</div>
+      </div>
+      <div class="stat">
+        <div class="l">EV</div>
+        <div class="v ${pick.ev > 0 ? "green" : ""}">${(pick.ev * 100).toFixed(1)}%</div>
+      </div>
+      <div class="stat">
+        <div class="l">Stake</div>
+        <div class="v yellow">💰 ${pick.stake_sugerido.toFixed(2)}</div>
+      </div>
+    </div>
+    ${warnHtml}
+    <div class="pick-actions">
+      <button data-act="reg">📝 Registrar</button>
+      <button data-act="copy">📋 Copiar</button>
+    </div>
+  `;
+
+  card.querySelector('[data-act="copy"]').addEventListener("click", () => {
     const txt = pick.tipo + " — " + pick.partido + "\n" +
-      pick.legs.map(function(l) { return "- " + l.texto + " @ " + l.cuota; }).join("\n") +
+      pick.legs.map(l => "- " + l.texto + " @ " + l.cuota).join("\n") +
       "\nCuota total: " + pick.cuota_total +
       " | EV " + (pick.ev * 100).toFixed(1) + "%" +
       " | Stake " + pick.stake_sugerido.toFixed(2) +
       " | Confianza: " + (pick.confianza_nivel || "");
-    navigator.clipboard.writeText(txt);
-    bubble("Copiado al portapapeles.");
+    navigator.clipboard.writeText(txt).then(() => {
+      showToast("✅ Copiado al portapapeles", "success");
+    });
   });
-  card.querySelector('[data-act="reg"]').addEventListener("click", function() {
+
+  card.querySelector('[data-act="reg"]').addEventListener("click", () => {
     registrar(pick, this);
   });
 
@@ -584,133 +1633,241 @@ function pickCard(pick) {
   chat.scrollTop = chat.scrollHeight;
 }
 
-/* ── Tarjeta de contexto real (forma + H2H) ── */
+/* ── Picks Rechazados ── */
+function rejectedPicksCard(rejectedPicks) {
+  if (!rejectedPicks || rejectedPicks.length === 0) return;
+
+  console.log("🔍 DEBUG rejectedPicks:", rejectedPicks);
+
+  const container = document.createElement("div");
+  container.className = "rejected-picks";
+
+  container.innerHTML = `
+    <h3>⚠️ Picks descartados (puedes considerarlos):</h3>
+    <div class="rejected-picks-list">
+      ${rejectedPicks.map(p => {
+        const conf = (p.confianza * 100).toFixed(1);
+        const umbral = (p.umbral * 100).toFixed(0);
+        let colorClass = "red";
+        let icon = "🔴";
+
+        if (conf >= 60) {
+          colorClass = "yellow";
+          icon = "🟡";
+        }
+        if (conf >= 50) {
+          colorClass = "yellow";
+          icon = "🟡";
+        }
+        if (conf < 30) {
+          colorClass = "red";
+          icon = "🔴";
+        }
+
+        const motivo = p.motivo === "confianza_baja"
+          ? "Confianza insuficiente"
+          : p.motivo === "contradiccion"
+          ? "Contradicción con mercado"
+          : p.motivo === "marginal_ou"
+          ? "OU marginal"
+          : "Otro criterio";
+
+        // Renderizar legs (qué mercados y cuotas)
+        const legsHtml = (p.legs && p.legs.length > 0)
+          ? p.legs.map(l => `<div style="font-size: 12px; margin: 4px 0;"><strong>${safeText(l.texto)}</strong> @ ${l.cuota}</div>`).join("")
+          : "<div style='font-size: 12px; color: var(--muted);'>Sin detalles de legs</div>";
+
+        // Estadísticas del pick
+        const prob = (p.prob * 100).toFixed(1);
+        const ev = (p.ev * 100).toFixed(1);
+
+        return `
+          <div class="rejected-pick-item ${colorClass}">
+            <div class="rejected-pick-title">
+              <strong>${p.tipo}</strong>
+              <span class="conf-pct">${icon} ${conf}% / ${umbral}%</span>
+            </div>
+            <div class="rejected-pick-motivo">📌 ${motivo}</div>
+            <div style="font-size: 12px; margin: 8px 0; padding: 8px 0; border-top: 1px solid rgba(255,255,255,0.1);">
+              ${legsHtml}
+            </div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; font-size: 11px; margin: 8px 0;">
+              <div><span style="color: var(--muted);">Cuota:</span> <strong>${p.cuota_total}</strong></div>
+              <div><span style="color: var(--muted);">Probabilidad:</span> <strong>${prob}%</strong></div>
+              <div><span style="color: var(--muted);">EV:</span> <strong style="color: ${parseFloat(ev) > 0 ? '#3ddc97' : '#ff6b6b'}">${ev}%</strong></div>
+              <div><span style="color: var(--muted);">Confianza:</span> <strong>${conf}%</strong></div>
+            </div>
+            <div class="rejected-pick-detail">${safeText(p.detalle)}</div>
+          </div>
+        `;
+      }).join("")}
+    </div>
+    <p style="font-size: 12px; color: var(--muted); margin-top: 12px; border-top: 1px solid var(--border); padding-top: 12px;">
+      💡 Ves aquí <strong>exactamente qué apostar</strong> (mercado, cuota, EV). Confianza baja significa riesgo, pero EV positivo significa valor matemático a largo plazo.
+    </p>
+  `;
+
+  chat.appendChild(container);
+  chat.scrollTop = chat.scrollHeight;
+}
+
+/* ── Contexto card ── */
 function contextoCard(ctx, home, away) {
   if (!ctx || !ctx.api_disponible) return;
   const fh = ctx.forma_home;
   const fa = ctx.forma_away;
-  const h2 = ctx.h2h;
-  if (!fh && !fa && !h2) return;
-
-  function seqHtml(seq) {
-    if (!seq) return "—";
-    return seq.split("").map(function(c) {
-      return '<span class="' + c + '">' + c + '</span>';
-    }).join(" ");
-  }
-
-  function formaCols(f, nombre) {
-    if (!f) return '<div class="ctx-col"><h4>' + safeText(nombre) + '</h4><p style="color:var(--muted)">Sin datos</p></div>';
-    return '<div class="ctx-col">' +
-      '<h4>' + safeText(nombre) + '</h4>' +
-      '<div class="seq">' + seqHtml(f.secuencia) + '</div>' +
-      '<div class="kv"><div>GF promedio</div><span>' + f.gf_promedio + '</span></div>' +
-      '<div class="kv"><div>GC promedio</div><span>' + f.gc_promedio + '</span></div>' +
-      '<div class="kv"><div>BTTS rate</div><span>' + (f.btts_rate * 100).toFixed(0) + '%</span></div>' +
-      '<div class="kv"><div>Over 2.5 rate</div><span>' + (f.over_25_rate * 100).toFixed(0) + '%</span></div>' +
-      '</div>';
-  }
-
-  let h2Html = "";
-  if (h2 && h2.n >= 3) {
-    const total = h2.wins_local_actual + h2.empates + h2.wins_visit_actual || 1;
-    const pctH = Math.round(h2.wins_local_actual / total * 100);
-    h2Html =
-      '<div style="margin-top:10px;padding-top:10px;border-top:1px dashed var(--border)">' +
-      '<div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">' +
-        'H2H últimos ' + h2.n + ' cruces' +
-      '</div>' +
-      '<div class="h2h-row">' +
-        '<div style="font-size:12px;color:var(--cyan);width:60px">' + safeText(home) + '</div>' +
-        '<div class="h2h-bar"><div class="h2h-fill" style="width:' + pctH + '%"></div></div>' +
-        '<div style="font-size:12px;color:var(--muted);width:60px;text-align:right">' + safeText(away) + '</div>' +
-      '</div>' +
-      '<div style="font-size:12px;color:var(--muted);margin-top:4px">' +
-        h2.wins_local_actual + 'V / ' + h2.empates + 'E / ' + h2.wins_visit_actual + 'D &nbsp;·&nbsp; ' +
-        'Goles prom: ' + h2.goles_promedio +
-      '</div>' +
-      '</div>';
-  }
+  const h2h = ctx.h2h;
+  if (!fh && !fa && !h2h) return;
 
   const details = document.createElement("details");
   details.className = "ctx-card";
-  details.innerHTML =
-    '<summary>Datos reales del partido</summary>' +
-    '<div class="ctx-grid">' +
-      formaCols(fh, home) +
-      formaCols(fa, away) +
-    '</div>' +
-    h2Html;
 
+  let contenido = `<summary>📊 Datos reales del partido</summary><div class="ctx-content">`;
+
+  // Forma Home
+  if (fh) {
+    contenido += `
+      <div class="ctx-section">
+        <div class="ctx-team">🏠 ${safeText(home)}</div>
+        <div class="ctx-stat">
+          <span class="label">Últimos 5 partidos:</span>
+          <span class="value">${safeText(fh.secuencia || "—")}</span>
+        </div>
+        <div class="ctx-stat">
+          <span class="label">Goles a favor:</span>
+          <span class="value">${fh.gf_promedio || "—"}/partido</span>
+        </div>
+        <div class="ctx-stat">
+          <span class="label">Goles en contra:</span>
+          <span class="value">${fh.gc_promedio || "—"}/partido</span>
+        </div>
+      </div>`;
+  }
+
+  // Forma Away
+  if (fa) {
+    contenido += `
+      <div class="ctx-section">
+        <div class="ctx-team">✈️ ${safeText(away)}</div>
+        <div class="ctx-stat">
+          <span class="label">Últimos 5 partidos:</span>
+          <span class="value">${safeText(fa.secuencia || "—")}</span>
+        </div>
+        <div class="ctx-stat">
+          <span class="label">Goles a favor:</span>
+          <span class="value">${fa.gf_promedio || "—"}/partido</span>
+        </div>
+        <div class="ctx-stat">
+          <span class="label">Goles en contra:</span>
+          <span class="value">${fa.gc_promedio || "—"}/partido</span>
+        </div>
+      </div>`;
+  }
+
+  // H2H (Head to Head)
+  if (h2h) {
+    contenido += `
+      <div class="ctx-section">
+        <div class="ctx-team">⚔️ Historial directo (últimos ${h2h.n || "?"} partidos)</div>
+        <div class="ctx-stat">
+          <span class="label">Victoria ${safeText(home)}:</span>
+          <span class="value">${h2h.wins_local_actual || 0}</span>
+        </div>
+        <div class="ctx-stat">
+          <span class="label">Empates:</span>
+          <span class="value">${h2h.empates || 0}</span>
+        </div>
+        <div class="ctx-stat">
+          <span class="label">Victoria ${safeText(away)}:</span>
+          <span class="value">${h2h.wins_visit_actual || 0}</span>
+        </div>
+        <div class="ctx-stat">
+          <span class="label">Goles promedio/partido:</span>
+          <span class="value">${h2h.goles_promedio || "—"}</span>
+        </div>
+        <div class="ctx-stat">
+          <span class="label">BTTS rate:</span>
+          <span class="value">${h2h.btts_rate ? (h2h.btts_rate * 100).toFixed(0) + "%" : "—"}</span>
+        </div>
+      </div>`;
+  }
+
+  contenido += `</div>`;
+  details.innerHTML = contenido;
   chat.appendChild(details);
   chat.scrollTop = chat.scrollHeight;
 }
 
-/* ── Narrativa del analista LLM ── */
+/* ── Narrativa card ── */
 function narrativaCard(texto) {
   if (!texto) return;
   const div = document.createElement("div");
   div.className = "narrativa-card";
-  div.innerHTML =
-    '<div class="nar-label">Análisis del modelo</div>' +
-    '<div>' + renderMarkdown(texto) + '</div>';
+  div.innerHTML = `
+    <div class="nar-label">🤖 Análisis del modelo</div>
+    <div>${renderMarkdown(texto)}</div>`;
   chat.appendChild(div);
   chat.scrollTop = chat.scrollHeight;
 }
 
-/* ── Registrar apuesta (tracking CSV) ── */
+/* ── Registrar apuesta ── */
 let currentLiga = "Default";
 let pendingRegistro = null;
 
-const stakeModal   = document.getElementById("stakeModal");
+const stakeModal = document.getElementById("stakeModal");
 const modalStakePct = document.getElementById("modalStakePct");
 
-document.getElementById("modalCancelar").addEventListener("click", function() {
-  stakeModal.style.display = "none";
+document.getElementById("modalCancelar").addEventListener("click", () => {
+  stakeModal.classList.remove("show");
   pendingRegistro = null;
 });
-document.getElementById("modalConfirmar").addEventListener("click", function() {
-  stakeModal.style.display = "none";
+
+document.getElementById("modalConfirmar").addEventListener("click", async () => {
+  stakeModal.classList.remove("show");
   if (pendingRegistro) {
     const p = pendingRegistro;
     pendingRegistro = null;
-    doRegistrar(p.pick, p.local, p.visitante, p.pickDesc, p.btn);
+    await doRegistrar(p.pick, p.local, p.visitante, p.pickDesc, p.btn);
   }
 });
 
 function registrar(pick, btn) {
-  const parts    = pick.partido.split(" vs ");
-  const local    = parts[0] ? parts[0].trim() : "";
+  const parts = pick.partido.split(" vs ");
+  const local = parts[0] ? parts[0].trim() : "";
   const visitante = parts[1] ? parts[1].trim() : "";
-  const pickDesc = pick.legs.map(function(l) { return l.texto; }).join(" + ");
+  const pickDesc = pick.legs.map(l => l.texto).join(" + ");
 
   const bankrollNow = parseFloat(bankrollEl.textContent) || 0;
-  const stakePct    = bankrollNow > 0 ? pick.stake_sugerido / bankrollNow : 0;
+  const stakePct = bankrollNow > 0 ? pick.stake_sugerido / bankrollNow : 0;
 
   if (stakePct > 0.03) {
     pendingRegistro = {pick, local, visitante, pickDesc, btn};
     modalStakePct.textContent = (stakePct * 100).toFixed(1);
-    stakeModal.style.display = "flex";
+    stakeModal.classList.add("show");
     return;
   }
   doRegistrar(pick, local, visitante, pickDesc, btn);
 }
 
 async function doRegistrar(pick, local, visitante, pickDesc, btn) {
-  if (btn) { btn.disabled = true; btn.textContent = "Registrando..."; }
+  if (btn) {
+    btn.disabled = true;
+    btn.textContent = "⏳ Registrando...";
+  }
+
   const body = {
-    liga:              currentLiga,
-    local:             local,
-    visitante:         visitante,
-    pick_tipo:         pick.tipo,
-    pick_descripcion:  pickDesc,
-    cuota:             pick.cuota_total,
-    stake:             pick.stake_sugerido,
-    prob_predicha:     pick.prob,
-    ev_predicho:       pick.ev,
-    confianza_score:   pick.confianza,
-    confianza_badge:   pick.confianza_nivel,
+    liga: currentLiga,
+    local, visitante,
+    pick_tipo: pick.tipo,
+    pick_descripcion: pickDesc,
+    cuota: pick.cuota_total,
+    stake: pick.stake_sugerido,
+    prob_predicha: pick.prob,
+    ev_predicho: pick.ev,
+    confianza_score: pick.confianza,
+    confianza_badge: pick.confianza_nivel,
   };
+
   try {
     const r = await fetch("/api/registrar_apuesta", {
       method: "POST",
@@ -719,66 +1876,72 @@ async function doRegistrar(pick, local, visitante, pickDesc, btn) {
     });
     const j = await r.json();
     if (j.id) {
-      bubble("Apuesta **#" + j.id + "** registrada. " + j.mensaje);
+      showToast(`✅ Apuesta #${j.id} registrada`, "success");
+      bubble(`**Apuesta #${j.id}** registrada. ${j.mensaje}`);
       if (btn) {
-        btn.textContent = "✓ Apuesta #" + j.id + " registrada";
-        setTimeout(function() {
-          if (btn) { btn.disabled = false; btn.textContent = "Registrar apuesta"; }
-        }, 2000);
+        btn.className = "send-btn success";
+        btn.textContent = `✅ #${j.id} registrada`;
       }
     } else {
-      bubbleErr("No se pudo registrar: " + (j.error || "error desconocido"));
-      if (btn) { btn.disabled = false; btn.textContent = "Registrar apuesta"; }
+      showToast(`❌ Error: ${j.error}`, "error");
+      if (btn) btn.disabled = false;
     }
   } catch (e) {
-    bubbleErr("Error de red: " + e.message);
-    if (btn) { btn.disabled = false; btn.textContent = "Registrar apuesta"; }
+    showToast(`❌ Error de red: ${e.message}`, "error");
+    if (btn) btn.disabled = false;
   }
-}
-
-/* ── Leer valor de input numérico ── */
-function val(id) {
-  const v = document.getElementById(id).value.trim();
-  return v === "" ? null : parseFloat(v);
 }
 
 /* ── Enviar formulario ── */
-sendBtn.addEventListener("click", async function() {
+sendBtn.addEventListener("click", async () => {
   const home = document.getElementById("home").value.trim();
   const away = document.getElementById("away").value.trim();
   const liga = document.getElementById("liga").value;
+
+  // Validar
+  const validHome = validarEquipo("home");
+  const validAway = validarEquipo("away");
+  const valid1 = validarCuota("c1");
+  const validX = validarCuota("cX");
+  const valid2 = validarCuota("c2");
+
+  if (!validHome || !validAway || !valid1 || !validX || !valid2) {
+    showToast("⚠️ Revisa los campos requeridos", "warning");
+    return;
+  }
+
   const c1 = val("c1"), cX = val("cX"), c2 = val("c2");
-
-  if (!home || !away || !c1 || !cX || !c2) {
-    bubbleErr("Necesito local, visitante y las 3 cuotas del 1X2.");
-    return;
-  }
-  if (c1 <= 1 || cX <= 1 || c2 <= 1) {
-    bubbleErr("Todas las cuotas deben ser mayores a 1.00.");
-    return;
-  }
-
   const cuotas = {"1X2": {"1": c1, "X": cX, "2": c2}};
+
   const cOver = val("cOver"), cUnder = val("cUnder");
   if (cOver && cUnder) {
-    if (cOver <= 1 || cUnder <= 1) { bubbleErr("Cuotas de goles deben ser > 1.00."); return; }
+    if (!validarCuota("cOver") || !validarCuota("cUnder")) {
+      showToast("⚠️ Cuotas OU_2.5 inválidas", "warning");
+      return;
+    }
     cuotas["OU_2.5"] = {"Over": cOver, "Under": cUnder};
   }
+
   const cBy = val("cBttsY"), cBn = val("cBttsN");
   if (cBy && cBn) {
-    if (cBy <= 1 || cBn <= 1) { bubbleErr("Cuotas de BTTS deben ser > 1.00."); return; }
+    if (!validarCuota("cBttsY") || !validarCuota("cBttsN")) {
+      showToast("⚠️ Cuotas BTTS inválidas", "warning");
+      return;
+    }
     cuotas["BTTS"] = {"Yes": cBy, "No": cBn};
   }
 
   currentLiga = liga;
-  let userTxt = home + " vs " + away + "\n1X2: " + c1 + " / " + cX + " / " + c2;
-  if (liga !== "Default") userTxt += "\nLiga: " + liga;
-  if (cuotas["OU_2.5"]) userTxt += "\nOU 2.5: " + cOver + " / " + cUnder;
-  if (cuotas["BTTS"])   userTxt += "\nBTTS: " + cBy + " / " + cBn;
+  let userTxt = `⚽ ${home} vs ${away}\n1X2: ${c1} / ${cX} / ${c2}`;
+  if (liga !== "Default") userTxt += `\n🏆 Liga: ${liga}`;
+  if (cuotas["OU_2.5"]) userTxt += `\n📊 OU 2.5: ${cOver} / ${cUnder}`;
+  if (cuotas["BTTS"]) userTxt += `\n🎯 BTTS: ${cBy} / ${cBn}`;
+
   bubble(userTxt, "user");
   quickForm.classList.remove("open");
+  toggleBtn.classList.remove("open");
 
-  const typing = bubble("Calculando...");
+  const typing = bubble("🔄 Analizando partido...");
   sendBtn.disabled = true;
 
   try {
@@ -790,20 +1953,40 @@ sendBtn.addEventListener("click", async function() {
     const j = await r.json();
     typing.remove();
 
-    if (j.error) { bubbleErr(j.error); return; }
+    if (j.error) {
+      showToast(`❌ Error: ${j.error}`, "error");
+      bubbleErr(j.error);
+      return;
+    }
 
     bubble(j.mensaje);
+    showToast("✅ Análisis completado", "success");
 
-    if (j.picks && j.picks.length) {
+    // Picks VERDE (confianza >= 75%)
+    if (j.picks_verdes && j.picks_verdes.length) {
+      bubble(`✅ ${j.picks_verdes.length} pick(s) VERDE — confianza ≥ 75% (recomendados):`);
+      j.picks_verdes.forEach(pickCard);
+    } else if (j.picks && j.picks.length) {
+      // fallback backward compat
+      bubble(`✅ ${j.picks.length} pick(s) con valor:`);
       j.picks.forEach(pickCard);
     }
 
-    /* Contexto real de la API */
+    // Picks AMARILLO (confianza 65-75%)
+    if (j.picks_amarillos && j.picks_amarillos.length) {
+      bubble(`⚠️ ${j.picks_amarillos.length} pick(s) AMARILLO — confianza 65-75% (considera con cautela, stake reducido):`);
+      j.picks_amarillos.forEach(pickCard);
+    }
+
+    // Picks descartados
+    if (j.debug_filtrado && j.debug_filtrado.descartados && j.debug_filtrado.descartados.length > 0) {
+      rejectedPicksCard(j.debug_filtrado.descartados);
+    }
+
     if (j.contexto_api) {
       contextoCard(j.contexto_api, home, away);
     }
 
-    /* Narrativa del analista */
     if (j.narrativa) {
       narrativaCard(j.narrativa);
     }
@@ -812,11 +1995,218 @@ sendBtn.addEventListener("click", async function() {
 
   } catch (e) {
     typing.remove();
-    bubbleErr("Error de red: " + e.message);
+    showToast(`❌ Error de red: ${e.message}`, "error");
+    bubbleErr(`Error de red: ${e.message}`);
   } finally {
     sendBtn.disabled = false;
   }
 });
+
+// Limpiar validación al cambiar liga
+document.getElementById("liga").addEventListener("change", () => {
+  document.getElementById("home").classList.remove("valid", "error");
+  document.getElementById("away").classList.remove("valid", "error");
+});
+
+/* ── Sport tabs ─────────────────────────────────────────────────────────── */
+const sportTabs   = document.getElementById("sportTabs");
+const tennisForm  = document.getElementById("tennisForm");
+let   activeSport = "football";
+
+document.querySelectorAll(".sport-tab").forEach(btn => {
+  btn.addEventListener("click", () => {
+    activeSport = btn.dataset.sport;
+    document.querySelectorAll(".sport-tab").forEach(b => b.classList.remove("active"));
+    btn.classList.add("active");
+    if (activeSport === "football") {
+      quickForm.style.display   = "";
+      tennisForm.style.display  = "none";
+    } else {
+      quickForm.style.display   = "none";
+      tennisForm.style.display  = "flex";
+    }
+  });
+});
+
+// Show tabs when form opens
+toggleBtn.addEventListener("click", function() {
+  if (quickForm.classList.contains("open") || tennisForm.style.display === "flex") {
+    sportTabs.style.display = "none";
+  } else {
+    sportTabs.style.display = "flex";
+  }
+}, true); // capture before the existing listener toggles the form
+
+/* ── Tennis helpers ─────────────────────────────────────────────────────── */
+function tval(id) {
+  const v = (document.getElementById(id) || {}).value || "";
+  const n = parseFloat(v.trim());
+  return isNaN(n) ? null : n;
+}
+function tstr(id) {
+  return ((document.getElementById(id) || {}).value || "").trim();
+}
+
+function tennisBuildCuotas() {
+  const cuotas = {};
+
+  const mw1 = tval("tmw1"), mw2 = tval("tmw2");
+  if (mw1 && mw2) cuotas.match_winner = {"1": mw1, "2": mw2};
+
+  const tgL = tval("ttg_line"), tgO = tval("ttg_over"), tgU = tval("ttg_under");
+  if (tgL && (tgO || tgU)) {
+    cuotas.total_games = {linea: tgL};
+    if (tgO) cuotas.total_games.over  = tgO;
+    if (tgU) cuotas.total_games.under = tgU;
+  }
+
+  return cuotas;
+}
+
+/* ── Tennis pick card ───────────────────────────────────────────────────── */
+function tennisPickCard(pick, tipo) {
+  const nivel  = pick.confianza_nivel || tipo || "rojo";
+  const isML   = pick.tipo === "DUPLA";
+  const tagCls = isML ? "dupla" : nivel;
+  const card   = document.createElement("div");
+  card.className = "tennis-pick-card " + (isML ? "dupla" : nivel);
+
+  let legsHtml = "";
+  if (isML) {
+    legsHtml = (pick.legs || []).map(l =>
+      `<div class="leg">
+        <span class="name">${safeText(l.pick)}</span>
+        <span class="cuota">${l.cuota}</span>
+      </div>`
+    ).join("");
+  } else {
+    legsHtml = `<div class="leg">
+      <span class="name">${safeText(pick.pick || pick.mercado)}</span>
+      <span class="cuota">${pick.cuota}</span>
+    </div>`;
+  }
+
+  const stakeHtml = pick.stake_sugerido != null
+    ? `<div class="stat"><div class="l">Stake</div><div class="v yellow">💰 ${pick.stake_sugerido.toFixed(2)}</div></div>`
+    : "";
+
+  card.innerHTML = `
+    <div class="head">
+      <div class="head-left">
+        <span class="tennis-tag ${tagCls}">${safeText(isML ? "DUPLA" : (pick.mercado || "Pick"))}</span>
+        <span class="badge-conf ${nivel}">${nivel === "verde" ? "✅ Verde" : nivel === "amarillo" ? "⚠️ Amarillo" : "🔴 Rojo"}</span>
+      </div>
+    </div>
+    ${legsHtml}
+    <div class="stats">
+      <div class="stat"><div class="l">Cuota</div><div class="v cyan">${(pick.cuota || pick.cuota_total || 0).toFixed(2)}</div></div>
+      <div class="stat"><div class="l">Prob</div><div class="v">${((pick.prob||0)*100).toFixed(1)}%</div></div>
+      <div class="stat"><div class="l">EV</div><div class="v ${(pick.ev||0)>0?"green":""}">${((pick.ev||0)*100).toFixed(1)}%</div></div>
+      ${stakeHtml}
+    </div>
+    ${isML ? '<div class="warn-box">⚠️ Parlay — la casa puede ajustar la cuota real.</div>' : ""}
+    <div class="pick-actions">
+      <button onclick="tRegistrar(${JSON.stringify(pick).replace(/"/g, '&quot;')})">📝 Registrar</button>
+      <button onclick="tCopiar(${JSON.stringify(pick).replace(/"/g, '&quot;')})">📋 Copiar</button>
+    </div>
+  `;
+  chat.appendChild(card);
+  chat.scrollTop = chat.scrollHeight;
+}
+
+function tCopiar(pick) {
+  const desc = pick.pick || (pick.legs || []).map(l => l.pick).join(" + ");
+  const txt  = `🎾 ${desc} @ ${pick.cuota || pick.cuota_total} | EV ${((pick.ev||0)*100).toFixed(1)}%`;
+  navigator.clipboard.writeText(txt).then(() => showToast("Copiado al portapapeles", "success"));
+}
+
+function tRegistrar(pick) {
+  const j1  = tstr("tj1"), j2 = tstr("tj2");
+  const desc = pick.pick || (pick.legs || []).map(l => l.pick).join(" + ");
+  const body = {
+    liga: "Tenis", local: j1, visitante: j2,
+    pick_tipo: "TENIS", pick_descripcion: desc,
+    cuota: pick.cuota || pick.cuota_total || 0,
+    stake: pick.stake_sugerido || 0,
+    prob_predicha: pick.prob || 0,
+    ev_predicho: pick.ev || 0,
+    confianza_score: pick.confianza || 0,
+    confianza_badge: pick.confianza_nivel || "",
+  };
+  fetch("/api/registrar_apuesta", {
+    method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify(body),
+  })
+  .then(r => r.json())
+  .then(j => j.id
+    ? showToast(`✅ Apuesta #${j.id} registrada`, "success")
+    : showToast(`❌ ${j.error}`, "error")
+  );
+}
+
+/* ── Tennis form submit ─────────────────────────────────────────────────── */
+document.getElementById("tSendBtn").addEventListener("click", async () => {
+  const j1 = tstr("tj1"), j2 = tstr("tj2");
+  if (!j1) { showToast("Ingresa el jugador 1", "warning"); return; }
+  if (!j2) { showToast("Ingresa el jugador 2", "warning"); return; }
+
+  const cuotas = tennisBuildCuotas();
+  if (!cuotas.match_winner) { showToast("Ingresa las cuotas del ganador del partido", "warning"); return; }
+
+  const body = {
+    jugador1: j1, jugador2: j2,
+    cuotas,
+  };
+
+  bubble(`🎾 ${j1} vs ${j2}`, "user");
+  const typing = bubble("🔄 Analizando partido de tenis...");
+  document.getElementById("tSendBtn").disabled = true;
+
+  try {
+    const r = await fetch("/api/analizar_tenis", {
+      method: "POST",
+      headers: {"Content-Type": "application/json"},
+      body: JSON.stringify(body),
+    });
+    const j = await r.json();
+    typing.remove();
+
+    if (j.error) { showToast(`❌ ${j.error}`, "error"); bubbleErr(j.error); return; }
+
+    bubble(`**${j.partido}** · ${j.superficie} · ${j.formato}\n` +
+           `Modelo: p(set J1)=${(j.modelo?.p_set_j1*100||0).toFixed(1)}% · ` +
+           `P(J1 gana)=${(j.modelo?.match_winner?.prob_j1*100||0).toFixed(1)}%\n` +
+           `Total games esperados: ${j.modelo?.total_games?.total_esp||"—"}\n` +
+           `${j.resumen}`);
+
+    if (j.picks_verdes?.length) {
+      bubble(`✅ ${j.picks_verdes.length} pick(s) VERDE:`);
+      j.picks_verdes.forEach(p => tennisPickCard(p, "verde"));
+    }
+    if (j.picks_amarillos?.length) {
+      bubble(`⚠️ ${j.picks_amarillos.length} pick(s) AMARILLO (cautela):`);
+      j.picks_amarillos.forEach(p => tennisPickCard(p, "amarillo"));
+    }
+    if (j.picks_multileg?.length) {
+      bubble(`🔗 ${j.picks_multileg.length} pick(s) multi-leg (parlay):`);
+      j.picks_multileg.forEach(p => tennisPickCard(p, "dupla"));
+    }
+    if (!j.picks_verdes?.length && !j.picks_amarillos?.length) {
+      bubble("Sin picks con value en estas cuotas. El mercado parece eficiente.");
+    }
+    showToast("✅ Análisis de tenis completado", "success");
+
+  } catch (e) {
+    typing.remove();
+    showToast(`❌ Error: ${e.message}`, "error");
+    bubbleErr(`Error: ${e.message}`);
+  } finally {
+    document.getElementById("tSendBtn").disabled = false;
+  }
+});
+
+/* ── Inicializar sistemas al final ── */
+inicializarTenis();
+console.log("🚀 App inicializada");
 </script>
 </body>
 </html>

@@ -1,0 +1,166 @@
+{
+  "jugadores": {
+    "Belinda Bencic": {
+      "elo": 1557.6,
+      "games": 22
+    },
+    "Diana Shnaider": {
+      "elo": 1362.7,
+      "games": 26
+    },
+    "Jasmine Paolini": {
+      "elo": 1572.1,
+      "games": 26
+    },
+    "Alexander Zverev": {
+      "elo": 1632.7,
+      "games": 24
+    },
+    "Tommy Paul": {
+      "elo": 1494.1,
+      "games": 30
+    },
+    "Iga Swiatek": {
+      "elo": 1603.1,
+      "games": 13
+    },
+    "Beatriz Haddad Maia": {
+      "elo": 1377.9,
+      "games": 26
+    },
+    "Andriy Rublev": {
+      "elo": 1401.8,
+      "games": 31
+    },
+    "Casper Ruud": {
+      "elo": 1469.8,
+      "games": 24
+    },
+    "Amanda Anisimova": {
+      "elo": 1495.7,
+      "games": 18
+    },
+    "Elena Rybakina": {
+      "elo": 1666.4,
+      "games": 30
+    },
+    "Coco Gauff": {
+      "elo": 1570.2,
+      "games": 29
+    },
+    "Carlos Alcaraz": {
+      "elo": 1617.5,
+      "games": 33
+    },
+    "Arthur Fils": {
+      "elo": 1424.7,
+      "games": 25
+    },
+    "Ben Shelton": {
+      "elo": 1584.0,
+      "games": 35
+    },
+    "Anna Karolina Schmiedlova": {
+      "elo": 1418.4,
+      "games": 25
+    },
+    "Daniil Medvedev": {
+      "elo": 1587.9,
+      "games": 59
+    },
+    "Karolina Muchova": {
+      "elo": 1527.7,
+      "games": 18
+    },
+    "Liudmila Samsonova": {
+      "elo": 1372.9,
+      "games": 22
+    },
+    "Marketa Vondrousova": {
+      "elo": 1487.4,
+      "games": 26
+    },
+    "Jeļena Ostapenko": {
+      "elo": 1448.9,
+      "games": 27
+    },
+    "Taylor Fritz": {
+      "elo": 1473.2,
+      "games": 32
+    },
+    "Hubert Hurkacz": {
+      "elo": 1395.6,
+      "games": 27
+    },
+    "Grigor Dimitrov": {
+      "elo": 1363.9,
+      "games": 38
+    },
+    "Elina Svitolina": {
+      "elo": 1520.3,
+      "games": 19
+    },
+    "Felix Auger-Aliassime": {
+      "elo": 1445.4,
+      "games": 30
+    },
+    "Aryna Sabalenka": {
+      "elo": 1585.4,
+      "games": 17
+    },
+    "Magdalena Fręch": {
+      "elo": 1409.2,
+      "games": 21
+    },
+    "Mirra Andreeva": {
+      "elo": 1558.4,
+      "games": 23
+    },
+    "Lorenzo Musetti": {
+      "elo": 1489.9,
+      "games": 32
+    },
+    "Novak Djokovic": {
+      "elo": 1612.2,
+      "games": 17
+    },
+    "Jannik Sinner": {
+      "elo": 1681.6,
+      "games": 20
+    },
+    "Jessica Pegula": {
+      "elo": 1593.6,
+      "games": 18
+    },
+    "Madison Keys": {
+      "elo": 1338.9,
+      "games": 25
+    },
+    "Stefanos Tsitsipas": {
+      "elo": 1459.3,
+      "games": 28
+    },
+    "Sebastian Korda": {
+      "elo": 1395.1,
+      "games": 20
+    },
+    "Alex de Minaur": {
+      "elo": 1465.0,
+      "games": 27
+    },
+    "Jakub Mensik": {
+      "elo": 1481.1,
+      "games": 18
+    },
+    "Victoria Azarenka": {
+      "elo": 1533.2,
+      "games": 19
+    }
+  },
+  "_meta": {
+    "fecha": "2026-05-08T07:56:04.789886",
+    "total_jugadores": 39,
+    "matches_procesados": 500,
+    "metodo": "Elo dinámico"
+  }
+}
