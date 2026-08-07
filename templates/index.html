@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <title>BetBrain — Chat</title>
 <meta name="viewport" content="width=device-width,initial-scale=1">
+<script src="https://cdn.tailwindcss.com"></script>
 <style>
   :root {
     --bg: #0e1014;
@@ -11,10 +12,14 @@
     --bg3: #21252f;
     --fg: #e7e9ee;
     --muted: #8b93a3;
-    --cyan: #6ee7ff;
-    --green: #3ddc97;
-    --yellow: #ffd23f;
-    --red: #ff6b6b;
+    /* Paleta: Azul Profundo (primary), Teal (secondary/ganadores),
+       Oro (accent), Rojo (danger) — variantes claras para texto/bordes
+       sobre fondo oscuro, --*-fill para el tono sólido original. */
+    --cyan: #60a5fa;        /* antes #6ee7ff — ahora azul primario claro */
+    --cyan-fill: #1e40af;   /* azul profundo sólido, para botones/CTAs */
+    --green: #10b981;       /* antes #3ddc97 — teal secundario */
+    --yellow: #f59e0b;      /* antes #ffd23f — oro accent */
+    --red: #ef4444;         /* antes #ff6b6b — rojo danger */
     --border: #2a2f3a;
   }
   * { box-sizing: border-box; }
@@ -53,10 +58,10 @@
     from { transform: translateX(400px); opacity: 0; }
     to { transform: translateX(0); opacity: 1; }
   }
-  .toast.success { background: #1a4d32; color: var(--green); border: 1px solid var(--green); }
-  .toast.error { background: #3a1010; color: var(--red); border: 1px solid var(--red); }
-  .toast.warning { background: #2b2200; color: var(--yellow); border: 1px solid var(--yellow); }
-  .toast.info { background: #162030; color: var(--cyan); border: 1px solid var(--cyan); }
+  .toast.success { background: #064e3b; color: var(--green); border: 1px solid var(--green); }
+  .toast.error { background: #450a0a; color: var(--red); border: 1px solid var(--red); }
+  .toast.warning { background: #451a03; color: var(--yellow); border: 1px solid var(--yellow); }
+  .toast.info { background: #1e2a4a; color: var(--cyan); border: 1px solid var(--cyan); }
 
   header {
     padding: 14px 20px;
@@ -96,7 +101,7 @@
   }
   .sport-tab.active {
     background: var(--cyan);
-    color: #002028;
+    color: #0c1a3d;
   }
   .sport-tab:hover:not(.active) { color: var(--fg); }
 
@@ -110,6 +115,12 @@
     border-radius: 14px;
     padding: 14px 16px;
     border-bottom-left-radius: 4px;
+    animation: fadeInUp 0.35s ease;
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+  .tennis-pick-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
   }
   .tennis-pick-card.verde  { border-left: 4px solid var(--green); }
   .tennis-pick-card.amarillo { border-left: 4px solid var(--yellow); }
@@ -119,10 +130,10 @@
     font-size: 11px; padding: 3px 9px; border-radius: 999px;
     font-weight: 700; letter-spacing: .4px;
   }
-  .tennis-tag.verde   { background: #1a4d32; color: var(--green); border: 1px solid var(--green); }
-  .tennis-tag.amarillo{ background: #4a3a00; color: var(--yellow); border: 1px solid var(--yellow); }
-  .tennis-tag.rojo    { background: #3a1010; color: var(--red); border: 1px solid var(--red); }
-  .tennis-tag.dupla   { background: #162030; color: var(--cyan); border: 1px solid var(--cyan); }
+  .tennis-tag.verde   { background: #064e3b; color: var(--green); border: 1px solid var(--green); }
+  .tennis-tag.amarillo{ background: #78350f; color: var(--yellow); border: 1px solid var(--yellow); }
+  .tennis-tag.rojo    { background: #450a0a; color: var(--red); border: 1px solid var(--red); }
+  .tennis-tag.dupla   { background: #1e2a4a; color: var(--cyan); border: 1px solid var(--cyan); }
   main {
     flex: 1;
     overflow-y: auto;
@@ -134,6 +145,10 @@
     width: 100%;
     margin: 0 auto;
   }
+  @keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(10px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
   .bubble {
     max-width: 88%;
     padding: 12px 16px;
@@ -141,11 +156,12 @@
     line-height: 1.45;
     font-size: 15px;
     white-space: pre-wrap;
+    animation: fadeInUp 0.35s ease;
   }
   .bubble.user {
     align-self: flex-end;
     background: var(--cyan);
-    color: #002028;
+    color: #0c1a3d;
     border-bottom-right-radius: 4px;
   }
   .bubble.bot {
@@ -167,6 +183,12 @@
     border-radius: 14px;
     padding: 14px 16px;
     border-bottom-left-radius: 4px;
+    animation: fadeInUp 0.35s ease;
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+  .pick-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
   }
   .pick-card.risk-low { border-left: 4px solid var(--green); }
   .pick-card.risk-med { border-left: 4px solid var(--yellow); }
@@ -186,14 +208,14 @@
   .pick-card .tag {
     font-size: 11px;
     background: var(--cyan);
-    color: #002028;
+    color: #0c1a3d;
     padding: 4px 10px;
     border-radius: 999px;
     font-weight: 700;
     letter-spacing: .5px;
   }
-  .pick-card .tag.dupla { background: var(--yellow); color: #4a3a00; }
-  .pick-card .tag.tripleta { background: var(--green); color: #00301d; }
+  .pick-card .tag.dupla { background: var(--yellow); color: #78350f; }
+  .pick-card .tag.tripleta { background: var(--green); color: #022c22; }
 
   .badge-conf {
     font-size: 10px;
@@ -202,10 +224,10 @@
     font-weight: 700;
     letter-spacing: .4px;
   }
-  .badge-conf.alta, .badge-conf.verde { background: #1a4d32; color: var(--green); border: 1px solid var(--green); }
-  .badge-conf.media, .badge-conf.amarillo { background: #4a3a00; color: var(--yellow); border: 1px solid var(--yellow); }
-  .badge-conf.baja, .badge-conf.rojo { background: #3a1010; color: var(--red); border: 1px solid var(--red); }
-  .badge-conf.muy-baja { background: #2a0a0a; color: #888; border: 1px solid #555; }
+  .badge-conf.alta, .badge-conf.verde { background: #064e3b; color: var(--green); border: 1px solid var(--green); }
+  .badge-conf.media, .badge-conf.amarillo { background: #78350f; color: var(--yellow); border: 1px solid var(--yellow); }
+  .badge-conf.baja, .badge-conf.rojo { background: #450a0a; color: var(--red); border: 1px solid var(--red); }
+  .badge-conf.muy-baja { background: #3f0d0d; color: #888; border: 1px solid #555; }
 
   .risk-indicator {
     font-size: 11px;
@@ -302,27 +324,27 @@
     font-size: 13px;
   }
   .rejected-pick-item.red {
-    border-left-color: #ff6b6b;
+    border-left-color: #ef4444;
     background: rgba(255, 107, 107, 0.1);
   }
   .rejected-pick-item.red .conf-pct {
-    color: #ff6b6b;
+    color: #ef4444;
     font-weight: 600;
   }
   .rejected-pick-item.yellow {
-    border-left-color: #ffd23f;
+    border-left-color: #f59e0b;
     background: rgba(255, 210, 63, 0.1);
   }
   .rejected-pick-item.yellow .conf-pct {
-    color: #ffd23f;
+    color: #f59e0b;
     font-weight: 600;
   }
   .rejected-pick-item.green {
-    border-left-color: #3ddc97;
+    border-left-color: #10b981;
     background: rgba(61, 220, 151, 0.1);
   }
   .rejected-pick-item.green .conf-pct {
-    color: #3ddc97;
+    color: #10b981;
     font-weight: 600;
   }
   .rejected-pick-title {
@@ -350,8 +372,8 @@
   .warn-box {
     font-size: 12px;
     color: var(--yellow);
-    background: #2b2200;
-    border: 1px solid #4a3a00;
+    background: #451a03;
+    border: 1px solid #78350f;
     border-radius: 6px;
     padding: 8px 10px;
     margin-top: 8px;
@@ -370,6 +392,7 @@
     border-radius: 14px;
     padding: 12px 16px;
     font-size: 13px;
+    animation: fadeInUp 0.35s ease;
   }
   .ctx-card summary {
     cursor: pointer;
@@ -456,12 +479,13 @@
     align-self: flex-start;
     max-width: 88%;
     background: var(--bg2);
-    border: 1px solid #2a3a2a;
+    border: 1px solid #1a332c;
     border-radius: 14px;
     padding: 12px 16px;
     font-size: 14px;
     color: var(--fg);
     line-height: 1.6;
+    animation: fadeInUp 0.35s ease;
   }
   .narrativa-card .nar-label {
     font-size: 10px;
@@ -731,7 +755,7 @@
 
   .send-btn {
     background: var(--cyan);
-    color: #002028;
+    color: #0c1a3d;
     border: none;
     padding: 12px 20px;
     border-radius: 8px;
@@ -745,7 +769,7 @@
     gap: 6px;
   }
   .send-btn:hover:not(:disabled) {
-    background: #5dd6ea;
+    background: #3b82f6;
     transform: translateY(-2px);
   }
   .send-btn:disabled {
@@ -754,7 +778,7 @@
   }
   .send-btn.success {
     background: var(--green);
-    color: #00301d;
+    color: #022c22;
   }
 
   /* ── Modal ── */
@@ -1694,7 +1718,7 @@ function rejectedPicksCard(rejectedPicks) {
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; font-size: 11px; margin: 8px 0;">
               <div><span style="color: var(--muted);">Cuota:</span> <strong>${p.cuota_total}</strong></div>
               <div><span style="color: var(--muted);">Probabilidad:</span> <strong>${prob}%</strong></div>
-              <div><span style="color: var(--muted);">EV:</span> <strong style="color: ${parseFloat(ev) > 0 ? '#3ddc97' : '#ff6b6b'}">${ev}%</strong></div>
+              <div><span style="color: var(--muted);">EV:</span> <strong style="color: ${parseFloat(ev) > 0 ? '#10b981' : '#ef4444'}">${ev}%</strong></div>
               <div><span style="color: var(--muted);">Confianza:</span> <strong>${conf}%</strong></div>
             </div>
             <div class="rejected-pick-detail">${safeText(p.detalle)}</div>
