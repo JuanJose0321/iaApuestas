@@ -185,6 +185,7 @@ class TennisImprovedEngine:
         return round(min(certeza + ev_bonus, 0.99), 3)
 
     def _nivel_confianza(self, score: float) -> str:
+        """'verde' / 'amarillo' / 'rojo' según los umbrales del módulo."""
         if score >= UMBRAL_VERDE:
             return "verde"
         if score >= UMBRAL_AMARILLO:

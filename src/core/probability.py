@@ -35,6 +35,7 @@ def estimar_lambdas_desde_cuotas(prob_1: float, prob_2: float,
     from scipy.optimize import minimize
 
     def objetivo(params):
+        """Error cuadrático entre el 1X2 objetivo y el que produce (lh, la)."""
         lh, la = params
         if lh < 0.1 or la < 0.1:
             return 1e9
@@ -54,11 +55,13 @@ def estimar_lambdas_desde_cuotas(prob_1: float, prob_2: float,
 
 
 def poisson_probability(l: float, x: int) -> float:
+    """P(X=x) para una Poisson de media l."""
     return (math.exp(-l) * (l ** x)) / math.factorial(x)
 
 
 def generar_matriz_poisson(lambda_h: float, lambda_a: float,
                            max_goles: int = 8) -> np.ndarray:
+    """Matriz [goles_local][goles_visita] de probabilidad conjunta, normalizada a 1."""
     m = np.zeros((max_goles + 1, max_goles + 1))
     for i in range(max_goles + 1):
         for j in range(max_goles + 1):
@@ -124,6 +127,7 @@ def _predicado(seleccion: tuple):
 
 
 def prob_marginal(matriz, mercado: str, seleccion: str) -> float:
+    """Probabilidad de una sola selección, marginalizando el resto de la matriz."""
     pred = _predicado((mercado, seleccion))
     n = matriz.shape[0]
     return float(sum(matriz[h][a] for h in range(n) for a in range(n) if pred(h, a)))

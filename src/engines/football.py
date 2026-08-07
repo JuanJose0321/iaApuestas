@@ -31,6 +31,7 @@ from src.core.model import FEATURES
 
 
 def _es_combo_uniforme(combo: list[tuple]) -> tuple[bool, str]:
+    """True si 2+ legs del combo son la misma (mercado, selección) — parlay redundante."""
     for (m, s), cnt in Counter(combo).items():
         if cnt >= 2:
             return True, f"{m} {s}"
@@ -74,6 +75,7 @@ def check_marginal_ou(raw_pick: dict, xg_total: float,
 
 @dataclass
 class ValueBet:
+    """Un pick individual con valor detectado (usado por BettingEngine.analizar)."""
     mercado: str
     seleccion: str
     prob_modelo: float
@@ -84,6 +86,7 @@ class ValueBet:
 
 
 def _kelly_fraction(p: float, cuota: float, fraction: float = KELLY_FRACTION) -> float:
+    """Fracción del bankroll a apostar (Kelly fraccional). 0 si el EV es negativo."""
     b = cuota - 1
     if b <= 0:
         return 0.0
@@ -92,6 +95,7 @@ def _kelly_fraction(p: float, cuota: float, fraction: float = KELLY_FRACTION) ->
 
 
 def _ultimo_estado_equipo(df_stats: pd.DataFrame, equipo: str) -> dict | None:
+    """Forma reciente (últimos 5) del equipo en su partido más reciente del histórico."""
     mask_h = df_stats["HomeTeam"] == equipo
     mask_a = df_stats["AwayTeam"] == equipo
     partidos = df_stats[mask_h | mask_a].sort_values("Date")
@@ -104,12 +108,15 @@ def _ultimo_estado_equipo(df_stats: pd.DataFrame, equipo: str) -> dict | None:
 
 
 class BettingEngine:
+    """Motor de fútbol: combina XGBoost calibrado (si hay histórico) con Poisson."""
+
     def __init__(self):
         self.calibrator = None
         self.df_stats = None
         self._cargar()
 
     def _cargar(self):
+        """Carga el calibrador y el histórico rolling-stats; sigue funcionando (solo Poisson) si faltan."""
         if CALIBRATOR_PATH.exists():
             self.calibrator = joblib.load(CALIBRATOR_PATH)
         else:
@@ -122,6 +129,7 @@ class BettingEngine:
 
     def prob_ml(self, home: str, away: str,
                 cuota_h: float, cuota_d: float, cuota_a: float) -> dict | None:
+        """Prob. 1X2 del modelo XGBoost calibrado. None si falta calibrador o histórico del equipo."""
         if self.calibrator is None or self.df_stats is None:
             return None
         h = _ultimo_estado_equipo(self.df_stats, home)
@@ -139,6 +147,7 @@ class BettingEngine:
 
     def prob_poisson(self, cuota_h: float, cuota_d: float, cuota_a: float,
                      promedio_goles_liga: float = 2.7) -> dict:
+        """Mercados (1X2/OU/BTTS/AH) derivados de la matriz de Poisson estimada desde las cuotas."""
         sin_vig = eliminar_vig({"1": cuota_h, "X": cuota_d, "2": cuota_a})
         lh, la = estimar_lambdas_desde_cuotas(sin_vig["1"], sin_vig["2"], promedio_goles_liga)
         matriz = generar_matriz_poisson(lh, la, max_goles=8)
@@ -149,6 +158,7 @@ class BettingEngine:
 
     def analizar(self, home: str, away: str, cuotas: dict,
                  promedio_goles_liga: float = 2.7) -> dict:
+        """Analiza un partido y devuelve los value bets individuales (sin combinar en picks)."""
         c_1x2 = cuotas["1X2"]
         poisson = self.prob_poisson(c_1x2["1"], c_1x2["X"], c_1x2["2"], promedio_goles_liga)
         ml = self.prob_ml(home, away, c_1x2["1"], c_1x2["X"], c_1x2["2"])
@@ -207,6 +217,7 @@ class BettingEngine:
     def pick_simple(self, home: str, away: str, cuotas: dict,
                     cuota_min: float = 1.70, cuota_max: float = 2.50,
                     promedio_goles_liga: float = 2.7) -> dict:
+        """Versión previa a pick_multileg: solo directa + dupla de 2 legs. Se mantiene por compatibilidad."""
         c_1x2 = cuotas["1X2"]
         sin_vig = eliminar_vig({"1": c_1x2["1"], "X": c_1x2["X"], "2": c_1x2["2"]})
         lh, la = estimar_lambdas_desde_cuotas(sin_vig["1"], sin_vig["2"], promedio_goles_liga)
@@ -283,6 +294,9 @@ class BettingEngine:
                       cuota_max_tripleta: float = 6.00,
                       min_ev: float = MIN_EV,
                       promedio_goles_liga: float = 2.7) -> dict:
+        """Motor principal usado por /chat: genera el mejor pick directa/dupla/tripleta
+        (y hasta 2 alternativas de cada uno) por EV, descartando combos redundantes
+        (ver _es_combo_uniforme) e incompatibles (ver son_compatibles)."""
         c_1x2 = cuotas["1X2"]
         sin_vig = eliminar_vig({"1": c_1x2["1"], "X": c_1x2["X"], "2": c_1x2["2"]})
         lh, la = estimar_lambdas_desde_cuotas(sin_vig["1"], sin_vig["2"], promedio_goles_liga)
@@ -425,6 +439,7 @@ SELECCION_LABEL = {
 
 
 def leg_legible(leg: dict, home: str = "", away: str = "") -> str:
+    """Texto legible para el frontend, p.ej. 'Gana Real Madrid' en vez de ('1X2','1')."""
     m, s = leg["mercado"], leg["seleccion"]
     base = SELECCION_LABEL.get((m, s), f"{m} {s}")
     if m == "1X2":
