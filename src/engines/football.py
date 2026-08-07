@@ -36,6 +36,41 @@ def _es_combo_uniforme(combo: list[tuple]) -> tuple[bool, str]:
     return False, ""
 
 
+# ── Filtro de picks OU_2.5 en zona marginal ─────────────────────────────
+MARGEN_OU_MIN = 0.30       # |xg_total - 2.5| mínimo para considerar el pick fiable
+EV_MARGINAL_MIN = 0.10     # EV mínimo cuando el xG está en zona marginal (con datos API)
+
+
+def check_marginal_ou(raw_pick: dict, xg_total: float,
+                      tiene_datos_reales: bool) -> str | None:
+    """
+    Devuelve un motivo de descarte si el pick tiene un leg de OU_2.5 y el xG
+    del modelo cae en la zona marginal (|xg - 2.5| < MARGEN_OU_MIN).
+
+    - Sin datos API reales: siempre descarta (no hay forma real que confirme la tendencia).
+    - Con datos API reales: descarta solo si EV < EV_MARGINAL_MIN (10%).
+    Devuelve None si el pick es válido.
+    """
+    has_ou = any(leg.get("mercado") == "OU_2.5" for leg in raw_pick.get("legs", []))
+    if not has_ou:
+        return None
+
+    margen = abs(xg_total - 2.5)
+    if margen >= MARGEN_OU_MIN:
+        return None  # xG claro: Over o Under con suficiente margen
+
+    if not tiene_datos_reales:
+        return (f"marginal_sin_datos (xg_total={xg_total:.2f}, "
+                f"margen={margen:.2f} < {MARGEN_OU_MIN} — sin forma real que confirme tendencia)")
+
+    ev = raw_pick.get("ev", 0)
+    if ev < EV_MARGINAL_MIN:
+        return (f"ev_insuficiente_zona_marginal (xg={xg_total:.2f}, margen={margen:.2f} < {MARGEN_OU_MIN}, "
+                f"ev={ev:.1%} < {EV_MARGINAL_MIN:.0%} requerido en zona dudosa)")
+
+    return None
+
+
 @dataclass
 class ValueBet:
     mercado: str

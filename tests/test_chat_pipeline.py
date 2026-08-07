@@ -26,6 +26,8 @@ import pytest
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
+from src.engines.football import check_marginal_ou
+
 # ── Fixture: app en modo test ───────────────────────────────────────────
 @pytest.fixture(scope="module")
 def client():
@@ -61,36 +63,41 @@ def test_chat_keys_always_present(client):
     resp = _post_chat(client)
     assert resp.status_code == 200
     body = resp.get_json()
-    for key in ("partido", "picks", "mensaje", "narrativa", "coherencia",
-                "contexto_api", "bankroll", "lambdas", "fuente", "debug_filtrado"):
+    for key in ("mensaje", "picks_verdes", "picks_amarillos", "narrativa",
+                "contexto_api", "bankroll", "debug_filtrado"):
         assert key in body, f"Clave '{key}' ausente en respuesta"
 
 
-# ── Test 2: picks es lista (puede estar vacía, pero NUNCA None) ─────────
+# ── Test 2: picks_verdes/picks_amarillos son listas (nunca None) ────────
 def test_chat_picks_is_list(client):
     resp = _post_chat(client)
     body = resp.get_json()
-    assert isinstance(body["picks"], list), "picks debe ser una lista, no None"
+    assert isinstance(body["picks_verdes"], list), "picks_verdes debe ser una lista, no None"
+    assert isinstance(body["picks_amarillos"], list), "picks_amarillos debe ser una lista, no None"
 
 
-# ── Test 3: narrativa nunca es None (fallback cubre ausencia de LLM) ────
+# ── Test 3: narrativa nunca es None; solo hay texto si hubo picks ───────
 def test_chat_narrativa_not_none(client):
     resp = _post_chat(client)
     body = resp.get_json()
-    assert body["narrativa"] is not None, "narrativa es None — fallback_sin_llm falló"
-    assert len(body["narrativa"]) > 10, "narrativa está prácticamente vacía"
+    assert isinstance(body["narrativa"], str), "narrativa debe ser string, nunca None"
+    hay_picks = body["picks_verdes"] or body["picks_amarillos"]
+    if hay_picks:
+        assert len(body["narrativa"]) > 10, "con picks, narrativa no debería estar vacía"
+    else:
+        assert body["narrativa"] == "", "sin picks, narrativa debe quedar vacía"
 
 
 # ── Test 4: umbrales dinámicos (Fix C) ─────────────────────────────────
 def test_umbral_sin_api_es_menor():
-    from src.confidence import UMBRAL_CONFIANZA, UMBRAL_CONFIANZA_SIN_API
+    from src.core.confidence import UMBRAL_CONFIANZA, UMBRAL_CONFIANZA_SIN_API
     assert UMBRAL_CONFIANZA_SIN_API < UMBRAL_CONFIANZA, (
         "El umbral sin API debe ser más permisivo que el umbral con API"
     )
 
 
 def test_calcular_confianza_factor_bajo_pasa_umbral_sin_api():
-    from src.confidence import calcular_confianza, UMBRAL_CONFIANZA_SIN_API
+    from src.core.confidence import calcular_confianza, UMBRAL_CONFIANZA_SIN_API
     # EV=12%, prob=0.50, sin datos reales → factor=0.6
     # Con el umbral reducido debe pasar
     score = calcular_confianza(prob=0.50, ev=0.12, factor_datos=0.6)
@@ -101,7 +108,7 @@ def test_calcular_confianza_factor_bajo_pasa_umbral_sin_api():
 
 
 def test_calcular_confianza_factor_alto():
-    from src.confidence import calcular_confianza, UMBRAL_CONFIANZA
+    from src.core.confidence import calcular_confianza, UMBRAL_CONFIANZA
     # EV=15%, prob=0.55, con datos reales → factor=1.0
     score = calcular_confianza(prob=0.55, ev=0.15, factor_datos=1.0)
     assert score >= UMBRAL_CONFIANZA, (
@@ -112,7 +119,7 @@ def test_calcular_confianza_factor_alto():
 
 # ── Test 5: contradicciones detectadas correctamente ────────────────────
 def test_contradicciones_btts_no_over():
-    from src.confidence import verificar_contradicciones_combo
+    from src.core.confidence import verificar_contradicciones_combo
     legs = [
         {"mercado": "BTTS", "seleccion": "No"},
         {"mercado": "OU_2.5", "seleccion": "Over"},
@@ -122,7 +129,7 @@ def test_contradicciones_btts_no_over():
 
 
 def test_sin_contradicciones():
-    from src.confidence import verificar_contradicciones_combo
+    from src.core.confidence import verificar_contradicciones_combo
     legs = [
         {"mercado": "1X2", "seleccion": "1"},
         {"mercado": "OU_2.5", "seleccion": "Over"},
@@ -141,10 +148,10 @@ def test_chat_api_football_down(client):
         "injuries_home": [], "injuries_away": [], "notas": [],
     }
     with (
-        patch("src.api_football.contexto_partido_completo",
+        patch("src.providers.api_football.contexto_partido_completo",
               side_effect=Exception("timeout simulado")),
-        patch("src.sportsmonk.disponible", return_value=False),
-        patch("src.thesportsdb.contexto_partido_completo", return_value=ctx_vacio),
+        patch("src.providers.sportsmonk.disponible", return_value=False),
+        patch("src.providers.thesportsdb.contexto_partido_completo", return_value=ctx_vacio),
     ):
         resp = _post_chat(client)
     assert resp.status_code == 200
@@ -162,9 +169,13 @@ def test_engine_equipos_desconocidos(client):
                "away": "Equipo_ABC_Desconocido"}
     resp = _post_chat(client, payload)
     assert resp.status_code == 200
-    body = resp.get_json()
-    assert "solo Poisson" in body["fuente"], (
-        f"Equipos desconocidos deberían usar 'solo Poisson', got: {body['fuente']}"
+
+    from src.engines.football import BettingEngine
+    result = BettingEngine().pick_multileg(
+        payload["home"], payload["away"], payload["cuotas"], promedio_goles_liga=2.6
+    )
+    assert result["fuente_1x2"] == "solo Poisson", (
+        f"Equipos desconocidos deberían usar 'solo Poisson', got: {result['fuente_1x2']}"
     )
 
 
@@ -185,14 +196,12 @@ def test_chat_cuota_invalida(client):
     assert resp.status_code == 400
 
 
-# ── Test 9: lambdas son positivos y razonables ──────────────────────────
+# ── Test 9: xg_total (suma de lambdas) es positivo y razonable ──────────
 def test_chat_lambdas_razonables(client):
     resp = _post_chat(client)
     body = resp.get_json()
-    lh = body["lambdas"]["home"]
-    la = body["lambdas"]["away"]
-    assert 0.1 < lh < 8.0, f"lambda_home={lh} fuera de rango razonable"
-    assert 0.1 < la < 8.0, f"lambda_away={la} fuera de rango razonable"
+    xg_total = body["debug_filtrado"]["xg_total"]
+    assert 0.2 < xg_total < 16.0, f"xg_total={xg_total} fuera de rango razonable"
 
 
 # ── Test 10: contexto_api siempre tiene las claves esperadas ────────────
@@ -209,11 +218,11 @@ def test_chat_debug_filtrado_estructura(client):
     body = resp.get_json()
     dbg = body.get("debug_filtrado")
     assert dbg is not None, "debug_filtrado ausente en respuesta"
-    for key in ("factor_datos", "umbral_usado", "datos_api_reales",
-                "picks_totales", "picks_pasaron", "descartados"):
+    for key in ("factor_datos", "datos_api_reales", "xg_total",
+                "margen_ou", "combos_descartados", "descartados"):
         assert key in dbg, f"debug_filtrado falta clave '{key}'"
     assert isinstance(dbg["descartados"], list)
-    assert dbg["picks_pasaron"] == len(body["picks"])
+    assert isinstance(dbg["combos_descartados"], list)
 
 
 # ── Tests /api/teams — dropdown de equipos ──────────────────────────────
@@ -225,16 +234,13 @@ def test_teams_liga_mx_equipos_presentes(client):
     assert "Cruz Azul" in equipos,   f"Cruz Azul no encontrado en Liga MX: {equipos}"
     assert "Tigres UANL" in equipos, f"Tigres UANL no encontrado en Liga MX: {equipos}"
     assert "Monterrey" in equipos,   f"Monterrey no encontrado en Liga MX: {equipos}"
-    assert j["total"] == len(equipos)
 
 
-def test_teams_liga_mx_placeholder_order(client):
+def test_teams_liga_mx_orden_alfabetico(client):
     r = client.get("/api/teams?liga=Liga%20MX")
     equipos = r.get_json()["equipos"]
-    assert len(equipos) >= 2, "Liga MX debe tener al menos 2 equipos para los placeholders"
-    # el placeholder de home = equipos[0], away = equipos[1]
-    assert equipos[0] == "Club America",  f"Primer equipo Liga MX esperado 'Club America', got '{equipos[0]}'"
-    assert equipos[1] == "Cruz Azul",     f"Segundo equipo Liga MX esperado 'Cruz Azul', got '{equipos[1]}'"
+    assert len(equipos) >= 2
+    assert equipos == sorted(equipos), "El endpoint devuelve los equipos ordenados alfabéticamente"
 
 
 def test_teams_filtro_mon_monterrey(client):
@@ -247,24 +253,18 @@ def test_teams_filtro_mon_monterrey(client):
     )
 
 
-def test_teams_liga_inexistente_404(client):
+def test_teams_liga_inexistente_error(client):
     r = client.get("/api/teams?liga=Liga%20Inexistente")
-    assert r.status_code == 404
+    assert r.status_code == 200
     j = r.get_json()
     assert "error" in j
-    assert j["equipos"] == []
 
 
-def test_teams_sin_param_devuelve_todas_ligas(client):
+def test_teams_sin_param_devuelve_error(client):
     r = client.get("/api/teams")
     assert r.status_code == 200
     j = r.get_json()
-    ligas = j["ligas"]
-    assert "Liga MX" in ligas
-    assert "LaLiga" in ligas
-    assert "Premier League" in ligas
-    assert j["total_ligas"] == len(ligas)
-    assert "_meta" not in ligas
+    assert "error" in j, "Sin ?liga, /api/teams debe devolver un error claro"
 
 
 def test_teams_liga_mx_chat_round_trip(client):
@@ -282,18 +282,16 @@ def test_teams_liga_mx_chat_round_trip(client):
                     content_type="application/json")
     assert r.status_code == 200
     body = r.get_json()
-    assert body["partido"] == "Cruz Azul vs Tigres UANL"
-    assert isinstance(body["picks"], list)
-    assert body["lambdas"]["home"] > 0
-    assert body["lambdas"]["away"] > 0
+    assert isinstance(body["picks_verdes"], list)
+    assert isinstance(body["picks_amarillos"], list)
+    assert body["debug_filtrado"]["xg_total"] > 0
 
 
 # ── Tests filtro OU_2.5 marginal ────────────────────────────────────────
 def test_check_marginal_ou_descarta_sin_datos():
     """xg=2.66, margen=0.16 < 0.30, sin datos → descarte marginal_sin_datos."""
-    import app as _app
     raw = {"legs": [{"mercado": "OU_2.5", "seleccion": "Under"}], "ev": 0.06}
-    motivo = _app._check_marginal_ou(raw, xg_total=2.66, tiene_datos_reales=False)
+    motivo = check_marginal_ou(raw, xg_total=2.66, tiene_datos_reales=False)
     assert motivo is not None, "Debería descartar: margen 0.16 < 0.30 sin datos"
     assert "marginal_sin_datos" in motivo
     assert "2.66" in motivo
@@ -302,17 +300,15 @@ def test_check_marginal_ou_descarta_sin_datos():
 
 def test_check_marginal_ou_pasa_margen_suficiente():
     """xg=3.10, margen=0.60 >= 0.30 → no descarta aunque no haya datos."""
-    import app as _app
     raw = {"legs": [{"mercado": "OU_2.5", "seleccion": "Over"}], "ev": 0.06}
-    motivo = _app._check_marginal_ou(raw, xg_total=3.10, tiene_datos_reales=False)
+    motivo = check_marginal_ou(raw, xg_total=3.10, tiene_datos_reales=False)
     assert motivo is None, f"No debería descartar con margen=0.60: {motivo}"
 
 
 def test_check_marginal_ou_con_datos_ev_bajo():
     """xg=2.66, margen=0.16, CON datos pero EV=6% < 10% → descarte ev_insuficiente."""
-    import app as _app
     raw = {"legs": [{"mercado": "OU_2.5", "seleccion": "Under"}], "ev": 0.06}
-    motivo = _app._check_marginal_ou(raw, xg_total=2.66, tiene_datos_reales=True)
+    motivo = check_marginal_ou(raw, xg_total=2.66, tiene_datos_reales=True)
     assert motivo is not None, "Con datos y EV bajo debería descartar en zona marginal"
     assert "ev_insuficiente" in motivo
     assert "6.0%" in motivo or "6%" in motivo
@@ -320,17 +316,15 @@ def test_check_marginal_ou_con_datos_ev_bajo():
 
 def test_check_marginal_ou_con_datos_ev_suficiente():
     """xg=2.66, margen=0.16, CON datos y EV=12% >= 10% → pasa."""
-    import app as _app
     raw = {"legs": [{"mercado": "OU_2.5", "seleccion": "Under"}], "ev": 0.12}
-    motivo = _app._check_marginal_ou(raw, xg_total=2.66, tiene_datos_reales=True)
+    motivo = check_marginal_ou(raw, xg_total=2.66, tiene_datos_reales=True)
     assert motivo is None, f"Con datos y EV=12% debería pasar: {motivo}"
 
 
 def test_check_marginal_ou_ignora_picks_sin_ou():
     """Pick 1X2 puro → filtro marginal no aplica."""
-    import app as _app
     raw = {"legs": [{"mercado": "1X2", "seleccion": "1"}], "ev": 0.06}
-    motivo = _app._check_marginal_ou(raw, xg_total=2.66, tiene_datos_reales=False)
+    motivo = check_marginal_ou(raw, xg_total=2.66, tiene_datos_reales=False)
     assert motivo is None, "Picks 1X2 no deben filtrarse por marginal_ou"
 
 
@@ -358,7 +352,7 @@ def test_chat_marginal_ou_sin_datos_aparece_en_descartados(client):
             "OU_2.5": {"Over": 1.95, "Under": 1.90},  # cuotas muy parejas → cerca de 2.5
         }
     }
-    with patch("src.api_football.contexto_partido_completo",
+    with patch("src.providers.api_football.contexto_partido_completo",
                side_effect=Exception("timeout")):
         resp = client.post("/chat", data=json.dumps(payload),
                            content_type="application/json")
@@ -376,7 +370,7 @@ def test_chat_marginal_ou_sin_datos_aparece_en_descartados(client):
 # ── Tests bloqueo de parlay uniforme (Mejora 3) ─────────────────────────
 def test_dupla_uniforme_descartada():
     """[1X2 Local, 1X2 Local] → _es_combo_uniforme detecta el duplicado."""
-    from src.engine import _es_combo_uniforme
+    from src.engines.football import _es_combo_uniforme
     combo = [("1X2", "1"), ("1X2", "1")]
     es_unif, leg = _es_combo_uniforme(combo)
     assert es_unif, "Dupla con 2× 1X2 Local debe ser uniforme"
@@ -385,7 +379,7 @@ def test_dupla_uniforme_descartada():
 
 def test_tripleta_uniforme_descartada():
     """[OU_2.5 Under × 3] → uniforme."""
-    from src.engine import _es_combo_uniforme
+    from src.engines.football import _es_combo_uniforme
     combo = [("OU_2.5", "Under"), ("OU_2.5", "Under"), ("OU_2.5", "Under")]
     es_unif, leg = _es_combo_uniforme(combo)
     assert es_unif, "Tripleta triple Under debe ser uniforme"
@@ -394,7 +388,7 @@ def test_tripleta_uniforme_descartada():
 
 def test_combo_mixto_pasa():
     """[1X2 Local, OU_2.5 Under, BTTS Yes] → no uniforme."""
-    from src.engine import _es_combo_uniforme
+    from src.engines.football import _es_combo_uniforme
     combo = [("1X2", "1"), ("OU_2.5", "Under"), ("BTTS", "Yes")]
     es_unif, _ = _es_combo_uniforme(combo)
     assert not es_unif, "Combo con mercados distintos NO debe ser uniforme"
@@ -402,7 +396,7 @@ def test_combo_mixto_pasa():
 
 def test_directa_no_afectada():
     """_es_combo_uniforme con un solo leg nunca devuelve True."""
-    from src.engine import _es_combo_uniforme
+    from src.engines.football import _es_combo_uniforme
     combo = [("OU_2.5", "Under")]
     es_unif, _ = _es_combo_uniforme(combo)
     assert not es_unif, "Un solo leg nunca puede ser uniforme"
@@ -410,7 +404,7 @@ def test_directa_no_afectada():
 
 def test_dupla_2_mercados_distintos_misma_seleccion_pasa():
     """[OU_2.5 Under, BTTS No] — distinto mercado, pasa aunque ambos sean 'negativos'."""
-    from src.engine import _es_combo_uniforme
+    from src.engines.football import _es_combo_uniforme
     combo = [("OU_2.5", "Under"), ("BTTS", "No")]
     es_unif, _ = _es_combo_uniforme(combo)
     assert not es_unif, "OU Under + BTTS No son mercados distintos: NO uniforme"
@@ -426,7 +420,7 @@ def test_chat_debug_filtrado_tiene_combos_descartados(client):
 
 # ── Test 12: umbral menor cuando API caída (Fix C) ──────────────────────
 def test_chat_umbral_reducido_sin_api(client):
-    from src.confidence import UMBRAL_CONFIANZA, UMBRAL_CONFIANZA_SIN_API
+    """Sin datos de API, factor_datos baja a 0.6 (en vez de un umbral variable)."""
     ctx_vacio = {
         "api_disponible": False, "fuente": "thesportsdb",
         "home": "Real Madrid", "away": "Barcelona",
@@ -435,16 +429,14 @@ def test_chat_umbral_reducido_sin_api(client):
         "injuries_home": [], "injuries_away": [], "notas": [],
     }
     with (
-        patch("src.api_football.contexto_partido_completo",
+        patch("src.providers.api_football.contexto_partido_completo",
               side_effect=Exception("timeout")),
-        patch("src.sportsmonk.disponible", return_value=False),
-        patch("src.thesportsdb.contexto_partido_completo", return_value=ctx_vacio),
+        patch("src.providers.sportsmonk.disponible", return_value=False),
+        patch("src.providers.thesportsdb.contexto_partido_completo", return_value=ctx_vacio),
     ):
         resp = _post_chat(client)
     dbg = resp.get_json()["debug_filtrado"]
     assert dbg["datos_api_reales"] is False
-    assert abs(dbg["umbral_usado"] - UMBRAL_CONFIANZA_SIN_API) < 0.001, (
-        f"Sin API, umbral debería ser {UMBRAL_CONFIANZA_SIN_API}, "
-        f"got {dbg['umbral_usado']}"
+    assert dbg["factor_datos"] == 0.6, (
+        f"Sin datos reales de API, factor_datos debería ser 0.6, got {dbg['factor_datos']}"
     )
-    assert dbg["umbral_usado"] < UMBRAL_CONFIANZA

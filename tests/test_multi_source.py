@@ -97,14 +97,14 @@ CTX_CSV_COMPLETO = {
 class TestCSVProvider:
 
     def test_normalizar_nombre_exacto(self):
-        from src.football_data_api import _normalizar
+        from src.providers.football_csv import _normalizar
         assert _normalizar("Real Madrid") == "real madrid"
         assert _normalizar("Atlético Madrid") == "atletico madrid"
         assert _normalizar("  PSG  ") == "psg"
 
     def test_buscar_nombre_equipo_hit(self):
         """Con CSVs reales cargados, Real Madrid debería encontrarse."""
-        from src.football_data_api import buscar_nombre_equipo, _cargar_df
+        from src.providers.football_csv import buscar_nombre_equipo, _cargar_df
         df = _cargar_df()
         if df.empty:
             pytest.skip("CSVs no descargados — ejecuta data_loader.py")
@@ -113,13 +113,13 @@ class TestCSVProvider:
         assert "Real Madrid" in resultado or "madrid" in resultado.lower()
 
     def test_buscar_nombre_equipo_miss(self):
-        from src.football_data_api import buscar_nombre_equipo
+        from src.providers.football_csv import buscar_nombre_equipo
         resultado = buscar_nombre_equipo("Equipo Ficticio XYZ 99999")
         assert resultado is None
 
     def test_form_csv_retorna_schema_correcto(self):
         """Verifica que el schema de forma coincide con el esperado por el engine."""
-        from src.football_data_api import _cargar_df, get_team_form_csv
+        from src.providers.football_csv import _cargar_df, get_team_form_csv
         df = _cargar_df()
         if df.empty:
             pytest.skip("CSVs no disponibles")
@@ -140,7 +140,7 @@ class TestCSVProvider:
                 break
 
     def test_h2h_csv_schema_correcto(self):
-        from src.football_data_api import _cargar_df, get_h2h_csv
+        from src.providers.football_csv import _cargar_df, get_h2h_csv
         df = _cargar_df()
         if df.empty:
             pytest.skip("CSVs no disponibles")
@@ -161,7 +161,7 @@ class TestCSVProvider:
             assert "wins_visit_actual" in h2h
 
     def test_contexto_completo_schema(self):
-        from src.football_data_api import _cargar_df, contexto_partido_completo
+        from src.providers.football_csv import _cargar_df, contexto_partido_completo
         df = _cargar_df()
         if df.empty:
             pytest.skip("CSVs no disponibles")
@@ -176,7 +176,7 @@ class TestCSVProvider:
         assert "notas"          in ctx
 
     def test_info_cobertura_estructura(self):
-        from src.football_data_api import info_cobertura
+        from src.providers.football_csv import info_cobertura
         info = info_cobertura()
         assert "partidos"     in info
         assert "equipos"      in info
@@ -194,13 +194,13 @@ class TestDataSourceManager:
     @pytest.fixture
     def dsm_fresco(self):
         """DSM nuevo sin estado previo para cada test."""
-        from src.data_source_manager import DataSourceManager
+        from src.providers.manager import DataSourceManager
         return DataSourceManager(fuente_default="auto")
 
     # --- fuente explícita "football-data" (CSV) ---
 
     def test_fuente_csv_retorna_schema(self, dsm_fresco):
-        from src.football_data_api import _cargar_df
+        from src.providers.football_csv import _cargar_df
         if _cargar_df().empty:
             pytest.skip("CSVs no disponibles")
         ctx = dsm_fresco.contexto_partido_completo(
@@ -213,7 +213,7 @@ class TestDataSourceManager:
     # --- fuente "api-football" mockeada ---
 
     def test_fuente_api_llama_api_football(self, dsm_fresco):
-        with patch("src.api_football.contexto_partido_completo",
+        with patch("src.providers.api_football.contexto_partido_completo",
                    return_value=CTX_API_COMPLETO) as mock_fn:
             ctx = dsm_fresco.contexto_partido_completo(
                 "Real Madrid", "Barcelona", fuente="api-football"
@@ -223,7 +223,7 @@ class TestDataSourceManager:
         assert ctx["forma_home"] is not None
 
     def test_fuente_api_error_retorna_empty(self, dsm_fresco):
-        with patch("src.api_football.contexto_partido_completo",
+        with patch("src.providers.api_football.contexto_partido_completo",
                    side_effect=Exception("timeout")):
             ctx = dsm_fresco.contexto_partido_completo(
                 "Real Madrid", "Barcelona", fuente="api-football"
@@ -235,7 +235,7 @@ class TestDataSourceManager:
     # --- fuente "auto": api ok ---
 
     def test_auto_usa_api_si_hay_forma(self, dsm_fresco):
-        with patch("src.api_football.contexto_partido_completo",
+        with patch("src.providers.api_football.contexto_partido_completo",
                    return_value=CTX_API_COMPLETO):
             ctx = dsm_fresco.contexto_partido_completo(
                 "Real Madrid", "Barcelona", fuente="auto"
@@ -248,12 +248,12 @@ class TestDataSourceManager:
     def test_auto_fallback_csv_si_api_sin_forma(self, dsm_fresco):
         ctx_tsdb_vacio = {**CTX_API_VACIO, "fuente": "thesportsdb"}
         with (
-            patch("src.api_football.contexto_partido_completo",
+            patch("src.providers.api_football.contexto_partido_completo",
                   return_value=CTX_API_VACIO),
-            patch("src.sportsmonk.disponible", return_value=False),
-            patch("src.thesportsdb.contexto_partido_completo",
+            patch("src.providers.sportsmonk.disponible", return_value=False),
+            patch("src.providers.thesportsdb.contexto_partido_completo",
                   return_value=ctx_tsdb_vacio),
-            patch("src.football_data_api.contexto_partido_completo",
+            patch("src.providers.football_csv.contexto_partido_completo",
                   return_value=CTX_CSV_COMPLETO) as mock_csv,
         ):
             ctx = dsm_fresco.contexto_partido_completo(
@@ -271,9 +271,9 @@ class TestDataSourceManager:
         ctx_api_sin_h2h["h2h"] = None
 
         with (
-            patch("src.api_football.contexto_partido_completo",
+            patch("src.providers.api_football.contexto_partido_completo",
                   return_value=ctx_api_sin_h2h),
-            patch("src.football_data_api.contexto_partido_completo",
+            patch("src.providers.football_csv.contexto_partido_completo",
                   return_value=CTX_CSV_COMPLETO),
         ):
             ctx = dsm_fresco.contexto_partido_completo(
@@ -290,9 +290,9 @@ class TestDataSourceManager:
     def test_merged_h2h_csv_gana_si_mas_partidos(self, dsm_fresco):
         """CSV tiene n=10, api tiene n=5 → se elige CSV."""
         with (
-            patch("src.api_football.contexto_partido_completo",
+            patch("src.providers.api_football.contexto_partido_completo",
                   return_value=CTX_API_COMPLETO),          # h2h n=5
-            patch("src.football_data_api.contexto_partido_completo",
+            patch("src.providers.football_csv.contexto_partido_completo",
                   return_value=CTX_CSV_COMPLETO),          # h2h n=10
         ):
             ctx = dsm_fresco.contexto_partido_completo(
@@ -311,9 +311,9 @@ class TestDataSourceManager:
         ctx_csv_h2h_chico["h2h"]["n"] = 5
 
         with (
-            patch("src.api_football.contexto_partido_completo",
+            patch("src.providers.api_football.contexto_partido_completo",
                   return_value=ctx_api_h2h_grande),
-            patch("src.football_data_api.contexto_partido_completo",
+            patch("src.providers.football_csv.contexto_partido_completo",
                   return_value=ctx_csv_h2h_chico),
         ):
             ctx = dsm_fresco.contexto_partido_completo(
@@ -324,7 +324,7 @@ class TestDataSourceManager:
     # --- Estadísticas ---
 
     def test_stats_se_incrementan(self, dsm_fresco):
-        with patch("src.api_football.contexto_partido_completo",
+        with patch("src.providers.api_football.contexto_partido_completo",
                    return_value=CTX_API_COMPLETO):
             dsm_fresco.contexto_partido_completo(
                 "Real Madrid", "Barcelona", fuente="api-football"
@@ -333,7 +333,7 @@ class TestDataSourceManager:
         assert s["delegated_api"] >= 1
 
     def test_reset_stats(self, dsm_fresco):
-        with patch("src.api_football.contexto_partido_completo",
+        with patch("src.providers.api_football.contexto_partido_completo",
                    return_value=CTX_API_COMPLETO):
             dsm_fresco.contexto_partido_completo(
                 "Real Madrid", "Barcelona", fuente="api-football"
@@ -367,7 +367,7 @@ class TestDataSourceManager:
             )
             resultados.append(ctx)
 
-        with patch("src.api_football.contexto_partido_completo", side_effect=mock_api):
+        with patch("src.providers.api_football.contexto_partido_completo", side_effect=mock_api):
             threads = [threading.Thread(target=worker) for _ in range(10)]
             for t in threads: t.start()
             for t in threads: t.join()
@@ -395,48 +395,48 @@ class TestDataSourceManager:
 class TestMergeHelpers:
 
     def test_merge_forma_api_tiene_precedencia(self):
-        from src.data_source_manager import _merge_forma
+        from src.providers.manager import _merge_forma
         api = {"gf_promedio": 2.0, "secuencia": "WWW"}
         csv = {"gf_promedio": 1.5, "secuencia": "DLD"}
         assert _merge_forma(api, csv) is api
 
     def test_merge_forma_fallback_a_csv(self):
-        from src.data_source_manager import _merge_forma
+        from src.providers.manager import _merge_forma
         csv = {"gf_promedio": 1.5, "secuencia": "DLD", "_fuente": "csv"}
         result = _merge_forma(None, csv)
         assert result is not None
         assert result["_fuente"] == "csv-fallback"
 
     def test_merge_forma_ambos_none(self):
-        from src.data_source_manager import _merge_forma
+        from src.providers.manager import _merge_forma
         assert _merge_forma(None, None) is None
 
     def test_merge_h2h_csv_mayor(self):
-        from src.data_source_manager import _merge_h2h
+        from src.providers.manager import _merge_h2h
         api = {"n": 3, "goles_promedio": 2.5}
         csv = {"n": 8, "goles_promedio": 3.0, "_fuente": "csv"}
         result = _merge_h2h(api, csv)
         assert result["n"] == 8
 
     def test_merge_h2h_api_mayor(self):
-        from src.data_source_manager import _merge_h2h
+        from src.providers.manager import _merge_h2h
         api = {"n": 12, "goles_promedio": 2.5}
         csv = {"n": 5,  "goles_promedio": 3.0}
         result = _merge_h2h(api, csv)
         assert result["n"] == 12
 
     def test_merge_h2h_solo_api(self):
-        from src.data_source_manager import _merge_h2h
+        from src.providers.manager import _merge_h2h
         api = {"n": 5}
         assert _merge_h2h(api, None) is api
 
     def test_merge_h2h_solo_csv(self):
-        from src.data_source_manager import _merge_h2h
+        from src.providers.manager import _merge_h2h
         csv = {"n": 5}
         assert _merge_h2h(None, csv) is csv
 
     def test_merge_contextos_combina_notas(self):
-        from src.data_source_manager import _merge_contextos
+        from src.providers.manager import _merge_contextos
         ctx_a = dict(CTX_API_COMPLETO); ctx_a["notas"] = ["nota-api"]
         ctx_c = dict(CTX_CSV_COMPLETO); ctx_c["notas"] = ["nota-csv"]
         merged = _merge_contextos(ctx_a, ctx_c)
@@ -444,7 +444,7 @@ class TestMergeHelpers:
         assert "nota-csv" in merged["notas"]
 
     def test_merge_contextos_no_duplica_notas(self):
-        from src.data_source_manager import _merge_contextos
+        from src.providers.manager import _merge_contextos
         misma_nota = "misma nota"
         ctx_a = dict(CTX_API_COMPLETO); ctx_a["notas"] = [misma_nota]
         ctx_c = dict(CTX_CSV_COMPLETO); ctx_c["notas"] = [misma_nota]
@@ -490,8 +490,8 @@ class TestSportsmonkClient:
 
     def test_sin_token_devuelve_api_no_disponible(self):
         """Sin SPORTMONKS_TOKEN, contexto_partido_completo devuelve api_disponible=False."""
-        with patch("src.sportsmonk.SPORTMONKS_TOKEN", ""):
-            from src.sportsmonk import contexto_partido_completo
+        with patch("src.providers.sportsmonk.SPORTMONKS_TOKEN", ""):
+            from src.providers.sportsmonk import contexto_partido_completo
             ctx = contexto_partido_completo("Real Madrid", "Barcelona")
         assert ctx["api_disponible"] is False
         assert ctx["fuente"] == "sportsmonk"
@@ -500,25 +500,25 @@ class TestSportsmonkClient:
         assert any("SPORTMONKS_TOKEN" in n for n in ctx["notas"])
 
     def test_disponible_sin_token(self):
-        with patch("src.sportsmonk.SPORTMONKS_TOKEN", ""):
-            from src.sportsmonk import disponible
+        with patch("src.providers.sportsmonk.SPORTMONKS_TOKEN", ""):
+            from src.providers.sportsmonk import disponible
             assert disponible() is False
 
     def test_disponible_con_token(self):
-        with patch("src.sportsmonk.SPORTMONKS_TOKEN", "fake-token-123"):
-            from src.sportsmonk import disponible
+        with patch("src.providers.sportsmonk.SPORTMONKS_TOKEN", "fake-token-123"):
+            from src.providers.sportsmonk import disponible
             assert disponible() is True
 
     def test_search_team_sin_token_devuelve_none(self):
-        with patch("src.sportsmonk.SPORTMONKS_TOKEN", ""):
-            from src.sportsmonk import search_team
+        with patch("src.providers.sportsmonk.SPORTMONKS_TOKEN", ""):
+            from src.providers.sportsmonk import search_team
             result = search_team("Real Madrid")
         assert result is None
 
     def test_search_team_respuesta_vacia(self):
-        with patch("src.sportsmonk.SPORTMONKS_TOKEN", "fake-token"):
-            with patch("src.sportsmonk._get", return_value={"data": []}):
-                from src.sportsmonk import search_team
+        with patch("src.providers.sportsmonk.SPORTMONKS_TOKEN", "fake-token"):
+            with patch("src.providers.sportsmonk._get", return_value={"data": []}):
+                from src.providers.sportsmonk import search_team
                 result = search_team("Equipo Inexistente")
         assert result is None
 
@@ -529,17 +529,17 @@ class TestSportsmonkClient:
                 {"id": 541, "name": "Real Madrid"},
             ]
         }
-        with patch("src.sportsmonk.SPORTMONKS_TOKEN", "fake-token"):
-            with patch("src.sportsmonk._get", return_value=mock_resp):
-                from src.sportsmonk import search_team
+        with patch("src.providers.sportsmonk.SPORTMONKS_TOKEN", "fake-token"):
+            with patch("src.providers.sportsmonk._get", return_value=mock_resp):
+                from src.providers.sportsmonk import search_team
                 result = search_team("Real Madrid")
         assert result == 541
 
     def test_search_team_fallback_primer_resultado(self):
         mock_resp = {"data": [{"id": 42, "name": "Real Zaragoza"}]}
-        with patch("src.sportsmonk.SPORTMONKS_TOKEN", "fake-token"):
-            with patch("src.sportsmonk._get", return_value=mock_resp):
-                from src.sportsmonk import search_team
+        with patch("src.providers.sportsmonk.SPORTMONKS_TOKEN", "fake-token"):
+            with patch("src.providers.sportsmonk._get", return_value=mock_resp):
+                from src.providers.sportsmonk import search_team
                 result = search_team("Real Madrid")  # no coincide exacto
         assert result == 42
 
@@ -567,9 +567,9 @@ class TestSportsmonkClient:
                 ],
             },
         ]
-        with patch("src.sportsmonk.SPORTMONKS_TOKEN", "fake-token"):
-            with patch("src.sportsmonk._get", return_value={"data": fixtures_mock}):
-                from src.sportsmonk import get_team_form
+        with patch("src.providers.sportsmonk.SPORTMONKS_TOKEN", "fake-token"):
+            with patch("src.providers.sportsmonk._get", return_value={"data": fixtures_mock}):
+                from src.providers.sportsmonk import get_team_form
                 forma = get_team_form(541, last=5)
 
         assert forma is not None
@@ -584,9 +584,9 @@ class TestSportsmonkClient:
         assert forma["partidos"] == 2
 
     def test_get_team_form_sin_scores_devuelve_none(self):
-        with patch("src.sportsmonk.SPORTMONKS_TOKEN", "fake-token"):
-            with patch("src.sportsmonk._get", return_value={"data": [{"scores": []}]}):
-                from src.sportsmonk import get_team_form
+        with patch("src.providers.sportsmonk.SPORTMONKS_TOKEN", "fake-token"):
+            with patch("src.providers.sportsmonk._get", return_value={"data": [{"scores": []}]}):
+                from src.providers.sportsmonk import get_team_form
                 result = get_team_form(541, last=5)
         assert result is None
 
@@ -604,9 +604,9 @@ class TestSportsmonkClient:
                 ],
             }
         ]
-        with patch("src.sportsmonk.SPORTMONKS_TOKEN", "fake-token"):
-            with patch("src.sportsmonk._get", return_value={"data": fixture_h2h}):
-                from src.sportsmonk import get_head_to_head
+        with patch("src.providers.sportsmonk.SPORTMONKS_TOKEN", "fake-token"):
+            with patch("src.providers.sportsmonk._get", return_value={"data": fixture_h2h}):
+                from src.providers.sportsmonk import get_head_to_head
                 h2h = get_head_to_head(541, 529, last=10)
 
         assert h2h is not None
@@ -618,9 +618,9 @@ class TestSportsmonkClient:
 
     def test_contexto_completo_sin_api_error_graceful(self):
         """Si la API HTTP devuelve error, contexto_partido_completo no lanza excepción."""
-        with patch("src.sportsmonk.SPORTMONKS_TOKEN", "fake-token"):
-            with patch("src.sportsmonk._get", return_value=None):
-                from src.sportsmonk import contexto_partido_completo
+        with patch("src.providers.sportsmonk.SPORTMONKS_TOKEN", "fake-token"):
+            with patch("src.providers.sportsmonk._get", return_value=None):
+                from src.providers.sportsmonk import contexto_partido_completo
                 ctx = contexto_partido_completo("Arsenal", "Chelsea")
         # No explota, devuelve ctx con notas
         assert "api_disponible" in ctx
@@ -632,13 +632,13 @@ class TestDataSourceManagerSportsmonk:
 
     @pytest.fixture
     def dsm_fresco(self):
-        from src.data_source_manager import DataSourceManager
+        from src.providers.manager import DataSourceManager
         return DataSourceManager(fuente_default="auto")
 
     # --- fuente explícita "sportsmonk" ---
 
     def test_fuente_sportsmonk_llama_sm(self, dsm_fresco):
-        with patch("src.sportsmonk.contexto_partido_completo",
+        with patch("src.providers.sportsmonk.contexto_partido_completo",
                    return_value=CTX_SM_COMPLETO) as mock_sm:
             ctx = dsm_fresco.contexto_partido_completo(
                 "Real Madrid", "Barcelona", fuente="sportsmonk"
@@ -647,7 +647,7 @@ class TestDataSourceManagerSportsmonk:
         assert ctx["fuente"] == "sportsmonk"
 
     def test_fuente_sportsmonk_error_retorna_empty(self, dsm_fresco):
-        with patch("src.sportsmonk.contexto_partido_completo",
+        with patch("src.providers.sportsmonk.contexto_partido_completo",
                    side_effect=Exception("SM timeout")):
             ctx = dsm_fresco.contexto_partido_completo(
                 "Real Madrid", "Barcelona", fuente="sportsmonk"
@@ -661,10 +661,10 @@ class TestDataSourceManagerSportsmonk:
         """api-football sin datos + SM con datos → SM rescata, api_disponible=True."""
         from tests.test_multi_source import CTX_API_VACIO
         with (
-            patch("src.api_football.contexto_partido_completo",
+            patch("src.providers.api_football.contexto_partido_completo",
                   return_value=CTX_API_VACIO),
-            patch("src.sportsmonk.disponible", return_value=True),
-            patch("src.sportsmonk.contexto_partido_completo",
+            patch("src.providers.sportsmonk.disponible", return_value=True),
+            patch("src.providers.sportsmonk.contexto_partido_completo",
                   return_value=CTX_SM_COMPLETO),
         ):
             ctx = dsm_fresco.contexto_partido_completo(
@@ -686,14 +686,14 @@ class TestDataSourceManagerSportsmonk:
                         "forma_home": None, "forma_away": None}
         ctx_tsdb_vacio = {**CTX_API_VACIO, "fuente": "thesportsdb"}
         with (
-            patch("src.api_football.contexto_partido_completo",
+            patch("src.providers.api_football.contexto_partido_completo",
                   return_value=CTX_API_VACIO),
-            patch("src.sportsmonk.disponible", return_value=True),
-            patch("src.sportsmonk.contexto_partido_completo",
+            patch("src.providers.sportsmonk.disponible", return_value=True),
+            patch("src.providers.sportsmonk.contexto_partido_completo",
                   return_value=ctx_sm_vacio),
-            patch("src.thesportsdb.contexto_partido_completo",
+            patch("src.providers.thesportsdb.contexto_partido_completo",
                   return_value=ctx_tsdb_vacio),
-            patch("src.football_data_api.contexto_partido_completo",
+            patch("src.providers.football_csv.contexto_partido_completo",
                   return_value=CTX_CSV_COMPLETO),
         ):
             ctx = dsm_fresco.contexto_partido_completo(
@@ -714,12 +714,12 @@ class TestDataSourceManagerSportsmonk:
         from tests.test_multi_source import CTX_API_VACIO, CTX_CSV_COMPLETO
         ctx_tsdb_vacio = {**CTX_API_VACIO, "fuente": "thesportsdb"}
         with (
-            patch("src.api_football.contexto_partido_completo",
+            patch("src.providers.api_football.contexto_partido_completo",
                   return_value=CTX_API_VACIO),
-            patch("src.sportsmonk.disponible", return_value=False),
-            patch("src.thesportsdb.contexto_partido_completo",
+            patch("src.providers.sportsmonk.disponible", return_value=False),
+            patch("src.providers.thesportsdb.contexto_partido_completo",
                   return_value=ctx_tsdb_vacio),
-            patch("src.football_data_api.contexto_partido_completo",
+            patch("src.providers.football_csv.contexto_partido_completo",
                   return_value=CTX_CSV_COMPLETO) as mock_csv,
         ):
             ctx = dsm_fresco.contexto_partido_completo(
@@ -740,12 +740,12 @@ class TestDataSourceManagerSportsmonk:
         from tests.test_multi_source import CTX_API_VACIO, CTX_CSV_COMPLETO
         ctx_tsdb_vacio = {**CTX_API_VACIO, "fuente": "thesportsdb"}
         with (
-            patch("src.api_football.contexto_partido_completo",
+            patch("src.providers.api_football.contexto_partido_completo",
                   side_effect=Exception("timeout")),
-            patch("src.sportsmonk.disponible", return_value=False),
-            patch("src.thesportsdb.contexto_partido_completo",
+            patch("src.providers.sportsmonk.disponible", return_value=False),
+            patch("src.providers.thesportsdb.contexto_partido_completo",
                   return_value=ctx_tsdb_vacio),
-            patch("src.football_data_api.contexto_partido_completo",
+            patch("src.providers.football_csv.contexto_partido_completo",
                   return_value=CTX_CSV_COMPLETO),
         ):
             ctx = dsm_fresco.contexto_partido_completo(
@@ -756,11 +756,11 @@ class TestDataSourceManagerSportsmonk:
     # --- sportsmonk_disponible() en DSM ---
 
     def test_dsm_sportsmonk_disponible_false_sin_token(self, dsm_fresco):
-        with patch("src.sportsmonk.disponible", return_value=False):
+        with patch("src.providers.sportsmonk.disponible", return_value=False):
             assert dsm_fresco.sportsmonk_disponible() is False
 
     def test_dsm_sportsmonk_disponible_true_con_token(self, dsm_fresco):
-        with patch("src.sportsmonk.disponible", return_value=True):
+        with patch("src.providers.sportsmonk.disponible", return_value=True):
             assert dsm_fresco.sportsmonk_disponible() is True
 
     # --- stats incluyen contadores SM ---
@@ -773,10 +773,10 @@ class TestDataSourceManagerSportsmonk:
 
     def test_reset_stats_limpia_sm(self, dsm_fresco):
         with (
-            patch("src.api_football.contexto_partido_completo",
+            patch("src.providers.api_football.contexto_partido_completo",
                   return_value={**CTX_API_VACIO}),
-            patch("src.sportsmonk.disponible", return_value=True),
-            patch("src.sportsmonk.contexto_partido_completo",
+            patch("src.providers.sportsmonk.disponible", return_value=True),
+            patch("src.providers.sportsmonk.contexto_partido_completo",
                   return_value=CTX_SM_COMPLETO),
         ):
             dsm_fresco.contexto_partido_completo(

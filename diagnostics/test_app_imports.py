@@ -14,7 +14,7 @@ try:
 
     print("\n✓ Importando engines...")
     from src.engines.football import BettingEngine
-    from src.engines.tennis import TennisEngine
+    from src.engines.tennis_improved import TennisImprovedEngine
     from src.engines.tennis_validator import validar_entrada_tenis
     print("  Engines OK")
 

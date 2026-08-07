@@ -194,9 +194,15 @@ def chat():
     except Exception as exc:
         _log.debug("contexto_api no disponible: %s", exc)
 
+    tiene_datos_reales = bool(
+        contexto_api.get("api_disponible") and
+        (contexto_api.get("forma_home") is not None or
+         contexto_api.get("forma_away") is not None)
+    )
     factor_datos = 1.0 if contexto_api.get("api_disponible") else 0.6
 
     # Motor de fútbol
+    from src.engines.football import check_marginal_ou
     try:
         eng    = _get_football_engine()
         result = eng.pick_multileg(home, away, cuotas,
@@ -205,6 +211,10 @@ def chat():
         _log.exception("Error en pick_multileg")
         return jsonify({"error": f"Error del motor: {exc}"}), 500
 
+    lambdas  = result.get("lambdas", {"home": 0, "away": 0})
+    xg_total = lambdas["home"] + lambdas["away"]
+    margen_ou = abs(xg_total - 2.5)
+
     picks_raw = []
     for key in ("directa", "dupla", "tripleta"):
         if result.get(key):
@@ -212,19 +222,37 @@ def chat():
     for key in ("directa_alt", "dupla_alt", "tripleta_alt"):
         picks_raw.extend(p for p in (result.get(key) or []) if p)
 
-    verdes, amarillos, descartados = _clasificar_picks(
-        picks_raw, home, away, bankroll, factor_datos
-    )
+    # Filtro de zona marginal OU_2.5: descarta antes de clasificar por confianza
+    picks_validos = []
+    descartados_marginal = []
+    for raw in picks_raw:
+        motivo = check_marginal_ou(raw, xg_total, tiene_datos_reales)
+        if motivo:
+            descartados_marginal.append({
+                "tipo":    raw["tipo"].upper(),
+                "motivo":  "marginal_ou",
+                "detalle": motivo,
+            })
+        else:
+            picks_validos.append(raw)
 
-    # Coherencia (falla silenciosa)
+    verdes, amarillos, descartados = _clasificar_picks(
+        picks_validos, home, away, bankroll, factor_datos
+    )
+    descartados = descartados_marginal + descartados
+
+    # Coherencia (falla silenciosa, pero logueada)
     coherencia: dict = {}
     try:
         from src.core.coherence import evaluar_coherencia
         coherencia = evaluar_coherencia(
-            result.get("prob_1x2_final", {}), cuotas["1X2"]
+            cuotas, lambdas,
+            forma_home=contexto_api.get("forma_home"),
+            forma_away=contexto_api.get("forma_away"),
+            h2h=contexto_api.get("h2h"),
         )
-    except Exception:
-        pass
+    except Exception as exc:
+        _log.warning("evaluar_coherencia falló: %s", exc, exc_info=True)
 
     # Narrativa LLM (falla silenciosa)
     narrativa = ""
@@ -253,7 +281,14 @@ def chat():
         "mensaje":         mensaje,
         "picks_verdes":    verdes,
         "picks_amarillos": amarillos,
-        "debug_filtrado":  {"descartados": descartados},
+        "debug_filtrado":  {
+            "descartados":        descartados,
+            "xg_total":           round(xg_total, 2),
+            "margen_ou":          round(margen_ou, 2),
+            "combos_descartados": result.get("combos_bloqueados_uniforme", []),
+            "factor_datos":       factor_datos,
+            "datos_api_reales":   tiene_datos_reales,
+        },
         "contexto_api":    contexto_api,
         "narrativa":       narrativa,
         "bankroll":        bankroll,
