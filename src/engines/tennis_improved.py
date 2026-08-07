@@ -8,9 +8,13 @@ Combine:
 4. Ensemble simple (70% Elo + 30% Forma)
 """
 import logging
+import sys
+from pathlib import Path
 from typing import Dict, List, Optional
 import numpy as np
-from scipy.stats import norm
+
+sys.path.append(str(Path(__file__).resolve().parent.parent.parent))
+from src.core.probability import norm_cdf
 
 _log = logging.getLogger("betbrain.tennis_improved")
 
@@ -258,7 +262,7 @@ class TennisImprovedEngine:
                 dist = modelo["total_games"]
 
                 if "over" in tg:
-                    p_over = float(1.0 - norm.cdf(
+                    p_over = float(1.0 - norm_cdf(
                         linea, loc=dist["total_esp"], scale=dist["std_dev"]
                     ))
                     cuota = float(tg["over"])

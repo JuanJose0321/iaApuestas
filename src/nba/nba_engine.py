@@ -7,8 +7,12 @@ Diferencias con fútbol:
 - xG estadísticas → Pace, ORtg, DRtg (eficiencia)
 """
 import logging
-from scipy.stats import norm
+import sys
+from pathlib import Path
 import numpy as np
+
+sys.path.append(str(Path(__file__).resolve().parent.parent.parent))
+from src.core.probability import norm_cdf
 
 _log = logging.getLogger("betbrain.nba")
 
@@ -92,10 +96,10 @@ class NBAEngine:
         std_diff = std_dev * np.sqrt(2)
 
         # P(Home > Away) = P(diferencia > 0)
-        prob_home = norm.cdf(0, loc=spread_esp, scale=std_diff)
+        prob_home = norm_cdf(0, loc=spread_esp, scale=std_diff)
         # Nota: norm.cdf invierte, por eso es P(X < 0)
-        # Realmente queremos P(X > 0) = 1 - norm.cdf(0, loc, scale)
-        prob_home = 1 - norm.cdf(0, loc=spread_esp, scale=std_diff)
+        # Realmente queremos P(X > 0) = 1 - norm_cdf(0, loc, scale)
+        prob_home = 1 - norm_cdf(0, loc=spread_esp, scale=std_diff)
         prob_away = 1 - prob_home
 
         return {
@@ -177,7 +181,7 @@ class NBAEngine:
         std_diff = std_dev * np.sqrt(2)
 
         # P(Home - Away > Spread)
-        prob_home_covers = 1 - norm.cdf(spread, loc=diff_esp, scale=std_diff)
+        prob_home_covers = 1 - norm_cdf(spread, loc=diff_esp, scale=std_diff)
         prob_away_covers = 1 - prob_home_covers
 
         return {
@@ -206,7 +210,7 @@ class NBAEngine:
             }
         """
         # El total sigue N(total_esp, std_dev)
-        prob_over = 1 - norm.cdf(total_linea, loc=total_esp, scale=std_dev)
+        prob_over = 1 - norm_cdf(total_linea, loc=total_esp, scale=std_dev)
         prob_under = 1 - prob_over
 
         return {
