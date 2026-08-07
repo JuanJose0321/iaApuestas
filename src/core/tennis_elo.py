@@ -77,7 +77,7 @@ class TennisEloCalculator:
         loser_elo = self.get_elo(loser_name)
 
         # K-factor base
-        k = self.get_k_factor(tournament_level)
+        k: float = self.get_k_factor(tournament_level)
 
         # Ajuste por competitividad (sets jugados)
         total_sets = winner_sets + loser_sets

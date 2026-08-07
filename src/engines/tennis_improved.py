@@ -33,8 +33,8 @@ STD_GAMES = {"best_of_3": 4.5, "best_of_5": 6.0}
 class TennisImprovedEngine:
     """Motor de tenis mejorado con datos históricos."""
 
-    def __init__(self, elo_ratings: Dict[str, float] = None,
-                 form_stats: Dict[str, Dict] = None):
+    def __init__(self, elo_ratings: Optional[Dict[str, float]] = None,
+                 form_stats: Optional[Dict[str, Dict]] = None):
         """
         Inicializa el motor.
 

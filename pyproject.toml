@@ -1,3 +1,8 @@
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 norecursedirs = ["Lib", "Scripts", "Include", ".git", "diagnostics", "data", "models"]
+
+[tool.mypy]
+ignore_missing_imports = true
+check_untyped_defs = true
+exclude = ["Lib/", "Scripts/", "Include/"]

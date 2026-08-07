@@ -163,6 +163,9 @@ def cmd_train(args):
 # ── main ──────────────────────────────────────────────────────────────────────
 
 def main():
+    from config import ensure_dirs
+    ensure_dirs()
+
     parser = argparse.ArgumentParser(
         prog="betbrain",
         description="BetBrain CLI — herramienta de análisis de apuestas deportivas",

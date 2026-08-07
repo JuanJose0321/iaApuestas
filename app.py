@@ -28,7 +28,12 @@ logging.basicConfig(
 )
 _log = logging.getLogger("betbrain.app")
 
-from config import FLASK_DEBUG, FLASK_PORT, SECRET_KEY, BANKROLL_INICIAL, PROMEDIO_GOLES_LIGA
+from config import (
+    FLASK_DEBUG, FLASK_PORT, SECRET_KEY, BANKROLL_INICIAL, PROMEDIO_GOLES_LIGA,
+    ensure_dirs,
+)
+
+ensure_dirs()
 from src.core.confidence import (
     calcular_confianza, nivel_confianza, verificar_contradicciones_combo,
     UMBRAL_VERDE, UMBRAL_AMARILLO,
@@ -184,7 +189,7 @@ def chat():
     bankroll = float(cfg.get("bankroll_actual", BANKROLL_INICIAL))
     promedio = PROMEDIO_GOLES_LIGA.get(liga, PROMEDIO_GOLES_LIGA["Default"])
 
-    # Contexto API (falla silenciosa)
+    # Contexto API (falla silenciosa para el usuario, pero logueada)
     contexto_api: dict = {"api_disponible": False}
     try:
         from src.providers.manager import dsm
@@ -192,7 +197,7 @@ def chat():
         if ctx:
             contexto_api = ctx
     except Exception as exc:
-        _log.debug("contexto_api no disponible: %s", exc)
+        _log.warning("contexto_api no disponible: %s", exc, exc_info=True)
 
     tiene_datos_reales = bool(
         contexto_api.get("api_disponible") and
@@ -254,7 +259,7 @@ def chat():
     except Exception as exc:
         _log.warning("evaluar_coherencia falló: %s", exc, exc_info=True)
 
-    # Narrativa LLM (falla silenciosa)
+    # Narrativa LLM (falla silenciosa para el usuario, pero logueada)
     narrativa = ""
     todos     = verdes + amarillos
     if todos and coherencia:
@@ -266,8 +271,8 @@ def chat():
                      todos, contexto_api, coherencia)
                 or fallback_sin_llm(coherencia, todos)
             )
-        except Exception:
-            pass
+        except Exception as exc:
+            _log.warning("Narrativa LLM falló: %s", exc, exc_info=True)
 
     n       = len(verdes) + len(amarillos)
     mensaje = (

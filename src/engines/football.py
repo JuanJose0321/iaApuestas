@@ -10,6 +10,7 @@ from pathlib import Path
 from dataclasses import dataclass, asdict
 from collections import Counter
 from itertools import combinations
+from typing import Any
 
 import joblib
 import numpy as np
@@ -237,7 +238,7 @@ class BettingEngine:
         directa_candidatas.sort(key=lambda x: x["ev"], reverse=True)
         directa = directa_candidatas[0] if directa_candidatas else None
 
-        dupla_candidatas = []
+        dupla_candidatas: list[dict[str, Any]] = []
         seleccs = list(catalogo.keys())
         for i in range(len(seleccs)):
             for j in range(i + 1, len(seleccs)):
@@ -302,7 +303,7 @@ class BettingEngine:
 
         keys = list(catalogo.keys())
 
-        directa_cands = []
+        directa_cands: list[dict[str, Any]] = []
         for (m, s) in keys:
             p, c = catalogo[(m, s)]
             if not (cuota_min <= c <= cuota_max):
@@ -319,8 +320,8 @@ class BettingEngine:
             })
         directa_cands.sort(key=lambda x: x["ev"], reverse=True)
 
-        dupla_cands = []
-        combos_bloqueados_uniforme = []
+        dupla_cands: list[dict[str, Any]] = []
+        combos_bloqueados_uniforme: list[dict[str, Any]] = []
         for combo in combinations(keys, 2):
             if not son_compatibles(list(combo)):
                 continue
@@ -356,24 +357,24 @@ class BettingEngine:
             })
         dupla_cands.sort(key=lambda x: x["ev"], reverse=True)
 
-        tripleta_cands = []
-        for combo in combinations(keys, 3):
-            if not son_compatibles(list(combo)):
+        tripleta_cands: list[dict[str, Any]] = []
+        for combo3 in combinations(keys, 3):
+            if not son_compatibles(list(combo3)):
                 continue
-            uniforme, leg_unif = _es_combo_uniforme(list(combo))
+            uniforme, leg_unif = _es_combo_uniforme(list(combo3))
             if uniforme:
                 _log.warning("Combo descartado: 2+ legs son %s", leg_unif)
                 combos_bloqueados_uniforme.append({
                     "tipo": "tripleta", "motivo": "uniforme", "leg_repetido": leg_unif,
-                    "legs": [{"mercado": m, "seleccion": s} for m, s in combo],
+                    "legs": [{"mercado": m, "seleccion": s} for m, s in combo3],
                 })
                 continue
-            p_conj = prob_conjunta_n(matriz, list(combo))
+            p_conj = prob_conjunta_n(matriz, list(combo3))
             if p_conj <= 0:
                 continue
             cuota_total = 1.0
             legs = []
-            for (m, s) in combo:
+            for (m, s) in combo3:
                 p_ind, c_ind = catalogo[(m, s)]
                 cuota_total *= c_ind
                 legs.append({"mercado": m, "seleccion": s,

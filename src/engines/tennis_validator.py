@@ -30,8 +30,8 @@ def validar_entrada_tenis(data: dict) -> tuple:
 
     # Cargar Elos del formulario O desde ratings calibrados
     try:
-        elo1 = float(data.get("elo1")) if data.get("elo1") else None
-        elo2 = float(data.get("elo2")) if data.get("elo2") else None
+        elo1 = float(data.get("elo1")) if data.get("elo1") else None  # type: ignore[arg-type]
+        elo2 = float(data.get("elo2")) if data.get("elo2") else None  # type: ignore[arg-type]
     except (TypeError, ValueError):
         return (None,) * 7 + ("Elo debe ser un número",)
 
