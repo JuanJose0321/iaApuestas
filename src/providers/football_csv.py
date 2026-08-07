@@ -22,7 +22,7 @@ import sys
 from functools import lru_cache
 from pathlib import Path
 
-import pandas as pd
+import polars as pl
 
 sys.path.append(str(Path(__file__).resolve().parent.parent.parent))
 from config import RAW_DATA_DIR
@@ -33,10 +33,10 @@ _log = logging.getLogger("betbrain.football_data_api")
 # Carga y caché del DataFrame global (se carga una sola vez al importar)
 # ──────────────────────────────────────────────────────────────────────────────
 
-_df_cache: pd.DataFrame | None = None
+_df_cache: pl.DataFrame | None = None
 
 
-def _cargar_df() -> pd.DataFrame:
+def _cargar_df() -> pl.DataFrame:
     """Carga y concatena todos los CSVs de RAW_DATA_DIR. Resultado en módulo cache."""
     global _df_cache
     if _df_cache is not None:
@@ -47,26 +47,27 @@ def _cargar_df() -> pd.DataFrame:
 
     for csv in sorted(RAW_DATA_DIR.glob("*.csv")):
         try:
-            df = pd.read_csv(csv, encoding="latin-1", on_bad_lines="skip")
+            df = pl.read_csv(csv, encoding="latin-1", ignore_errors=True)
             if not all(c in df.columns for c in requeridas):
                 continue
             liga_val = csv.stem.split("_")[0]
-            subset = df[requeridas].copy()
-            subset["_liga"] = liga_val
+            subset = df.select(requeridas).with_columns(pl.lit(liga_val).alias("_liga"))
             frames.append(subset)
         except Exception as exc:
             _log.warning("CSV %s no se pudo cargar: %s", csv.name, exc)
 
     if not frames:
         _log.error("No hay CSVs en %s. Ejecuta: python src/data_loader.py", RAW_DATA_DIR)
-        _df_cache = pd.DataFrame(columns=requeridas + ["_liga"])
+        _df_cache = pl.DataFrame(schema={c: pl.Utf8 for c in requeridas + ["_liga"]})
         return _df_cache
 
-    df = pd.concat(frames, ignore_index=True)
-    df["Date"] = pd.to_datetime(df["Date"], dayfirst=True, errors="coerce")
-    df = df.dropna(subset=requeridas).sort_values("Date").reset_index(drop=True)
-    df["FTHG"] = df["FTHG"].astype(int)
-    df["FTAG"] = df["FTAG"].astype(int)
+    df = pl.concat(frames, how="vertical_relaxed")
+    df = df.with_columns(pl.col("Date").str.strptime(pl.Date, "%d/%m/%Y", strict=False))
+    df = df.drop_nulls(subset=requeridas).sort("Date")
+    df = df.with_columns([
+        pl.col("FTHG").cast(pl.Int64),
+        pl.col("FTAG").cast(pl.Int64),
+    ])
 
     _df_cache = df
     _log.info("CSV provider: %d partidos cargados de %d archivos", len(df), len(frames))
@@ -98,7 +99,7 @@ def _normalizar(name: str) -> str:
 @lru_cache(maxsize=256)
 def _todos_los_equipos() -> list[str]:
     df = _cargar_df()
-    equipos = set(df["HomeTeam"].dropna().tolist()) | set(df["AwayTeam"].dropna().tolist())
+    equipos = set(df["HomeTeam"].drop_nulls().to_list()) | set(df["AwayTeam"].drop_nulls().to_list())
     return sorted(equipos)
 
 
@@ -156,7 +157,7 @@ def get_team_form_csv(team_name: str, last: int = 5) -> dict | None:
       {partidos, W, D, L, gf_promedio, gc_promedio, btts_rate, over_25_rate, secuencia}
     """
     df = _cargar_df()
-    if df.empty:
+    if df.is_empty():
         return None
 
     nombre_csv = buscar_nombre_equipo(team_name)
@@ -164,17 +165,20 @@ def get_team_form_csv(team_name: str, last: int = 5) -> dict | None:
         _log.debug("CSV: equipo '%s' no encontrado", team_name)
         return None
 
-    mask = (df["HomeTeam"] == nombre_csv) | (df["AwayTeam"] == nombre_csv)
-    partidos = df[mask].sort_values("Date", ascending=False).head(last)
+    partidos = (
+        df.filter((pl.col("HomeTeam") == nombre_csv) | (pl.col("AwayTeam") == nombre_csv))
+          .sort("Date", descending=True)
+          .head(last)
+    )
 
-    if partidos.empty:
+    if partidos.is_empty():
         return None
 
     w = d = l = 0
     gf = gc = btts_yes = over_25 = 0
     seq = []
 
-    for _, row in partidos.iterrows():
+    for row in partidos.iter_rows(named=True):
         es_local = row["HomeTeam"] == nombre_csv
         propios = int(row["FTHG"]) if es_local else int(row["FTAG"])
         ajenos  = int(row["FTAG"]) if es_local else int(row["FTHG"])
@@ -216,7 +220,7 @@ def get_h2h_csv(home: str, away: str, last: int = 10) -> dict | None:
        wins_local_actual, empates, wins_visit_actual}
     """
     df = _cargar_df()
-    if df.empty:
+    if df.is_empty():
         return None
 
     nombre_h = buscar_nombre_equipo(home)
@@ -226,19 +230,22 @@ def get_h2h_csv(home: str, away: str, last: int = 10) -> dict | None:
         _log.debug("CSV H2H: no encontrado home='%s' away='%s'", home, away)
         return None
 
-    mask = (
-        ((df["HomeTeam"] == nombre_h) & (df["AwayTeam"] == nombre_a)) |
-        ((df["HomeTeam"] == nombre_a) & (df["AwayTeam"] == nombre_h))
+    enfrentamientos = (
+        df.filter(
+            ((pl.col("HomeTeam") == nombre_h) & (pl.col("AwayTeam") == nombre_a)) |
+            ((pl.col("HomeTeam") == nombre_a) & (pl.col("AwayTeam") == nombre_h))
+        )
+        .sort("Date", descending=True)
+        .head(last)
     )
-    enfrentamientos = df[mask].sort_values("Date", ascending=False).head(last)
 
-    if enfrentamientos.empty:
+    if enfrentamientos.is_empty():
         return None
 
     total = gh_sum = ga_sum = btts = over25 = 0
     w_h = w_a = empates = 0
 
-    for _, row in enfrentamientos.iterrows():
+    for row in enfrentamientos.iter_rows(named=True):
         gh, ga = int(row["FTHG"]), int(row["FTAG"])
         # Normalizar perspectiva: home es siempre nombre_h
         if row["HomeTeam"] == nombre_h:
@@ -285,9 +292,9 @@ def contexto_partido_completo(home: str, away: str) -> dict:
     """
     df = _cargar_df()
     notas: list[str] = []
-    api_disponible = not df.empty
+    api_disponible = not df.is_empty()
 
-    if df.empty:
+    if df.is_empty():
         notas.append("CSV provider: no hay archivos en data/raw/. Ejecuta data_loader.py")
         return {
             "api_disponible": False,
@@ -342,15 +349,15 @@ def contexto_partido_completo(home: str, away: str) -> dict:
 def info_cobertura() -> dict:
     """Devuelve estadísticas de los CSVs cargados (útil para debug)."""
     df = _cargar_df()
-    if df.empty:
+    if df.is_empty():
         return {"partidos": 0, "equipos": 0, "ligas": [], "rango_fechas": None}
     return {
         "partidos": len(df),
         "equipos":  len(_todos_los_equipos()),
-        "ligas":    sorted(df["_liga"].unique().tolist()),
+        "ligas":    sorted(df["_liga"].unique().to_list()),
         "rango_fechas": {
-            "desde": df["Date"].min().date().isoformat(),
-            "hasta": df["Date"].max().date().isoformat(),
+            "desde": df["Date"].min().isoformat(),
+            "hasta": df["Date"].max().isoformat(),
         },
     }
 

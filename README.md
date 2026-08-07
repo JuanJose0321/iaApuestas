@@ -32,8 +32,15 @@ Requiere Python 3.14 (ver `pyvenv.cfg`).
 
 ```bash
 pip install -r requirements.txt          # producción
-pip install -r requirements-dev.txt      # + pytest, mypy, vulture, pre-commit
+pip install --no-deps xgboost==3.2.0     # aparte, para no arrastrar scipy (ver "Despliegue en Vercel")
+pip install -r requirements-dev.txt      # dev local/CI: ya incluye xgboost normal, + pytest/mypy/vulture/pre-commit
 ```
+
+`requirements.txt` ya no incluye `xgboost` directamente — se instala aparte con
+`--no-deps` para no arrastrar `scipy` (135MB) como dependencia transitiva
+innecesaria (el motor de fútbol usa la API nativa de XGBoost, sin
+`scikit-learn`/`scipy`). `requirements-dev.txt` ya se encarga de esto por vos
+si vas a correr tests o development local.
 
 Copia `.env.example` a `.env` y rellena tus claves (todas opcionales excepto
 `SECRET_KEY`, que puede generarse con
@@ -74,12 +81,25 @@ Pasos:
    nunca commiteado) y las que uses de fútbol/tenis (`GROQ_API_KEY`, etc.).
 4. Deploy.
 
-**Riesgos conocidos de esta ruta**: el bundle incluye `xgboost` +
-`scikit-learn` + `pandas` + `numpy` (pesados) — cerca del límite de 500MB
-del plan gratuito, revisa el log de build si falla por tamaño. El plan
-Hobby limita cada función a 10s por defecto (`vercel.json` pide 30s vía
-`maxDuration`, pero el techo real depende del plan) — `/chat` encadena
-llamadas a APIs externas y puede tardar más que eso en el peor caso.
+### Tamaño del bundle
+
+El motor de fútbol usa `polars` (no `pandas`) y la API nativa de XGBoost con
+calibración isotónica propia (`src/core/calibration.py`, sin `scikit-learn`/
+`scipy` — ver ese archivo para el porqué). `vercel.json` instala `xgboost`
+aparte con `--no-deps` para que `pip` no reinstale `scipy` como dependencia
+transitiva declarada (135MB que el código no usa en absoluto).
+
+Aun con esto, `xgboost` (140MB) sigue siendo pesado — es el motor de
+predicción, no hay forma de sacarlo sin perder el ensemble ML. Si el build
+en Vercel sigue fallando por tamaño, las opciones que quedan son: reducir el
+motor a solo-Poisson para el despliegue serverless (el código ya soporta
+ese fallback), o usar el despliegue tradicional (`wsgi.py` + waitress, más
+arriba) en un host sin límite de bundle — no tiene esta restricción porque
+no es un modelo serverless.
+
+El plan Hobby de Vercel limita cada función a 10s por defecto (`vercel.json`
+pide 30s vía `maxDuration`, pero el techo real depende del plan) — `/chat`
+encadena llamadas a APIs externas y puede tardar más que eso en el peor caso.
 
 ## Tests
 

@@ -2,7 +2,7 @@
 Descarga de datos históricos de fútbol desde football-data.co.uk
 Soporta múltiples ligas y temporadas.
 """
-import pandas as pd
+import polars as pl
 import requests
 from pathlib import Path
 import sys
@@ -48,7 +48,7 @@ def descargar_todo(ligas=None, temporadas=None) -> list[Path]:
     return paths
 
 
-def cargar_todo() -> pd.DataFrame:
+def cargar_todo() -> pl.DataFrame:
     """
     Carga y concatena todos los CSV descargados en RAW_DATA_DIR.
     Normaliza fechas y conserva solo columnas útiles.
@@ -56,31 +56,33 @@ def cargar_todo() -> pd.DataFrame:
     frames = []
     for csv in sorted(RAW_DATA_DIR.glob("*.csv")):
         try:
-            df = pd.read_csv(csv, encoding="latin-1", on_bad_lines="skip")
+            df = pl.read_csv(csv, encoding="latin-1", ignore_errors=True)
             liga_val, temp_val = csv.stem.split("_")[0], csv.stem.split("_")[1]
-            meta = pd.DataFrame(
-                {"Liga": liga_val, "Temporada": temp_val}, index=df.index
-            )
-            frames.append(pd.concat([df, meta], axis=1))
+            frames.append(df.with_columns([
+                pl.lit(liga_val).alias("Liga"),
+                pl.lit(temp_val).alias("Temporada"),
+            ]))
         except Exception as e:
             print(f"⚠️ {csv.name}: {e}")
 
     if not frames:
         raise FileNotFoundError(f"No hay CSVs en {RAW_DATA_DIR}. Corre descargar_todo() primero.")
 
-    df = pd.concat(frames, ignore_index=True)
-    df["Date"] = pd.to_datetime(df["Date"], dayfirst=True, errors="coerce")
+    df = pl.concat(frames, how="diagonal_relaxed")
+    df = df.with_columns(
+        pl.col("Date").str.strptime(pl.Date, "%d/%m/%Y", strict=False)
+    )
     # Columnas mínimas requeridas
     requeridas = ["Date", "HomeTeam", "AwayTeam", "FTHG", "FTAG", "FTR",
                   "B365H", "B365D", "B365A"]
-    df = df.dropna(subset=requeridas)
-    return df.sort_values("Date").reset_index(drop=True)
+    df = df.drop_nulls(subset=requeridas)
+    return df.sort("Date")
 
 
 if __name__ == "__main__":
     descargar_todo()
     df = cargar_todo()
     print(f"\n📊 Total partidos cargados: {len(df)}")
-    print(f"   Ligas: {df['Liga'].unique().tolist()}")
-    print(f"   Temporadas: {sorted(df['Temporada'].unique().tolist())}")
-    print(f"   Rango fechas: {df['Date'].min().date()} → {df['Date'].max().date()}")
+    print(f"   Ligas: {df['Liga'].unique().to_list()}")
+    print(f"   Temporadas: {sorted(df['Temporada'].unique().to_list())}")
+    print(f"   Rango fechas: {df['Date'].min()} → {df['Date'].max()}")

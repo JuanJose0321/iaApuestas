@@ -10,7 +10,7 @@ from pathlib import Path
 
 import joblib
 import numpy as np
-import pandas as pd
+import xgboost as xgb
 
 sys.path.append(str(Path(__file__).resolve().parent.parent.parent))
 from config import CALIBRATOR_PATH, BANKROLL_INICIAL, MIN_EV, KELLY_FRACTION
@@ -25,14 +25,15 @@ def backtest(metodo: str = "kelly_frac",
     if not CALIBRATOR_PATH.exists():
         raise FileNotFoundError(f"Falta {CALIBRATOR_PATH}. Corre: python src/core/model.py")
 
-    cal = joblib.load(CALIBRATOR_PATH)
+    booster = joblib.load(CALIBRATOR_PATH)
     df = preparar_dataset()
     _, test = split_temporal(df, test_frac=0.2)
-    test = test.sort_values("Date").reset_index(drop=True)
+    test = test.sort("Date")
 
-    probs = cal.predict_proba(test[FEATURES])
-    cuotas = test[["B365H", "B365D", "B365A"]].to_numpy()
-    resultados_reales = test["FTR"].map(MAPPING).to_numpy()
+    dtest = xgb.DMatrix(test.select(FEATURES).to_numpy())
+    probs = booster.predict(dtest)
+    cuotas = test.select(["B365H", "B365D", "B365A"]).to_numpy()
+    resultados_reales = np.array([MAPPING[v] for v in test["FTR"].to_list()])
 
     bankroll = bankroll_inicial
     curva = [bankroll]

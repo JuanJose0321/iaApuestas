@@ -14,7 +14,8 @@ from typing import Any
 
 import joblib
 import numpy as np
-import pandas as pd
+import polars as pl
+import xgboost as xgb
 
 _log = logging.getLogger("betbrain.engine")
 
@@ -94,14 +95,15 @@ def _kelly_fraction(p: float, cuota: float, fraction: float = KELLY_FRACTION) ->
     return max(0.0, f_full * fraction)
 
 
-def _ultimo_estado_equipo(df_stats: pd.DataFrame, equipo: str) -> dict | None:
+def _ultimo_estado_equipo(df_stats: pl.DataFrame, equipo: str) -> dict | None:
     """Forma reciente (últimos 5) del equipo en su partido más reciente del histórico."""
-    mask_h = df_stats["HomeTeam"] == equipo
-    mask_a = df_stats["AwayTeam"] == equipo
-    partidos = df_stats[mask_h | mask_a].sort_values("Date")
-    if partidos.empty:
+    partidos = (
+        df_stats.filter((pl.col("HomeTeam") == equipo) | (pl.col("AwayTeam") == equipo))
+                .sort("Date")
+    )
+    if partidos.is_empty():
         return None
-    row = partidos.iloc[-1]
+    row = partidos.row(-1, named=True)
     if row["HomeTeam"] == equipo:
         return {"form": row["Home_Form_5"], "gf": row["Home_GF_5"], "gc": row["Home_GC_5"]}
     return {"form": row["Away_Form_5"], "gf": row["Away_GF_5"], "gc": row["Away_GC_5"]}
@@ -136,13 +138,14 @@ class BettingEngine:
         a = _ultimo_estado_equipo(self.df_stats, away)
         if h is None or a is None:
             return None
-        X = pd.DataFrame([{
+        valores = {
             "Home_Form_5": h["form"], "Away_Form_5": a["form"],
             "Home_GF_5": h["gf"], "Away_GF_5": a["gf"],
             "Home_GC_5": h["gc"], "Away_GC_5": a["gc"],
             "B365H": cuota_h, "B365D": cuota_d, "B365A": cuota_a,
-        }])[FEATURES]
-        probs = self.calibrator.predict_proba(X)[0]
+        }
+        X = np.array([[valores[f] for f in FEATURES]], dtype=np.float64)
+        probs = self.calibrator.predict(xgb.DMatrix(X))[0]
         return {"1": float(probs[0]), "X": float(probs[1]), "2": float(probs[2])}
 
     def prob_poisson(self, cuota_h: float, cuota_d: float, cuota_a: float,

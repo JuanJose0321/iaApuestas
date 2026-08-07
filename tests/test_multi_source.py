@@ -19,6 +19,7 @@ Ejecutar:
 import threading
 from unittest.mock import MagicMock, patch
 
+import polars as pl
 import pytest
 
 # ──────────────────────────────────────────────────────────────────────────────
@@ -106,7 +107,7 @@ class TestCSVProvider:
         """Con CSVs reales cargados, Real Madrid debería encontrarse."""
         from src.providers.football_csv import buscar_nombre_equipo, _cargar_df
         df = _cargar_df()
-        if df.empty:
+        if df.is_empty():
             pytest.skip("CSVs no descargados — ejecuta data_loader.py")
         resultado = buscar_nombre_equipo("Real Madrid")
         assert resultado is not None
@@ -121,10 +122,10 @@ class TestCSVProvider:
         """Verifica que el schema de forma coincide con el esperado por el engine."""
         from src.providers.football_csv import _cargar_df, get_team_form_csv
         df = _cargar_df()
-        if df.empty:
+        if df.is_empty():
             pytest.skip("CSVs no disponibles")
         # Busca el primer equipo que tenga partidos
-        equipos = df["HomeTeam"].dropna().unique()[:5]
+        equipos = df["HomeTeam"].drop_nulls().unique().to_list()[:5]
         for equipo in equipos:
             forma = get_team_form_csv(equipo, last=5)
             if forma:
@@ -142,11 +143,11 @@ class TestCSVProvider:
     def test_h2h_csv_schema_correcto(self):
         from src.providers.football_csv import _cargar_df, get_h2h_csv
         df = _cargar_df()
-        if df.empty:
+        if df.is_empty():
             pytest.skip("CSVs no disponibles")
         # Busca un par con enfrentamientos reales
-        grupos = df.groupby(["HomeTeam", "AwayTeam"]).size()
-        pares = [(h, a) for (h, a), n in grupos.items() if n >= 2]
+        grupos = df.group_by(["HomeTeam", "AwayTeam"]).agg(pl.len().alias("n"))
+        pares = [(row["HomeTeam"], row["AwayTeam"]) for row in grupos.iter_rows(named=True) if row["n"] >= 2]
         if not pares:
             pytest.skip("Sin enfrentamientos repetidos en el CSV")
         home, away = pares[0]
@@ -163,7 +164,7 @@ class TestCSVProvider:
     def test_contexto_completo_schema(self):
         from src.providers.football_csv import _cargar_df, contexto_partido_completo
         df = _cargar_df()
-        if df.empty:
+        if df.is_empty():
             pytest.skip("CSVs no disponibles")
         ctx = contexto_partido_completo("Real Madrid", "Barcelona")
         assert "api_disponible" in ctx
@@ -201,7 +202,7 @@ class TestDataSourceManager:
 
     def test_fuente_csv_retorna_schema(self, dsm_fresco):
         from src.providers.football_csv import _cargar_df
-        if _cargar_df().empty:
+        if _cargar_df().is_empty():
             pytest.skip("CSVs no disponibles")
         ctx = dsm_fresco.contexto_partido_completo(
             "Real Madrid", "Barcelona", fuente="football-data"

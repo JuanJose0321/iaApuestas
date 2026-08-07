@@ -3,94 +3,95 @@ Feature engineering para fútbol.
 Calcula rachas (forma) y promedios de goles anotados/recibidos por equipo,
 correctamente separando local y visitante sin data-leakage.
 """
-import pandas as pd
-import numpy as np
+import polars as pl
 
 
-def _stats_por_equipo(df: pd.DataFrame, window: int = 5) -> pd.DataFrame:
+def _stats_por_equipo(df: pl.DataFrame, window: int = 5) -> pl.DataFrame:
     """
     Construye una tabla larga (una fila por equipo-partido) con puntos y goles,
     calcula rolling means SHIFTADAS (sin el partido actual) y devuelve el dataframe.
     """
-    df = df.sort_values("Date").reset_index(drop=True)
+    df = df.sort("Date").with_row_index("match_idx")
 
-    # Construir dos DataFrames (uno por cada "lado") y concatenar
-    home = pd.DataFrame({
-        "match_idx": df.index,
-        "Date": df["Date"],
-        "team": df["HomeTeam"],
-        "rival": df["AwayTeam"],
-        "is_home": 1,
-        "goles_a_favor": df["FTHG"],
-        "goles_en_contra": df["FTAG"],
-        "pts": df["FTR"].map({"H": 3, "D": 1, "A": 0}),
-    })
-    away = pd.DataFrame({
-        "match_idx": df.index,
-        "Date": df["Date"],
-        "team": df["AwayTeam"],
-        "rival": df["HomeTeam"],
-        "is_home": 0,
-        "goles_a_favor": df["FTAG"],
-        "goles_en_contra": df["FTHG"],
-        "pts": df["FTR"].map({"A": 3, "D": 1, "H": 0}),
-    })
-    largo = pd.concat([home, away], ignore_index=True).sort_values(["team", "Date"])
+    pts_home = (
+        pl.when(pl.col("FTR") == "H").then(3)
+        .when(pl.col("FTR") == "D").then(1)
+        .otherwise(0)
+    )
+    pts_away = (
+        pl.when(pl.col("FTR") == "A").then(3)
+        .when(pl.col("FTR") == "D").then(1)
+        .otherwise(0)
+    )
+
+    home = df.select(
+        pl.col("match_idx"), pl.col("Date"),
+        pl.col("HomeTeam").alias("team"), pl.col("AwayTeam").alias("rival"),
+        pl.lit(1).alias("is_home"),
+        pl.col("FTHG").alias("goles_a_favor"), pl.col("FTAG").alias("goles_en_contra"),
+        pts_home.alias("pts"),
+    )
+    away = df.select(
+        pl.col("match_idx"), pl.col("Date"),
+        pl.col("AwayTeam").alias("team"), pl.col("HomeTeam").alias("rival"),
+        pl.lit(0).alias("is_home"),
+        pl.col("FTAG").alias("goles_a_favor"), pl.col("FTHG").alias("goles_en_contra"),
+        pts_away.alias("pts"),
+    )
+    largo = pl.concat([home, away]).sort(["team", "Date"])
 
     # Rolling por equipo, SHIFT(1) para no ver el partido actual
-    g = largo.groupby("team", group_keys=False)
-    largo[f"form_{window}"] = g["pts"].apply(lambda s: s.shift(1).rolling(window).mean())
-    largo[f"gf_{window}"] = g["goles_a_favor"].apply(lambda s: s.shift(1).rolling(window).mean())
-    largo[f"gc_{window}"] = g["goles_en_contra"].apply(lambda s: s.shift(1).rolling(window).mean())
+    largo = largo.with_columns([
+        pl.col("pts").cast(pl.Float64).shift(1)
+          .rolling_mean(window_size=window).over("team").alias(f"form_{window}"),
+        pl.col("goles_a_favor").cast(pl.Float64).shift(1)
+          .rolling_mean(window_size=window).over("team").alias(f"gf_{window}"),
+        pl.col("goles_en_contra").cast(pl.Float64).shift(1)
+          .rolling_mean(window_size=window).over("team").alias(f"gc_{window}"),
+    ])
 
     return largo
 
 
-def calculate_rolling_stats(df: pd.DataFrame, window: int = 5) -> pd.DataFrame:
+def calculate_rolling_stats(df: pl.DataFrame, window: int = 5) -> pl.DataFrame:
     """
     Añade al dataframe original las columnas de forma y goles rolling
     para equipo local y visitante. Elimina filas sin historial suficiente.
     """
-    largo = _stats_por_equipo(df, window=window)
+    df = df.sort("Date").with_row_index("match_idx")
+    largo = _stats_por_equipo(df.drop("match_idx"), window=window)
 
-    # Pivotar de vuelta: una fila por partido con columnas de home y away
-    home_stats = (
-        largo[largo["is_home"] == 1]
-        .set_index("match_idx")[[f"form_{window}", f"gf_{window}", f"gc_{window}"]]
-        .rename(columns={
-            f"form_{window}": f"Home_Form_{window}",
-            f"gf_{window}": f"Home_GF_{window}",
-            f"gc_{window}": f"Home_GC_{window}",
-        })
+    home_stats = largo.filter(pl.col("is_home") == 1).select(
+        "match_idx",
+        pl.col(f"form_{window}").alias(f"Home_Form_{window}"),
+        pl.col(f"gf_{window}").alias(f"Home_GF_{window}"),
+        pl.col(f"gc_{window}").alias(f"Home_GC_{window}"),
     )
-    away_stats = (
-        largo[largo["is_home"] == 0]
-        .set_index("match_idx")[[f"form_{window}", f"gf_{window}", f"gc_{window}"]]
-        .rename(columns={
-            f"form_{window}": f"Away_Form_{window}",
-            f"gf_{window}": f"Away_GF_{window}",
-            f"gc_{window}": f"Away_GC_{window}",
-        })
+    away_stats = largo.filter(pl.col("is_home") == 0).select(
+        "match_idx",
+        pl.col(f"form_{window}").alias(f"Away_Form_{window}"),
+        pl.col(f"gf_{window}").alias(f"Away_GF_{window}"),
+        pl.col(f"gc_{window}").alias(f"Away_GC_{window}"),
     )
 
-    out = df.copy().sort_values("Date").reset_index(drop=True)
-    out = out.join(home_stats).join(away_stats)
-    return out.dropna(subset=[
+    out = df.join(home_stats, on="match_idx", how="left").join(away_stats, on="match_idx", how="left")
+    out = out.drop_nulls(subset=[
         f"Home_Form_{window}", f"Away_Form_{window}",
         f"Home_GF_{window}", f"Away_GF_{window}",
-    ]).reset_index(drop=True)
+    ])
+    return out.drop("match_idx")
 
 
 if __name__ == "__main__":
     import os
     path = "data/raw/SP1_2425.csv"
     if os.path.exists(path):
-        data = pd.read_csv(path)
-        data["Date"] = pd.to_datetime(data["Date"], dayfirst=True)
+        data = pl.read_csv(path, encoding="latin-1", ignore_errors=True)
+        data = data.with_columns(pl.col("Date").str.strptime(pl.Date, "%d/%m/%Y"))
         out = calculate_rolling_stats(data)
         print(f"✅ Partidos con features: {len(out)}")
-        print(out[["Date", "HomeTeam", "AwayTeam",
-                   "Home_Form_5", "Away_Form_5",
-                   "Home_GF_5", "Away_GF_5"]].tail())
+        print(out.select(["Date", "HomeTeam", "AwayTeam",
+                          "Home_Form_5", "Away_Form_5",
+                          "Home_GF_5", "Away_GF_5"]).tail())
     else:
-        print("❌ Corre primero: python src/data_loader.py")
+        print("❌ Corre primero: python src/providers/loader.py")
