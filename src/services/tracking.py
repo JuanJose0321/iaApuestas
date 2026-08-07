@@ -11,6 +11,7 @@ importar de dónde vinieron las filas.
 """
 import csv
 import json
+import logging
 import shutil
 import sys
 from datetime import datetime
@@ -19,6 +20,8 @@ from pathlib import Path
 sys.path.append(str(Path(__file__).resolve().parent.parent.parent))
 
 from src.services import supabase_client as _sb
+
+_log = logging.getLogger("betbrain.tracking")
 
 ROOT     = Path(__file__).resolve().parent.parent
 DATA_DIR = ROOT / "data"
@@ -64,13 +67,22 @@ _CONFIG_DEFAULT = {
 
 
 def leer_config() -> dict:
-    """Config de bankroll (Supabase si está configurado, si no bankroll_config.json)."""
+    """Config de bankroll (Supabase si está configurado, si no bankroll_config.json).
+
+    Un fallo de Supabase (tabla faltante, red, etc.) degrada a los valores
+    por defecto en memoria en vez de tumbar la ruta que la llame — /  llama
+    esto en cada request, así que un error acá no puede ser fatal.
+    """
     if _sb.disponible():
-        cfg = _sb.leer_config()
-        if cfg is None:
-            _sb.guardar_config(_CONFIG_DEFAULT)
+        try:
+            cfg = _sb.leer_config()
+            if cfg is None:
+                _sb.guardar_config(_CONFIG_DEFAULT)
+                return dict(_CONFIG_DEFAULT)
+            return cfg
+        except Exception as exc:
+            _log.error("Supabase leer_config falló, uso default en memoria: %s", exc, exc_info=True)
             return dict(_CONFIG_DEFAULT)
-        return cfg
 
     if not CONFIG_PATH.exists():
         guardar_config(dict(_CONFIG_DEFAULT))
@@ -83,7 +95,10 @@ def leer_config() -> dict:
 
 def guardar_config(cfg: dict):
     if _sb.disponible():
-        _sb.guardar_config(cfg)
+        try:
+            _sb.guardar_config(cfg)
+        except Exception as exc:
+            _log.error("Supabase guardar_config falló (bankroll no persistido): %s", exc, exc_info=True)
         return
     CONFIG_PATH.parent.mkdir(parents=True, exist_ok=True)
     CONFIG_PATH.write_text(
@@ -94,7 +109,11 @@ def guardar_config(cfg: dict):
 def leer_historial(csv_path: Path | None = None) -> list[dict]:
     """Lee todas las apuestas (Supabase si está configurado y no se fuerza csv_path)."""
     if csv_path is None and _sb.disponible():
-        return _sb.leer_apuestas()
+        try:
+            return _sb.leer_apuestas()
+        except Exception as exc:
+            _log.error("Supabase leer_apuestas falló, devuelvo historial vacío: %s", exc, exc_info=True)
+            return []
 
     path = csv_path or CSV_PATH
     _init()
