@@ -89,11 +89,20 @@ calibración isotónica propia (`src/core/calibration.py`, sin `scikit-learn`/
 aparte con `--no-deps` para que `pip` no reinstale `scipy` como dependencia
 transitiva declarada (135MB que el código no usa en absoluto).
 
-Aun con esto, `xgboost` (140MB) sigue siendo pesado — es el motor de
-predicción, no hay forma de sacarlo sin perder el ensemble ML. Si el build
-en Vercel sigue fallando por tamaño, las opciones que quedan son: reducir el
-motor a solo-Poisson para el despliegue serverless (el código ya soporta
-ese fallback), o usar el despliegue tradicional (`wsgi.py` + waitress, más
+`requirements.txt` usa `polars-lts-cpu`, no `polars` a secas: el paquete
+`polars` normal viene partido en dos (`polars` + `polars-runtime-32`, este
+último con el binario nativo de Rust) y ese runtime solo pesaba ~176MB en
+mediciones reales — más que `pandas`, `scikit-learn` y `scipy` juntos.
+`polars-lts-cpu` es un solo wheel autocontenido, sin la optimización AVX2
+que no necesitamos para el volumen de datos de este proyecto (miles de
+filas de CSV). Medido en un venv limpio (mismo proceso que usa
+`vercel.json`): 426.7MB → 378.3MB.
+
+`xgboost` (140MB) sigue siendo lo más pesado — es el motor de predicción,
+no hay forma de sacarlo sin perder el ensemble ML. Si el build en Vercel
+vuelve a fallar por tamaño, las opciones que quedan son: reducir el motor a
+solo-Poisson para el despliegue serverless (el código ya soporta ese
+fallback), o usar el despliegue tradicional (`wsgi.py` + waitress, más
 arriba) en un host sin límite de bundle — no tiene esta restricción porque
 no es un modelo serverless.
 

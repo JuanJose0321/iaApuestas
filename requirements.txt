@@ -5,6 +5,10 @@ supabase==2.31.0
 groq==1.0.0
 python-dotenv==1.2.2
 requests==2.32.5
-polars==1.43.2
+# polars-lts-cpu (no "polars" a secas): mismo paquete/API, pero un solo
+# binario sin runtime-selection (evita el split polars+polars-runtime-32,
+# que en Vercel pesaba ~176MB extra). Sin AVX2 — irrelevante para el
+# volumen de datos de este proyecto (miles de filas de CSV, no big data).
+polars-lts-cpu==1.33.1
 numpy==2.4.2
 joblib==1.5.3
