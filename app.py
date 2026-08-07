@@ -230,14 +230,14 @@ def chat():
     factor_datos = 1.0 if contexto_api.get("api_disponible") else 0.6
 
     # Motor de fútbol
-    from src.engines.football import check_marginal_ou
     try:
+        from src.engines.football import check_marginal_ou
         eng    = _get_football_engine()
         result = eng.pick_multileg(home, away, cuotas,
                                    promedio_goles_liga=promedio)
     except Exception as exc:
         _log.exception("Error en pick_multileg")
-        return jsonify({"error": f"Error del motor: {exc}"}), 500
+        return jsonify({"error": f"Error del motor: {type(exc).__name__}: {exc}"}), 500
 
     lambdas  = result.get("lambdas", {"home": 0, "away": 0})
     xg_total = lambdas["home"] + lambdas["away"]
