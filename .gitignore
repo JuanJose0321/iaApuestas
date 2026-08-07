@@ -1,6 +1,6 @@
-Lib/
-Scripts/
-Include/
+/Lib/
+/Scripts/
+/Include/
 venv/
 .env
 .env.local

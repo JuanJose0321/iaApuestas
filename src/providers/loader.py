@@ -22,14 +22,19 @@ def descargar_temporada(liga: str, temporada: str) -> Path | None:
     url = f"{BASE_URL}{temporada}/{liga}.csv"
     destino = RAW_DATA_DIR / f"{liga}_{temporada}.csv"
     try:
-        r = requests.get(url, timeout=15)
+        # allow_redirects=False: football-data.co.uk devuelve 301 hacia un
+        # archivo de OTRA liga cuando la temporada/liga pedida no existe
+        # todavía (confirmado: 2627/SP1.csv -> redirige a 2627/SC1.csv,
+        # Scottish Premiership). Seguir el redirect guardaría datos de la
+        # liga equivocada bajo el nombre de archivo de la liga pedida.
+        r = requests.get(url, timeout=15, allow_redirects=False)
         if r.status_code == 200 and len(r.content) > 100:
             destino.write_bytes(r.content)
-            print(f"  ✅ {liga} {temporada} → {destino.name} ({len(r.content) // 1024} KB)")
+            print(f"  OK {liga} {temporada} -> {destino.name} ({len(r.content) // 1024} KB)")
             return destino
-        print(f"  ❌ {liga} {temporada}: HTTP {r.status_code}")
+        print(f"  FAIL {liga} {temporada}: HTTP {r.status_code}")
     except Exception as e:
-        print(f"  ❌ {liga} {temporada}: {e}")
+        print(f"  FAIL {liga} {temporada}: {e}")
     return None
 
 
@@ -37,14 +42,14 @@ def descargar_todo(ligas=None, temporadas=None) -> list[Path]:
     """Descarga todas las combinaciones liga x temporada configuradas."""
     ligas = ligas or LIGAS
     temporadas = temporadas or TEMPORADAS
-    print(f"🚀 Descargando {len(ligas)} ligas × {len(temporadas)} temporadas...")
+    print(f"Descargando {len(ligas)} ligas x {len(temporadas)} temporadas...")
     paths = []
     for liga in ligas:
         for t in temporadas:
             p = descargar_temporada(liga, t)
             if p:
                 paths.append(p)
-    print(f"✅ Total descargado: {len(paths)} archivos")
+    print(f"Total descargado: {len(paths)} archivos")
     return paths
 
 
@@ -82,7 +87,7 @@ def cargar_todo() -> pl.DataFrame:
 if __name__ == "__main__":
     descargar_todo()
     df = cargar_todo()
-    print(f"\n📊 Total partidos cargados: {len(df)}")
+    print(f"\nTotal partidos cargados: {len(df)}")
     print(f"   Ligas: {df['Liga'].unique().to_list()}")
     print(f"   Temporadas: {sorted(df['Temporada'].unique().to_list())}")
-    print(f"   Rango fechas: {df['Date'].min()} → {df['Date'].max()}")
+    print(f"   Rango fechas: {df['Date'].min()} -> {df['Date'].max()}")
