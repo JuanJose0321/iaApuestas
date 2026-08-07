@@ -20,16 +20,17 @@ RAW_DATA_DIR = DATA_DIR / "raw"
 MODELS_DIR = ROOT_DIR / "models"
 NBA_DIR = ROOT_DIR / "nba"
 CACHE_DIR = ROOT_DIR / "data" / "api_cache"
+LOGS_DIR = ROOT_DIR / "logs"
 
 
 def ensure_dirs() -> None:
-    """Crea los directorios de datos/modelos/caché si no existen.
+    """Crea los directorios de datos/modelos/caché/logs si no existen.
 
     No se llama al importar el módulo (evita efectos secundarios en tests
     y entornos de solo lectura) — se invoca explícitamente en el arranque
     de app.py / src/cli.py.
     """
-    for d in (RAW_DATA_DIR, MODELS_DIR, NBA_DIR, CACHE_DIR):
+    for d in (RAW_DATA_DIR, MODELS_DIR, NBA_DIR, CACHE_DIR, LOGS_DIR):
         d.mkdir(parents=True, exist_ok=True)
 
 

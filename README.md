@@ -44,12 +44,15 @@ como respaldo.
 ## Correr la app
 
 ```bash
-python app.py
+python app.py       # desarrollo — servidor de Flask, con auto-reload si FLASK_DEBUG=1
+python wsgi.py       # "producción" local — mismo Flask app servido con waitress
 ```
 
 Sirve en `http://127.0.0.1:5000` por defecto (configurable con `FLASK_PORT`).
-Es el servidor de desarrollo de Flask — no está pensado para exponerse fuera
-de `localhost` (ver `AUDIT_REPORT.md`).
+Los endpoints que escriben datos o llaman APIs externas (`/chat`,
+`/api/analizar_tenis`, `/api/registrar_apuesta`) tienen rate limiting
+(Flask-Limiter). Sigue pensado para uso local/personal, no para exponerse
+públicamente sin añadir autenticación (ver `AUDIT_REPORT.md`).
 
 ## Tests
 

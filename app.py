@@ -16,24 +16,32 @@ POST /api/analizar_tenis        analizar partido de tenis
 """
 import logging
 import sys
+from logging.handlers import RotatingFileHandler
 from pathlib import Path
 
 from flask import Flask, render_template, request, jsonify
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
+
+from config import (
+    FLASK_DEBUG, FLASK_PORT, SECRET_KEY, BANKROLL_INICIAL, PROMEDIO_GOLES_LIGA,
+    LOGS_DIR, ensure_dirs,
+)
+
+ensure_dirs()
 
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s [%(name)s] %(levelname)s: %(message)s",
+    handlers=[
+        logging.StreamHandler(),
+        RotatingFileHandler(LOGS_DIR / "betbrain.log", maxBytes=5 * 1024 * 1024,
+                            backupCount=3, encoding="utf-8"),
+    ],
 )
 _log = logging.getLogger("betbrain.app")
-
-from config import (
-    FLASK_DEBUG, FLASK_PORT, SECRET_KEY, BANKROLL_INICIAL, PROMEDIO_GOLES_LIGA,
-    ensure_dirs,
-)
-
-ensure_dirs()
 from src.core.confidence import (
     calcular_confianza, nivel_confianza, verificar_contradicciones_combo,
     UMBRAL_VERDE, UMBRAL_AMARILLO,
@@ -53,6 +61,15 @@ from src.engines.tennis_validator import validar_entrada_tenis
 app = Flask(__name__, template_folder="templates", static_folder="static")
 app.config["JSON_SORT_KEYS"] = False
 app.config["SECRET_KEY"] = SECRET_KEY
+app.config["MAX_CONTENT_LENGTH"] = 1 * 1024 * 1024  # 1 MB: los payloads de /chat son pequeños
+
+limiter = Limiter(get_remote_address, app=app, default_limits=[], storage_uri="memory://")
+
+
+@limiter.request_filter
+def _sin_limite_en_tests() -> bool:
+    """Exime de rate limiting cuando app.config['TESTING'] está activo."""
+    return app.testing
 
 # Football engine: lazy (XGBoost + CSV son pesados)
 _football_engine = None
@@ -163,6 +180,7 @@ def historial():
 # ── Fútbol ────────────────────────────────────────────────────────────────────
 
 @app.route("/chat", methods=["POST"])
+@limiter.limit("20 per minute")
 def chat():
     data   = request.get_json(silent=True) or {}
     home   = (data.get("home") or "").strip()
@@ -331,6 +349,7 @@ def api_players():
 # ── Tracking ──────────────────────────────────────────────────────────────────
 
 @app.route("/api/registrar_apuesta", methods=["POST"])
+@limiter.limit("30 per minute")
 def api_registrar_apuesta():
     data = request.get_json(silent=True) or {}
     try:
@@ -399,6 +418,7 @@ def api_verificar_resultados():
 # ── Tenis ─────────────────────────────────────────────────────────────────────
 
 @app.route("/api/analizar_tenis", methods=["POST"])
+@limiter.limit("20 per minute")
 def api_analizar_tenis():
     """
     Analiza un partido de tenis y devuelve picks clasificados.

@@ -30,9 +30,9 @@ Fecha: 2026-08-06
 
 - **Dependencias sin pin, sin lockfile** | `requirements.txt` (todas con `>=`) | `flask>=3.0.0`, `xgboost>=2.0.0`, etc. sin cotas superiores ni hashes. Un `pip install` en dos momentos distintos puede traer versiones incompatibles del modelo XGBoost calibrado (`models/*.pkl`), rompiendo la predicción silenciosamente. | Generar lockfile (`pip-compile` / `poetry.lock`) con versiones exactas, separar `requirements-dev.txt`.
 
-- **Servidor Flask de desarrollo como único punto de entrada** | `app.py:418` (`app.run(...)`) | No hay WSGI de producción (gunicorn/waitress), ni límites de tamaño de request. El propio Flask lo advierte como "no apto para producción". | Servir con `waitress` detrás de un proceso supervisado (planeado para Fase 8). `SECRET_KEY` ya corregido en Fase 2 (`config.py`, desde entorno con fallback aleatorio por proceso).
+- **Servidor Flask de desarrollo como único punto de entrada** | `app.py:418` (`app.run(...)`) | No había WSGI de producción, ni límites de tamaño de request. El propio Flask lo advierte como "no apto para producción". | **Estado: corregido en Fase 8** (`wsgi.py` sirve con `waitress`; `MAX_CONTENT_LENGTH=1MB` en `app.py`). `SECRET_KEY` ya corregido en Fase 2.
 
-- **Endpoints sin autenticación ni rate limiting** | `app.py` (todas las rutas `/api/*`, `/chat`) | Cualquiera con acceso de red puede escribir en `data/ledger.json`/CSV vía `/api/registrar_apuesta`, o agotar la cuota de APIs externas (Groq, API-Football) vía `/chat`. Aceptable en local; no en producción. | Añadir auth (API key / login) y rate limiting (Flask-Limiter) antes de exponer el servicio fuera de `127.0.0.1`.
+- **Endpoints sin autenticación ni rate limiting** | `app.py` (todas las rutas `/api/*`, `/chat`) | Cualquiera con acceso de red puede escribir en `data/ledger.json`/CSV vía `/api/registrar_apuesta`, o agotar la cuota de APIs externas (Groq, API-Football) vía `/chat`. | **Estado: parcialmente corregido en Fase 8** (rate limiting con Flask-Limiter en `/chat`, `/api/registrar_apuesta`, `/api/analizar_tenis`). Sigue sin auth — aceptable para uso local en `127.0.0.1`, pero **no exponer fuera de localhost sin añadir autenticación**, que queda fuera del alcance de este trabajo.
 
 ### MEDIO (Pronto)
 
