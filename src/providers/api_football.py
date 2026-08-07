@@ -28,15 +28,24 @@ from config import API_FOOTBALL_KEY, API_FOOTBALL_HOST, CACHE_DIR, CACHE_TTL_HOR
 # -----------------------------------------------------------------------
 # Logging a archivo
 # -----------------------------------------------------------------------
-_log_path = Path(__file__).resolve().parent.parent / "api_calls.log"
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s [API-Football] %(levelname)s %(message)s",
-    handlers=[
-        logging.FileHandler(_log_path, encoding="utf-8"),
-    ],
-)
+# FileHandler abre el archivo al construirse -> en filesystems de solo
+# lectura (Vercel/serverless: todo excepto /tmp) lanza OSError al importar
+# este módulo. Como el import ocurre fuera de cualquier try/except de
+# manager.py (es la línea previa a _wrap()), eso tumbaba silenciosamente
+# TODA la cadena de fallback en producción, no solo api-football. Se
+# degrada al handler por defecto (stderr, visible en logs de Vercel) si
+# no se puede escribir a disco.
 _log = logging.getLogger("api_football")
+try:
+    _log_path = Path(__file__).resolve().parent.parent / "api_calls.log"
+    _handler = logging.FileHandler(_log_path, encoding="utf-8")
+    _handler.setFormatter(logging.Formatter(
+        "%(asctime)s [API-Football] %(levelname)s %(message)s"
+    ))
+    _log.addHandler(_handler)
+    _log.setLevel(logging.INFO)
+except OSError:
+    pass  # filesystem de solo lectura -> se usa el logging por defecto
 
 BASE_URL = f"https://{API_FOOTBALL_HOST}"
 
