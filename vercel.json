@@ -1,6 +1,5 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "buildCommand": "pip install -r requirements.txt && pip install --no-deps xgboost==3.2.0",
   "env": {
     "PYTHONUNBUFFERED": "1"
   },

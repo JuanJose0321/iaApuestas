@@ -12,3 +12,13 @@ requests==2.32.5
 polars-lts-cpu==1.33.1
 numpy==2.4.2
 joblib==1.5.3
+# xgboost-cpu (no "xgboost" a secas): xgboost==3.2.0 declara
+# nvidia-nccl-cu12 como dependencia INCONDICIONAL en Linux (confirmado en
+# PyPI), aunque no usamos GPU en absoluto — hubiera sido un desastre de
+# tamaño. xgboost-cpu es el mismo paquete (mismo import xgboost, misma
+# API) sin esa dependencia. scipy sigue viniendo igual (dependencia dura
+# tanto de xgboost como de xgboost-cpu, no hay forma de evitarlo con la
+# API pública de pip/PyPI — se probó con --no-deps vía buildCommand
+# personalizado y NO funciona: Vercel resuelve dependencias de Python por
+# su cuenta a partir de este archivo, ignora buildCommand para eso).
+xgboost-cpu==3.2.0

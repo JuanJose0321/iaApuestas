@@ -31,15 +31,18 @@ a largo plazo.
 Requiere Python 3.14 (ver `pyvenv.cfg`).
 
 ```bash
-pip install -r requirements.txt          # producción
-pip install --no-deps xgboost==3.2.0     # aparte, para no arrastrar scipy (ver "Despliegue en Vercel")
-pip install -r requirements-dev.txt      # dev local/CI: ya incluye xgboost normal, + pytest/mypy/vulture/pre-commit
+pip install -r requirements.txt          # producción — ya incluye xgboost-cpu
+pip install -r requirements-dev.txt      # + pytest, mypy, vulture, pre-commit
 ```
 
-`requirements.txt` ya no incluye `xgboost` directamente — se instala aparte con
-`--no-deps` para no arrastrar `scipy` (135MB) como dependencia transitiva
-innecesaria (el motor de fútbol usa la API nativa de XGBoost, sin
-`scikit-learn`/`scipy`). `requirements-dev.txt` ya se encarga de esto por vos
+`requirements.txt` usa `xgboost-cpu`, no `xgboost` a secas: mismo paquete/API
+(`import xgboost`), pero sin `nvidia-nccl-cu12` (que `xgboost==3.2.0` declara
+como dependencia *incondicional* en Linux, aunque no usamos GPU). `scipy` sí
+sigue viniendo — es dependencia dura de xgboost (con o sin GPU) y no hay
+forma de evitarlo vía pip estándar (se intentó instalarlo aparte con
+`--no-deps` en el `buildCommand` de Vercel; **no funciona**: Vercel resuelve
+dependencias de Python por su cuenta a partir de este archivo y no ejecuta
+un `buildCommand` genérico para eso — ver "Despliegue en Vercel").
 si vas a correr tests o development local.
 
 Copia `.env.example` a `.env` y rellena tus claves (todas opcionales excepto
@@ -84,27 +87,40 @@ Pasos:
 ### Tamaño del bundle
 
 El motor de fútbol usa `polars` (no `pandas`) y la API nativa de XGBoost con
-calibración isotónica propia (`src/core/calibration.py`, sin `scikit-learn`/
-`scipy` — ver ese archivo para el porqué). `vercel.json` instala `xgboost`
-aparte con `--no-deps` para que `pip` no reinstale `scipy` como dependencia
-transitiva declarada (135MB que el código no usa en absoluto).
+calibración isotónica propia (`src/core/calibration.py`, sin `scikit-learn`
+— ver ese archivo para el porqué). `scipy` sigue en el bundle: es
+dependencia dura de `xgboost`/`xgboost-cpu` sin excepción, no se pudo sacar
+(se intentó con `--no-deps` vía `buildCommand` en `vercel.json`; **no
+funciona en Vercel** — su runtime de Python resuelve dependencias por su
+cuenta a partir de `requirements.txt`/`pyproject.toml`/`Pipfile` e ignora un
+`buildCommand` genérico para eso. Si `requirements.txt` no declara un
+paquete ahí, **no se instala**, punto — así se rompió `/chat` en producción
+la primera vez que se probó este truco, con `ModuleNotFoundError`).
 
-`requirements.txt` usa `polars-lts-cpu`, no `polars` a secas: el paquete
-`polars` normal viene partido en dos (`polars` + `polars-runtime-32`, este
-último con el binario nativo de Rust) y ese runtime solo pesaba ~176MB en
-mediciones reales — más que `pandas`, `scikit-learn` y `scipy` juntos.
-`polars-lts-cpu` es un solo wheel autocontenido, sin la optimización AVX2
-que no necesitamos para el volumen de datos de este proyecto (miles de
-filas de CSV). Medido en un venv limpio (mismo proceso que usa
-`vercel.json`): 426.7MB → 378.3MB.
+`requirements.txt` usa dos paquetes "-cpu"/"-lts" en vez de sus versiones
+normales, mismo import/API, sin peso muerto:
+- `polars-lts-cpu` en vez de `polars`: el paquete `polars` normal viene
+  partido en dos (`polars` + `polars-runtime-32`, este último con el
+  binario nativo de Rust) y ese runtime solo pesaba ~176MB en mediciones
+  reales. `polars-lts-cpu` es un solo wheel autocontenido, sin la
+  optimización AVX2 que no necesitamos para el volumen de datos de este
+  proyecto (miles de filas de CSV).
+- `xgboost-cpu` en vez de `xgboost`: `xgboost==3.2.0` declara
+  `nvidia-nccl-cu12` (CUDA) como dependencia **incondicional en Linux**
+  (confirmado en PyPI), aunque no hay GPU en ningún lado de este proyecto.
+  `xgboost-cpu` es el mismo paquete sin esa dependencia.
 
-`xgboost` (140MB) sigue siendo lo más pesado — es el motor de predicción,
-no hay forma de sacarlo sin perder el ensemble ML. Si el build en Vercel
-vuelve a fallar por tamaño, las opciones que quedan son: reducir el motor a
-solo-Poisson para el despliegue serverless (el código ya soporta ese
-fallback), o usar el despliegue tradicional (`wsgi.py` + waitress, más
-arriba) en un host sin límite de bundle — no tiene esta restricción porque
-no es un modelo serverless.
+Medido en un venv limpio (mismo `requirements.txt`, sin ningún truco de
+build): **375.6MB en Windows**. Ese número no es directamente el bundle
+real de Vercel — los wheels de Linux vinieron siendo más pesados que los de
+Windows en cada paquete medido esta sesión (~100-120MB más, consistente
+entre `polars` y lo que se puede inferir de mediciones previas), así que el
+número real en Vercel probablemente ronda 480-500MB: **cerca del límite,
+no una victoria clara**. Si el build vuelve a fallar por tamaño, las
+opciones que quedan son: reducir el motor a solo-Poisson para el despliegue
+serverless (el código ya soporta ese fallback), o usar el despliegue
+tradicional (`wsgi.py` + waitress, más arriba) en un host sin límite de
+bundle — no tiene esta restricción porque no es un modelo serverless.
 
 El plan Hobby de Vercel limita cada función a 10s por defecto (`vercel.json`
 pide 30s vía `maxDuration`, pero el techo real depende del plan) — `/chat`
