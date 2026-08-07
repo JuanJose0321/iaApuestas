@@ -628,6 +628,176 @@ class TestSportsmonkClient:
         assert isinstance(ctx["notas"], list)
 
 
+# ──────────────────────────────────────────────────────────────────────────────
+# Tests: SofaScore
+# ──────────────────────────────────────────────────────────────────────────────
+
+# Contexto que devuelve SofaScore cuando tiene datos (sin H2H ni lesiones)
+CTX_SOFASCORE_COMPLETO = {
+    "api_disponible": True,
+    "fuente": "sofascore",
+    "home": "Real Madrid", "away": "Barcelona",
+    "home_id": 2829, "away_id": 2817,
+    "forma_home": {
+        "partidos": 5, "W": 3, "D": 1, "L": 1,
+        "gf_promedio": 2.0, "gc_promedio": 1.0,
+        "btts_rate": 0.6, "over_25_rate": 0.6,
+        "secuencia": "WWDLW", "_fuente": "sofascore",
+    },
+    "forma_away": {
+        "partidos": 5, "W": 2, "D": 2, "L": 1,
+        "gf_promedio": 1.6, "gc_promedio": 1.2,
+        "btts_rate": 0.6, "over_25_rate": 0.4,
+        "secuencia": "WDWDL", "_fuente": "sofascore",
+    },
+    "h2h": None,
+    "injuries_home": [], "injuries_away": [],
+    "notas": [],
+}
+
+
+class TestSofaScoreClient:
+    """Tests del cliente sofascore.py — todos usan mocks, sin red real."""
+
+    def _mock_response(self, payload):
+        resp = MagicMock()
+        resp.raise_for_status = MagicMock()
+        resp.json.return_value = payload
+        return resp
+
+    def test_buscar_equipo_encuentra_coincidencia(self):
+        payload = {
+            "results": [
+                {"type": "player", "entity": {"id": 1, "name": "Alguien"}},
+                {"type": "team", "entity": {"id": 2829, "name": "Real Madrid"}},
+            ]
+        }
+        with patch("src.providers.sofascore._session.get",
+                   return_value=self._mock_response(payload)):
+            from src.providers.sofascore import _buscar_equipo
+            result = _buscar_equipo("Real Madrid")
+        assert result == (2829, "Real Madrid")
+
+    def test_buscar_equipo_sin_resultados_devuelve_none(self):
+        with patch("src.providers.sofascore._session.get",
+                   return_value=self._mock_response({"results": []})):
+            from src.providers.sofascore import _buscar_equipo
+            result = _buscar_equipo("Equipo Inexistente")
+        assert result is None
+
+    def test_buscar_equipo_excepcion_devuelve_none(self):
+        with patch("src.providers.sofascore._session.get",
+                   side_effect=Exception("timeout")):
+            from src.providers.sofascore import _buscar_equipo
+            result = _buscar_equipo("Real Madrid")
+        assert result is None
+
+    def test_get_team_form_schema_correcto(self):
+        eventos = {
+            "events": [
+                {
+                    "status": {"type": "finished"},
+                    "homeTeam": {"id": 2829}, "awayTeam": {"id": 2817},
+                    "homeScore": {"current": 2}, "awayScore": {"current": 1},
+                },
+                {
+                    "status": {"type": "finished"},
+                    "homeTeam": {"id": 2817}, "awayTeam": {"id": 2829},
+                    "homeScore": {"current": 0}, "awayScore": {"current": 0},
+                },
+            ]
+        }
+        with patch("src.providers.sofascore._session.get",
+                   return_value=self._mock_response(eventos)):
+            from src.providers.sofascore import get_team_form
+            forma = get_team_form(2829, last=5)
+
+        assert forma is not None
+        assert "partidos"     in forma
+        assert "W" in forma and "D" in forma and "L" in forma
+        assert "gf_promedio"  in forma
+        assert "gc_promedio"  in forma
+        assert "btts_rate"    in forma
+        assert "over_25_rate" in forma
+        assert "secuencia"    in forma
+        assert forma["_fuente"] == "sofascore"
+        assert forma["partidos"] == 2
+        assert forma["W"] == 1 and forma["D"] == 1 and forma["L"] == 0
+
+    def test_get_team_form_filtra_no_finalizados(self):
+        eventos = {
+            "events": [
+                {
+                    "status": {"type": "notstarted"},
+                    "homeTeam": {"id": 2829}, "awayTeam": {"id": 2817},
+                    "homeScore": {}, "awayScore": {},
+                },
+            ]
+        }
+        with patch("src.providers.sofascore._session.get",
+                   return_value=self._mock_response(eventos)):
+            from src.providers.sofascore import get_team_form
+            result = get_team_form(2829, last=5)
+        assert result is None
+
+    def test_get_team_form_sin_eventos_devuelve_none(self):
+        with patch("src.providers.sofascore._session.get",
+                   return_value=self._mock_response({"events": []})):
+            from src.providers.sofascore import get_team_form
+            result = get_team_form(2829, last=5)
+        assert result is None
+
+    def test_contexto_completo_equipos_encontrados(self):
+        search_home = self._mock_response(
+            {"results": [{"type": "team", "entity": {"id": 2829, "name": "Real Madrid"}}]})
+        search_away = self._mock_response(
+            {"results": [{"type": "team", "entity": {"id": 2817, "name": "Barcelona"}}]})
+        eventos = self._mock_response({
+            "events": [
+                {
+                    "status": {"type": "finished"},
+                    "homeTeam": {"id": 2829}, "awayTeam": {"id": 999},
+                    "homeScore": {"current": 3}, "awayScore": {"current": 1},
+                },
+            ]
+        })
+        with patch("src.providers.sofascore._session.get",
+                   side_effect=[search_home, search_away, eventos, eventos]):
+            from src.providers.sofascore import contexto_partido_completo
+            ctx = contexto_partido_completo("Real Madrid", "Barcelona")
+
+        assert ctx["api_disponible"] is True
+        assert ctx["fuente"] == "sofascore"
+        assert ctx["home_id"] == 2829
+        assert ctx["away_id"] == 2817
+        assert ctx["forma_home"] is not None
+        assert isinstance(ctx["forma_home"], dict)
+        assert ctx["h2h"] is None
+        assert ctx["injuries_home"] == []
+        assert ctx["injuries_away"] == []
+
+    def test_contexto_completo_equipo_no_encontrado(self):
+        with patch("src.providers.sofascore._session.get",
+                   return_value=self._mock_response({"results": []})):
+            from src.providers.sofascore import contexto_partido_completo
+            ctx = contexto_partido_completo("Equipo Fantasma", "Otro Fantasma")
+
+        assert ctx["api_disponible"] is False
+        assert ctx["forma_home"] is None
+        assert ctx["forma_away"] is None
+        assert any("no encontrado" in n for n in ctx["notas"])
+
+    def test_contexto_completo_no_lanza_excepcion_en_error(self):
+        """Si la API HTTP falla, contexto_partido_completo no lanza excepción."""
+        with patch("src.providers.sofascore._session.get",
+                   side_effect=Exception("network error")):
+            from src.providers.sofascore import contexto_partido_completo
+            ctx = contexto_partido_completo("Arsenal", "Chelsea")
+        assert "api_disponible" in ctx
+        assert ctx["api_disponible"] is False
+        assert isinstance(ctx["notas"], list)
+
+
 class TestDataSourceManagerSportsmonk:
     """Tests del DSM con Sportmonks integrado."""
 
@@ -779,6 +949,117 @@ class TestDataSourceManagerSportsmonk:
             patch("src.providers.sportsmonk.disponible", return_value=True),
             patch("src.providers.sportsmonk.contexto_partido_completo",
                   return_value=CTX_SM_COMPLETO),
+        ):
+            dsm_fresco.contexto_partido_completo(
+                "Real Madrid", "Barcelona", fuente="auto"
+            )
+        dsm_fresco.reset_stats()
+        s = dsm_fresco.stats()
+        assert all(v == 0 for v in s.values())
+
+
+class TestDataSourceManagerSofaScore:
+    """Tests del DSM con SofaScore integrado (Paso 4 de la cadena auto)."""
+
+    @pytest.fixture
+    def dsm_fresco(self):
+        from src.providers.manager import DataSourceManager
+        return DataSourceManager(fuente_default="auto")
+
+    # --- fuente explícita "sofascore" ---
+
+    def test_fuente_sofascore_llama_provider(self, dsm_fresco):
+        with patch("src.providers.sofascore.contexto_partido_completo",
+                   return_value=CTX_SOFASCORE_COMPLETO) as mock_ss:
+            ctx = dsm_fresco.contexto_partido_completo(
+                "Real Madrid", "Barcelona", fuente="sofascore"
+            )
+        mock_ss.assert_called_once_with("Real Madrid", "Barcelona")
+        assert ctx["fuente"] == "sofascore"
+
+    def test_fuente_sofascore_error_retorna_empty(self, dsm_fresco):
+        with patch("src.providers.sofascore.contexto_partido_completo",
+                   side_effect=Exception("SofaScore timeout")):
+            ctx = dsm_fresco.contexto_partido_completo(
+                "Real Madrid", "Barcelona", fuente="sofascore"
+            )
+        assert ctx["api_disponible"] is False
+        assert ctx["forma_home"] is None
+
+    # --- cadena auto: api + SM + TSDB fallan -> sofascore rescata ---
+
+    def test_auto_sofascore_rescata_cuando_todo_lo_previo_falla(self, dsm_fresco):
+        """api-football, SM y TSDB sin datos + SofaScore con datos -> SofaScore rescata."""
+        from tests.test_multi_source import CTX_API_VACIO
+        ctx_tsdb_vacio = {**CTX_API_VACIO, "fuente": "thesportsdb"}
+        with (
+            patch("src.providers.api_football.contexto_partido_completo",
+                  return_value=CTX_API_VACIO),
+            patch("src.providers.sportsmonk.disponible", return_value=False),
+            patch("src.providers.thesportsdb.contexto_partido_completo",
+                  return_value=ctx_tsdb_vacio),
+            patch("src.providers.sofascore.contexto_partido_completo",
+                  return_value=CTX_SOFASCORE_COMPLETO),
+        ):
+            ctx = dsm_fresco.contexto_partido_completo(
+                "Real Madrid", "Barcelona", fuente="auto"
+            )
+
+        assert ctx["api_disponible"] is True
+        assert ctx["fuente"] == "sofascore-fallback"
+        assert ctx["forma_home"] is not None
+        s = dsm_fresco.stats()
+        assert s["fallback_sofascore"] == 1
+
+    # --- cadena auto: todo falla, incluido sofascore -> CSV ---
+
+    def test_auto_csv_cuando_sofascore_tambien_falla(self, dsm_fresco):
+        """api, SM, TSDB y SofaScore fallan -> CSV, api_disponible=False."""
+        from tests.test_multi_source import CTX_API_VACIO, CTX_CSV_COMPLETO
+        ctx_tsdb_vacio = {**CTX_API_VACIO, "fuente": "thesportsdb"}
+        ctx_sofascore_vacio = {**CTX_SOFASCORE_COMPLETO, "api_disponible": False,
+                                "forma_home": None, "forma_away": None}
+        with (
+            patch("src.providers.api_football.contexto_partido_completo",
+                  return_value=CTX_API_VACIO),
+            patch("src.providers.sportsmonk.disponible", return_value=False),
+            patch("src.providers.thesportsdb.contexto_partido_completo",
+                  return_value=ctx_tsdb_vacio),
+            patch("src.providers.sofascore.contexto_partido_completo",
+                  return_value=ctx_sofascore_vacio),
+            patch("src.providers.football_csv.contexto_partido_completo",
+                  return_value=CTX_CSV_COMPLETO) as mock_csv,
+        ):
+            ctx = dsm_fresco.contexto_partido_completo(
+                "Real Madrid", "Barcelona", fuente="auto"
+            )
+
+        mock_csv.assert_called_once()
+        assert ctx["fuente"] == "csv-fallback"
+        assert ctx["api_disponible"] is False
+        s = dsm_fresco.stats()
+        assert s["fallback_sofascore"] == 1
+        assert s["fallback_csv"] == 1
+
+    # --- stats incluyen contadores sofascore ---
+
+    def test_stats_tienen_contadores_sofascore(self, dsm_fresco):
+        s = dsm_fresco.stats()
+        assert "delegated_sofascore" in s
+        assert "fallback_sofascore"  in s
+        assert "errors_sofascore"    in s
+
+    def test_reset_stats_limpia_sofascore(self, dsm_fresco):
+        from tests.test_multi_source import CTX_API_VACIO
+        ctx_tsdb_vacio = {**CTX_API_VACIO, "fuente": "thesportsdb"}
+        with (
+            patch("src.providers.api_football.contexto_partido_completo",
+                  return_value=CTX_API_VACIO),
+            patch("src.providers.sportsmonk.disponible", return_value=False),
+            patch("src.providers.thesportsdb.contexto_partido_completo",
+                  return_value=ctx_tsdb_vacio),
+            patch("src.providers.sofascore.contexto_partido_completo",
+                  return_value=CTX_SOFASCORE_COMPLETO),
         ):
             dsm_fresco.contexto_partido_completo(
                 "Real Madrid", "Barcelona", fuente="auto"

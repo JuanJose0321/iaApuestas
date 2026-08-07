@@ -45,7 +45,7 @@ from typing import Any, Literal
 
 _log = logging.getLogger("betbrain.dsm")
 
-Fuente = Literal["api-football", "sportsmonk", "thesportsdb", "football-data", "merged", "auto"]
+Fuente = Literal["api-football", "sportsmonk", "thesportsdb", "sofascore", "football-data", "merged", "auto"]
 
 
 # ──────────────────────────────────────────────────────────────────────────────
@@ -144,14 +144,17 @@ class DataSourceManager:
             "delegated_api":   0,  # llamadas delegadas a api-football
             "delegated_sm":    0,  # llamadas delegadas a sportsmonk
             "delegated_tsdb":  0,  # llamadas delegadas a thesportsdb
+            "delegated_sofascore": 0,  # llamadas delegadas a sofascore
             "delegated_csv":   0,  # llamadas delegadas a CSV provider
             "fallback_sm":     0,  # api-football fallo -> intento sportsmonk
             "fallback_tsdb":   0,  # sportsmonk fallo -> intento thesportsdb
+            "fallback_sofascore": 0,  # thesportsdb fallo -> intento sofascore
             "fallback_csv":    0,  # todo live fallo -> uso CSV
             "merged":          0,  # respuestas merged
             "errors_api":      0,
             "errors_sm":       0,
             "errors_tsdb":     0,
+            "errors_sofascore": 0,
             "errors_csv":      0,
         }
 
@@ -219,11 +222,13 @@ class DataSourceManager:
             return self._ctx_sm(home, away)
         if fuente == "thesportsdb":
             return self._ctx_tsdb(home, away)
+        if fuente == "sofascore":
+            return self._ctx_sofascore(home, away)
         if fuente == "football-data":
             return self._ctx_csv(home, away)
         if fuente == "merged":
             return self._ctx_merged(home, away)
-        # "auto": cadena api-football -> sportsmonk -> thesportsdb -> CSV
+        # "auto": cadena api-football -> sportsmonk -> thesportsdb -> sofascore -> CSV
         return self._ctx_auto(home, away)
 
     # ──────────────────────────────────────────────────────────────────────────
@@ -297,6 +302,28 @@ class DataSourceManager:
                               nota="thesportsdb: error o equipo no encontrado")
         return result
 
+    def _ctx_sofascore(self, home: str, away: str) -> dict:
+        """Fuente: SofaScore (no oficial). Solo forma reciente, sin H2H/lesiones."""
+        from src.providers.sofascore import contexto_partido_completo as _fn
+        key = f"sofascore:ctx:{home.lower()}:{away.lower()}"
+
+        def _wrap():
+            with self._lock:
+                self._stats["delegated_sofascore"] += 1
+            try:
+                return _fn(home, away)
+            except Exception as exc:
+                with self._lock:
+                    self._stats["errors_sofascore"] += 1
+                _log.error("sofascore error: %s", exc, exc_info=True)
+                return None
+
+        result = self._call(key, _wrap)
+        if result is None:
+            return _empty_ctx(home, away, fuente="sofascore",
+                              nota="sofascore: error o equipo no encontrado")
+        return result
+
     def _ctx_csv(self, home: str, away: str) -> dict:
         """Fuente: CSVs locales de football-data.co.uk. Sin límite, sin key."""
         from src.providers.football_csv import contexto_partido_completo as _fn
@@ -321,7 +348,8 @@ class DataSourceManager:
 
     def _ctx_auto(self, home: str, away: str) -> dict:
         """
-        Cadena de fallback: api-football -> sportsmonk -> thesportsdb -> CSV.
+        Cadena de fallback: api-football -> sportsmonk -> thesportsdb ->
+        sofascore -> CSV.
 
         api_disponible semantica:
           True  -> una fuente live respondio con datos de forma reales
@@ -353,9 +381,18 @@ class DataSourceManager:
         if _ctx_tiene_forma(ctx_tsdb):
             ctx_tsdb["fuente"] = "thesportsdb-fallback"
             return ctx_tsdb
-        _log.info("DSM auto: TheSportsDB sin datos -> fallback CSV")
+        _log.info("DSM auto: TheSportsDB sin datos -> intentando SofaScore")
 
-        # Paso 4: football-data CSV (ultimo recurso, solo ligas europeas)
+        # Paso 4: SofaScore (no oficial — solo forma reciente, sin H2H/lesiones)
+        with self._lock:
+            self._stats["fallback_sofascore"] += 1
+        ctx_sofascore = self._ctx_sofascore(home, away)
+        if _ctx_tiene_forma(ctx_sofascore):
+            ctx_sofascore["fuente"] = "sofascore-fallback"
+            return ctx_sofascore
+        _log.info("DSM auto: SofaScore sin datos -> fallback CSV")
+
+        # Paso 5: football-data CSV (ultimo recurso, solo ligas europeas)
         with self._lock:
             self._stats["fallback_csv"] += 1
         ctx_csv = self._ctx_csv(home, away)
