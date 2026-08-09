@@ -13,4 +13,5 @@ __pycache__/
 .pytest_cache/
 
 data/api_cache/
+src/data/tennis/
 *.log

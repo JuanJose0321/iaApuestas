@@ -3,6 +3,14 @@
 Genera datos sintéticos de partidos de tenis basados en rankings reales.
 
 Crea un CSV con partidos simulados usando Elo/ranking actual.
+
+ADVERTENCIA: es un generador de datos FICTICIOS (resultados con
+random.random()) para pruebas locales — NO ejecutar como fuente de
+`src/data/tennis_elo_ratings.json` en producción. Ese fue exactamente el
+bug crítico P0-2 de la auditoría de 2026-08-08: los ratings de producción
+terminaron calibrados con la salida de este script en vez de datos reales.
+Para calibrar con datos reales usar `calibrate_tennis_elo.py`, que ahora
+descarga de una fuente real (ver src/providers/tennis_data_loader.py).
 """
 import csv
 import random

@@ -53,17 +53,18 @@ class TennisImprovedEngine:
         """Obtiene Elo del jugador (default 1500)."""
         return self.elo_ratings.get(player_name, 1500.0)
 
-    def get_form(self, player_name: str) -> Dict:
+    def get_form(self, player_name: str) -> Optional[Dict]:
         """
-        Obtiene estadísticas de forma (últimos 5 partidos).
+        Obtiene estadísticas de forma (últimos N partidos).
 
         Returns:
-            {'ganados': N, 'perdidos': M, 'porcentaje': X}
+            {'ganados': N, 'perdidos': M, 'porcentaje': X} si hay datos reales
+            del jugador, o None si no hay forma calculada (no se debe inventar
+            un 50% neutro: eso diluiría el Elo real con una constante sin
+            información — ver AUDIT_REPORT / report_tennis_audit.md, hallazgo
+            crítico P0-1).
         """
-        return self.form_stats.get(
-            player_name,
-            {'ganados': 0, 'perdidos': 0, 'porcentaje': 50.0}
-        )
+        return self.form_stats.get(player_name)
 
     def prob_from_elo(self, elo1: float, elo2: float,
                       superficie: str = "hard") -> float:
@@ -96,18 +97,25 @@ class TennisImprovedEngine:
         """
         P(ganar partido) combinando Elo + Forma.
 
-        Ensemble: 70% Elo + 30% Forma
+        Ensemble: 70% Elo + 30% Forma — pero SOLO cuando hay forma real
+        para ambos jugadores. Si a alguno le falta, usar 100% Elo: mezclar
+        con un 50% inventado sesga cada predicción hacia el empate sin
+        ninguna base estadística (era el bug de P0-1).
         """
         # Probabilidad por Elo
         p_elo = self.prob_from_elo(elo1, elo2, superficie)
 
-        # Probabilidad por Forma
+        # Probabilidad por Forma (solo si hay datos reales de ambos)
         form1 = self.get_form(player1)
         form2 = self.get_form(player2)
-        p_form = self.prob_from_form(form1, form2)
+        usa_forma = form1 is not None and form2 is not None
 
-        # Ensemble
-        p_j1 = 0.70 * p_elo + 0.30 * p_form
+        if usa_forma:
+            p_form = self.prob_from_form(form1, form2)
+            p_j1 = 0.70 * p_elo + 0.30 * p_form
+        else:
+            p_form = None
+            p_j1 = p_elo
 
         # Combinatoria para sets (igual que antes)
         q = 1.0 - p_j1
@@ -121,8 +129,9 @@ class TennisImprovedEngine:
             "prob_j2": round(1.0 - p_win, 4),
             "debug": {
                 "p_elo": round(p_elo, 4),
-                "p_form": round(p_form, 4),
+                "p_form": round(p_form, 4) if p_form is not None else None,
                 "ensemble": round(p_j1, 4),
+                "usa_forma": usa_forma,
             }
         }
 
@@ -214,16 +223,18 @@ class TennisImprovedEngine:
         p_base = mw_result["debug"]["ensemble"]  # Probabilidad ensemble
 
         # Modelo completo
+        usa_forma = mw_result["debug"]["usa_forma"]
         modelo = {
             "p_base_j1": round(p_base, 4),
             "elo": {"j1": elo1, "j2": elo2},
             "forma": {
-                "j1": self.get_form(player1),
+                "j1": self.get_form(player1),  # None si no hay datos reales
                 "j2": self.get_form(player2),
             },
             "match_winner": mw_result,
             "total_games": self.prob_total_games(p_base, formato),
-            "metodo": "Ensemble Elo (70%) + Forma (30%)",
+            "metodo": ("Ensemble Elo (70%) + Forma (30%)" if usa_forma
+                       else "Elo puro (sin forma reciente disponible para uno o ambos jugadores)"),
         }
 
         # Generar picks

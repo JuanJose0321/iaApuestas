@@ -91,14 +91,21 @@ def _get_tennis_engine():
         elo_ratings = {}
         form_stats = {}
 
-        # Cargar Elo ratings si existen
+        # Cargar Elo (y forma reciente, si el JSON de calibración la trae) si existen.
+        # form_stats solo se puebla con jugadores que tengan forma REAL calculada
+        # (ver calibrate_tennis_elo.py) — nunca con un 50% inventado. El motor
+        # (TennisImprovedEngine.get_form) cae a Elo puro para cualquier jugador
+        # ausente de este dict, en vez de diluir con una constante sin información.
         if elo_path.exists():
             try:
                 with open(elo_path, 'r', encoding='utf-8') as f:
                     data = json.load(f)
                     for player_name, stats in data.get("jugadores", {}).items():
                         elo_ratings[player_name] = stats.get("elo", 1500.0)
-                _log.info(f"✅ Cargados {len(elo_ratings)} Elo ratings para tenis")
+                        if "forma" in stats:
+                            form_stats[player_name] = stats["forma"]
+                _log.info(f"✅ Cargados {len(elo_ratings)} Elo ratings para tenis "
+                          f"({len(form_stats)} con forma reciente real)")
             except Exception as e:
                 _log.warning(f"⚠️ Error cargando Elo ratings: {e}")
 

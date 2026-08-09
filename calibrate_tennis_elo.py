@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
 """
-Script para descargar datos históricos de tenis y calibrar Elo.
+Descarga datos históricos reales de tenis y calibra Elo + forma reciente.
 
 Pasos:
-1. Descarga datos ATP/WTA 2024-2026
+1. Descarga datos ATP/WTA reales (ver src/providers/tennis_data_loader.py
+   para la fuente y por qué ya no es JeffSackmann/tennis_atp directamente)
 2. Procesa partidos en orden cronológico
-3. Calcula Elo dinámico para cada jugador
+3. Calcula Elo dinámico y forma reciente (últimos N partidos) por jugador
 4. Exporta a JSON para usar en la app
 
 Uso:
@@ -14,14 +15,17 @@ Uso:
 import sys
 import json
 import logging
+from collections import defaultdict, deque
 from pathlib import Path
-from collections import defaultdict
-from datetime import datetime
+from datetime import datetime, timezone
+from typing import Dict
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from src.core.tennis_elo import TennisEloCalculator
-from src.providers.tennis_data_loader import descargar_datos_tennis, combinar_archivos
+from src.providers.tennis_data_loader import (
+    descargar_datos_tennis, combinar_archivos, extraer_sets,
+)
 
 logging.basicConfig(
     level=logging.INFO,
@@ -31,9 +35,12 @@ _log = logging.getLogger("calibrate_elo")
 
 OUTPUT_FILE = Path(__file__).parent / "src" / "data" / "tennis_elo_ratings.json"
 
+FORMA_VENTANA = 10       # últimos N partidos considerados para "forma"
+FORMA_MIN_PARTIDOS = 3   # con menos que esto, no se reporta forma (ruido)
+
 
 def mapear_nivel_torneo(level_str: str) -> str:
-    """Mapea nivel de torneo a K-factor."""
+    """Mapea nivel de torneo (ATP/WTA, cualquier convención de nombres) a K-factor."""
     level_str = (level_str or "").upper()
 
     if "GRAND" in level_str or "SLAM" in level_str:
@@ -48,132 +55,117 @@ def mapear_nivel_torneo(level_str: str) -> str:
         return "ATP 250"  # default
 
 
-def extraer_sets(score_str: str) -> tuple:
-    """
-    Extrae sets del score.
-
-    Ej: "2 6 4 6 3 6" → (3, 2)
-    """
-    try:
-        parts = score_str.strip().split()
-        if not parts:
-            return (0, 0)
-
-        # Contar sets ganados (cada 2 números = 1 set)
-        sets_j1 = 0
-        sets_j2 = 0
-
-        for i in range(0, len(parts), 2):
-            if i + 1 < len(parts):
-                g1 = int(parts[i])
-                g2 = int(parts[i + 1])
-                if g1 > g2:
-                    sets_j1 += 1
-                else:
-                    sets_j2 += 1
-
-        return (sets_j1, sets_j2)
-    except:
-        return (0, 0)
-
-
 def calibrar_elo():
-    """Descarga datos y calibra Elo."""
+    """Descarga datos reales y calibra Elo + forma reciente."""
 
     _log.info("=" * 70)
-    _log.info("CALIBRANDO ELO DE TENISTAS")
+    _log.info("CALIBRANDO ELO DE TENISTAS CON DATOS REALES")
     _log.info("=" * 70)
 
-    # Paso 1: Descargar datos
-    _log.info("\n[PASO 1] Descargando datos históricos...")
+    _log.info("\n[PASO 1] Descargando datos históricos reales...")
     if not descargar_datos_tennis("ambos"):
-        _log.warning("⚠️ No se pudieron descargar algunos archivos, intentando con locales...")
+        _log.warning("No se pudieron descargar archivos nuevos, "
+                      "intentando con los que ya existan localmente...")
 
-    # Paso 2: Cargar y procesar matches
-    _log.info("\n[PASO 2] Cargando partidos...")
+    _log.info("\n[PASO 2] Cargando y ordenando partidos por fecha...")
     matches = combinar_archivos()
 
     if not matches:
-        _log.error("❌ No hay partidos para procesar. Verifica la descarga.")
+        _log.error("No hay partidos para procesar. Verifica la descarga "
+                    "(ver src/providers/tennis_data_loader.py).")
         return False
 
-    _log.info(f"✅ {len(matches)} partidos cargados")
+    hoy = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    antes = len(matches)
+    matches = [m for m in matches if m["date"] != "0000-00-00" and m["date"] <= hoy]
+    if len(matches) != antes:
+        _log.warning(f"Descartados {antes - len(matches)} partidos con fecha "
+                      f"inválida o futura (error de origen en la fuente).")
 
-    # Paso 3: Ordenar por fecha (importante para Elo)
-    _log.info("\n[PASO 3] Ordenando por fecha...")
-    matches.sort(key=lambda x: x.get('date', ''))
+    _log.info(f"{len(matches)} partidos cargados "
+              f"({matches[0]['date']} a {matches[-1]['date']})")
 
-    # Paso 4: Crear calculador Elo
-    _log.info("\n[PASO 4] Calibrando Elo...")
+    _log.info("\n[PASO 3] Calibrando Elo y forma reciente...")
     elo_calc = TennisEloCalculator()
+    recientes: Dict[str, deque] = defaultdict(lambda: deque(maxlen=FORMA_VENTANA))
 
-    # Procesar cada match
+    procesados = 0
+    omitidos = 0
     for i, match in enumerate(matches):
         try:
-            winner = match.get('winner', '').strip()
-            loser = match.get('loser', '').strip()
+            winner = match["winner"]
+            loser = match["loser"]
 
-            if not winner or not loser:
-                continue
-
-            # Extraer sets
-            score = match.get('score', '')
-            winner_sets, loser_sets = extraer_sets(score)
-
-            # Si no hay score, asumir 2-0
+            winner_sets, loser_sets = extraer_sets(match.get("score", ""))
             if winner_sets == 0 and loser_sets == 0:
-                winner_sets = 2
+                winner_sets = 2  # score no parseable (RET temprano, W/O, etc.)
 
-            # Mapear nivel de torneo
-            level = match.get('level', 'ATP 250')
-            level_mapped = mapear_nivel_torneo(level)
+            level_mapped = mapear_nivel_torneo(match.get("level", "ATP 250"))
 
-            # Actualizar Elo
             elo_calc.update_elo(
                 winner, loser,
                 tournament_level=level_mapped,
                 winner_sets=winner_sets,
-                loser_sets=loser_sets
+                loser_sets=loser_sets,
             )
 
-            # Progreso cada 1000 matches
-            if (i + 1) % 1000 == 0:
-                _log.info(f"  Procesados {i + 1}/{len(matches)} matches...")
+            recientes[winner].append(True)
+            recientes[loser].append(False)
+            procesados += 1
+
+            if (i + 1) % 5000 == 0:
+                _log.info(f"  Procesados {i + 1}/{len(matches)} partidos...")
 
         except Exception as e:
-            _log.debug(f"Error procesando match {i}: {e}")
+            omitidos += 1
+            _log.debug(f"Error procesando partido {i}: {e}")
             continue
 
-    _log.info(f"✅ Calibración completada: {len(elo_calc.players)} jugadores")
+    _log.info(f"Calibración completada: {procesados} partidos procesados, "
+              f"{omitidos} omitidos, {len(elo_calc.players)} jugadores")
 
-    # Paso 5: Exportar Elo ratings
-    _log.info("\n[PASO 5] Exportando ratings...")
+    _log.info("\n[PASO 4] Exportando ratings + forma...")
 
     ratings_export = {
         "jugadores": {},
         "_meta": {
-            "fecha": datetime.now().isoformat(),
+            "fecha": datetime.now(timezone.utc).isoformat(),
             "total_jugadores": len(elo_calc.players),
-            "metodo": "Elo dinámico con K-factor adaptativo",
+            "matches_procesados": procesados,
+            "rango_fechas": f"{matches[0]['date']} a {matches[-1]['date']}",
+            "metodo": "Elo dinámico con K-factor adaptativo + forma real (últimos "
+                      f"{FORMA_VENTANA} partidos, mínimo {FORMA_MIN_PARTIDOS})",
+            "fuente": "LuckyLoser91/TennisCourtLog (mirror activo del formato "
+                      "Jeff Sackmann; JeffSackmann/tennis_atp y tennis_wta ya no "
+                      "existen en GitHub — ver src/providers/tennis_data_loader.py)",
         }
     }
 
     for name, player_elo in elo_calc.players.items():
-        ratings_export["jugadores"][name] = {
+        entry = {
             "elo": round(player_elo.elo, 1),
             "games": player_elo.games_played,
         }
+        historial = recientes.get(name)
+        if historial and len(historial) >= FORMA_MIN_PARTIDOS:
+            ganados = sum(1 for w in historial if w)
+            total = len(historial)
+            entry["forma"] = {
+                "ganados": ganados,
+                "perdidos": total - ganados,
+                "porcentaje": round(100.0 * ganados / total, 1),
+            }
+        ratings_export["jugadores"][name] = entry
 
-    # Crear directorio si no existe
     OUTPUT_FILE.parent.mkdir(parents=True, exist_ok=True)
-
-    # Guardar JSON
-    with open(OUTPUT_FILE, 'w', encoding='utf-8') as f:
+    with open(OUTPUT_FILE, "w", encoding="utf-8") as f:
         json.dump(ratings_export, f, indent=2, ensure_ascii=False)
 
-    _log.info(f"✅ Guardado: {OUTPUT_FILE}")
+    _log.info(f"Guardado: {OUTPUT_FILE}")
 
-    # Mostrar top 10
+    con_forma = sum(1 for v in ratings_export["jugadores"].values() if "forma" in v)
+    _log.info(f"Jugadores con forma real calculada: {con_forma}/{len(elo_calc.players)}")
+
     _log.info("\n[TOP 10 JUGADORES POR ELO]")
     top = elo_calc.get_ranking(10)
     for rank, (name, elo) in enumerate(top, 1):
