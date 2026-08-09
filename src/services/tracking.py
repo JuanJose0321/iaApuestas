@@ -190,9 +190,9 @@ def registrar_apuesta(data: dict, csv_path: Path | None = None) -> dict:
         "confianza_score":  round(float(data.get("confianza_score", 0)), 4),
         "confianza_badge":  data.get("confianza_badge", ""),
         "resultado":        "pendiente",
-        "ganancia_neta":    "",
+        "ganancia_neta":    None,
         "bankroll_antes":   bankroll_antes,
-        "bankroll_despues": "",
+        "bankroll_despues": None,
         "fixture_id_api":   data.get("fixture_id_api", ""),
         "notas":            data.get("notas", ""),
     }
