@@ -175,6 +175,11 @@
       <option value="perdida">Perdidas</option>
       <option value="void">Void / Cashout</option>
     </select>
+    <select id="filtroDeporte">
+      <option value="">Todos los deportes</option>
+      <option value="football">Fútbol</option>
+      <option value="tennis">Tenis</option>
+    </select>
     <select id="filtroLiga">
       <option value="">Todas las ligas</option>
       <option value="LaLiga">LaLiga</option>
@@ -186,7 +191,6 @@
       <option value="Europa League">Europa League</option>
       <option value="Liga MX">Liga MX</option>
       <option value="MLS">MLS</option>
-      <option value="Tenis">Tenis</option>
     </select>
     <input type="date" id="filtroDesde" title="Desde fecha">
     <button class="btn" id="filtrarBtn">Filtrar</button>
@@ -318,10 +322,23 @@ function renderChart(puntos, br_inicial) {
 }
 
 /* ── Tabla ── */
+// No existe columna "sport" en el historial (ver src/services/tracking.py) — el dato
+// vive todo en "liga" ("Tenis" para tenis, nombre de liga para fútbol). El filtro de
+// deporte se resuelve contra ese mismo campo, sin tocar el backend.
+function esFutbol(row) { return (row.liga || "") !== "Tenis"; }
+
 async function cargarHistorial() {
   const resultado = document.getElementById("filtroResultado").value;
-  const liga      = document.getElementById("filtroLiga").value;
+  const deporte   = document.getElementById("filtroDeporte").value;
+  const ligaSel   = document.getElementById("filtroLiga").value;
   const desde     = document.getElementById("filtroDesde").value;
+
+  // liga="Tenis" ya funciona como filtro exacto en /api/historial. Para "todas las
+  // ligas de fútbol" no hay un valor único que pedirle al backend (no filtra por
+  // deporte) — se trae sin filtrar y se excluye Tenis en el cliente.
+  let liga = "";
+  if (deporte === "tennis") liga = "Tenis";
+  else if (deporte === "football" && ligaSel) liga = ligaSel;
 
   let url = "/api/historial?";
   if (resultado) url += "resultado=" + encodeURIComponent(resultado) + "&";
@@ -331,13 +348,22 @@ async function cargarHistorial() {
   try {
     const r = await fetch(url);
     const j = await r.json();
-    allRows = j.apuestas || [];
+    let rows = j.apuestas || [];
+    if (deporte === "football" && !ligaSel) rows = rows.filter(esFutbol);
+    allRows = rows;
     renderTabla(allRows);
   } catch (e) {
     document.getElementById("tablaBody").innerHTML =
       '<tr><td colspan="11" class="empty">Error cargando historial</td></tr>';
   }
 }
+
+document.getElementById("filtroDeporte").addEventListener("change", function() {
+  const ligaSelect = document.getElementById("filtroLiga");
+  const esTenis = this.value === "tennis";
+  ligaSelect.disabled = esTenis;
+  if (esTenis) ligaSelect.value = "";
+});
 
 function renderTabla(rows) {
   const tbody = document.getElementById("tablaBody");
