@@ -14,4 +14,6 @@ __pycache__/
 
 data/api_cache/
 src/data/tennis/
+src/data/apuestas_registradas.csv
+src/data/predicciones_tenis.csv
 *.log
