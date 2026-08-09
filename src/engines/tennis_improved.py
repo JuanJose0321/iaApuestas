@@ -60,6 +60,34 @@ def _cargar_std_games() -> Dict[str, float]:
 
 STD_GAMES = _cargar_std_games()
 
+
+def _cargar_total_esp_coefs() -> Dict[str, Optional[Dict[str, float]]]:
+    """
+    Carga los coeficientes (a, b) de total_esp = a + b*p*q calibrados por
+    regresión contra partidos reales (ver calibrate_tennis_std_dev.py —
+    reemplaza la fórmula heurística sets_esp*games_por_set, que
+    sobreestimaba el total real en +2.8/+3.1 games, ver
+    tennis_backtest_results.md). None por formato si el archivo no existe,
+    es viejo (sin estos campos) o falla la lectura — ese formato cae a la
+    fórmula heurística original, nunca crashea el motor por esto.
+    """
+    try:
+        with open(_STD_DEV_PATH, "r", encoding="utf-8") as f:
+            data = json.load(f)
+        coefs = {}
+        for formato, clave in (("best_of_3", "TOTAL_ESP_BO3"), ("best_of_5", "TOTAL_ESP_BO5")):
+            entry = data.get(clave)
+            coefs[formato] = {"a": float(entry["a"]), "b": float(entry["b"])} if entry else None
+        _log.info(f"Coeficientes de total_esp calibrado cargados: {coefs}")
+        return coefs
+    except Exception as e:
+        _log.warning(f"No se pudieron cargar coeficientes de total_esp calibrado, "
+                      f"usando fórmula heurística original: {e}")
+        return {"best_of_3": None, "best_of_5": None}
+
+
+TOTAL_ESP_COEFS = _cargar_total_esp_coefs()
+
 ELO_PRIOR = 1500.0   # mismo default usado en todo el resto del proyecto (Elo inicial sin historial)
 SHRINK_K = 20.0       # constante de regresión a la media — ver report_tennis_audit.md sección 9/10 para el valor elegido empíricamente por backtest
 
@@ -362,24 +390,34 @@ class TennisImprovedEngine:
         Distribución de total de games (Normal).
 
         p_base: probabilidad base (puede ser Elo o Ensemble)
-        Modelo: E[games] basado en expectativa de sets + competitiveness
+
+        total_esp usa la regresión calibrada contra partidos reales
+        (total_esp = a + b*p*q, ver calibrate_tennis_std_dev.py /
+        TOTAL_ESP_COEFS) cuando está disponible para ese formato — la
+        fórmula heurística vieja (sets_esp*games_por_set) sobreestimaba
+        el total real en +2.8/+3.1 games (ver tennis_backtest_results.md),
+        generando EV inflado en el mercado de Total Games. games_por_set/
+        sets_esperados siguen siendo la estimación heurística original,
+        son solo informativos — no se usan en ningún cálculo de EV.
         """
         p, q = p_base, 1.0 - p_base
+        pq = p * q
 
-        # Calcular sets esperados
+        # Calcular sets esperados (heurístico, solo para los campos de debug)
         if formato == "best_of_5":
-            sets_esp = 3.0 + 3.0*p*q
-            # Games por set: ~10-12 dependiendo de competitiveness
-            competitiveness = min(2.0 * p*q, 0.25)  # Máximo en 0.5-0.5
+            sets_esp = 3.0 + 3.0*pq
+            competitiveness = min(2.0*pq, 0.25)
             games_por_set = 10.5 + 2.0 * competitiveness
-            total_esp = sets_esp * games_por_set
         else:  # best_of_3
-            sets_esp = 2.0 + 2.0*p*q
-            # Games por set más realista: 10-11 en sets pareados, menos en dominantes
-            competitiveness = min(2.0 * p*q, 0.25)
+            sets_esp = 2.0 + 2.0*pq
+            competitiveness = min(2.0*pq, 0.25)
             games_por_set = 10.0 + 1.5 * competitiveness
-            # En BO3: total esperado = 19.5 a 23 games típicamente
-            total_esp = sets_esp * games_por_set
+
+        coef = TOTAL_ESP_COEFS.get(formato)
+        if coef is not None:
+            total_esp = coef["a"] + coef["b"] * pq
+        else:
+            total_esp = sets_esp * games_por_set  # fallback: fórmula heurística original
 
         return {
             "total_esp": round(total_esp, 1),

@@ -462,3 +462,22 @@ Resultado: selector pasa de 226 a **2,467 jugadores** (1,247 masculino +
 1,220 femenino). Validado en vivo: Nadal, Federer, Serena Williams,
 Osaka y Barty ya aparecen y son analizables. 6 tests nuevos
 (`tests/test_generar_jugadores_por_genero.py`).
+
+## 11. FIX CRÍTICO: sesgo sistemático de total_esp — ACTIVADO (2026-08-09)
+
+Diagnóstico del usuario confirmado con datos: Total Games generaba EV
+inflado (36-56% con cuotas justas) casi siempre, mientras Match Winner
+casi nunca aparecía como pick. Causa: `total_esp` (media de la
+distribución de total de games) nunca fue calibrada — a diferencia de
+`std_dev` (P1) — y sobreestimaba el total real en **+2.81 games (BO3) /
++3.10 games (BO5)**, con Brier score de Over/Under en umbrales bajos
+**peor que adivinar a ciegas** (0.310 vs 0.25).
+
+Fix: `total_esp = a + b*p_base*(1-p_base)`, coeficientes ajustados por
+regresión (mínimos cuadrados) contra games reales, walk-forward, misma
+metodología que ya validó Elo/H2H/decay. Sesgo baja de +2.81/+3.10 a
+0.00 (por construcción), MAE mejora ~13%/~7%. `backtest_tennis.py` ahora
+valida este mercado de forma permanente. Validado en vivo: los mismos 3
+partidos de ejemplo con cuotas justas pasan de EV 36-56% a **sin pick**,
+igual que Match Winner siempre se comportó correctamente. Detalle
+completo en `tennis_backtest_results.md`.

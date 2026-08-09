@@ -1,20 +1,53 @@
 {
-  "STD_DEV_BO3": 5.91,
-  "STD_DEV_BO5": 9.39,
+  "STD_DEV_BO3": 5.95,
+  "STD_DEV_BO5": 9.52,
+  "TOTAL_ESP_BO3": {
+    "a": 16.71,
+    "b": 26.1
+  },
+  "TOTAL_ESP_BO5": {
+    "a": 24.202,
+    "b": 58.761
+  },
   "_meta": {
-    "fecha": "2026-08-09T01:04:31.460014+00:00",
-    "metodo": "Desviación estándar muestral de games totales reales por partido completo (RET/W/O/DEF excluidos), separado por best_of.",
+    "fecha": "2026-08-09T18:27:13.490476+00:00",
+    "metodo_std_dev": "Desviación estándar muestral de games totales reales por partido completo (RET/W/O/DEF excluidos), separado por best_of.",
+    "metodo_total_esp": "Regresión lineal total_esp = a + b*p_base*(1-p_base), ajustada por mínimos cuadrados contra games reales, walk-forward (Elo+forma+decay+H2H, mismo config de producción).",
     "best_of_3": {
-      "std_dev": 5.91,
-      "mean": 22.72,
-      "n": 12433,
+      "std_dev": 5.95,
+      "mean": 22.56,
+      "n": 53630,
       "calibrado": true
     },
     "best_of_5": {
-      "std_dev": 9.39,
-      "mean": 37.18,
-      "n": 1340,
+      "std_dev": 9.52,
+      "mean": 36.49,
+      "n": 6244,
       "calibrado": true
+    },
+    "total_esp_antes_despues": {
+      "best_of_3": {
+        "n": 12433,
+        "antes": {
+          "sesgo": 2.808,
+          "mae": 5.729
+        },
+        "despues": {
+          "sesgo": 0.0,
+          "mae": 4.959
+        }
+      },
+      "best_of_5": {
+        "n": 1340,
+        "antes": {
+          "sesgo": 3.102,
+          "mae": 8.32
+        },
+        "despues": {
+          "sesgo": 0.0,
+          "mae": 7.748
+        }
+      }
     }
   }
 }

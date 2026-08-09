@@ -30,7 +30,7 @@ import numpy as np
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from src.core.tennis_elo import TennisEloCalculator
-from src.providers.tennis_data_loader import combinar_archivos, extraer_sets
+from src.providers.tennis_data_loader import combinar_archivos, extraer_sets, contar_games_totales
 from src.engines.tennis_improved import TennisImprovedEngine
 from calibrate_tennis_elo import mapear_nivel_torneo, FORMA_VENTANA, FORMA_MIN_PARTIDOS
 
@@ -41,6 +41,11 @@ ELO_GAP_BUCKETS = [
     ("moderado (50-150)", 50.0, 150.0),
     ("desbalanceado (>150)", 150.0, float("inf")),
 ]
+
+TOTAL_GAMES_THRESHOLDS = {
+    "best_of_3": [20.5, 22.5, 24.5, 26.5],
+    "best_of_5": [26.5, 28.5, 30.5, 32.5],
+}
 
 
 def _meses_entre(fecha_anterior: str, fecha_actual: str) -> float:
@@ -73,13 +78,43 @@ def _accuracy(preds: List[float]) -> float:
     return float(np.mean([1.0 if p > 0.5 else (0.5 if p == 0.5 else 0.0) for p in preds]))
 
 
+def _mae_total_games(predichos: List[float], reales: List[int]) -> float:
+    return float(np.mean([abs(p - r) for p, r in zip(predichos, reales)]))
+
+
+def _sesgo_total_games(predichos: List[float], reales: List[int]) -> float:
+    """Sesgo medio: predicho - real. Positivo = el modelo sobreestima."""
+    return float(np.mean([p - r for p, r in zip(predichos, reales)]))
+
+
+def _brier_over_bajo_umbral(total_esp_list: List[float], std_dev: float,
+                             reales: List[int], formato: str) -> Dict[float, float]:
+    """
+    Brier score de P(Over umbral) contra el resultado real, para los
+    umbrales convencionales de ese formato (mismos que
+    calibrate_tennis_std_dev.py) — valida el modelo COMPLETO de
+    distribución (media + std), no solo la media.
+    """
+    from scipy.stats import norm
+    resultado = {}
+    for th in TOTAL_GAMES_THRESHOLDS[formato]:
+        errores = []
+        for total_esp, real in zip(total_esp_list, reales):
+            p_over = 1.0 - norm.cdf(th, loc=total_esp, scale=std_dev)
+            y = 1.0 if real > th else 0.0
+            errores.append((p_over - y) ** 2)
+        resultado[th] = round(float(np.mean(errores)), 5)
+    return resultado
+
+
 def ejecutar_backtest(shrink_k: Optional[float] = None,
                        evaluar_desde: Optional[str] = None,
                        usar_superficie: bool = False,
                        min_games_superficie: Optional[int] = None,
                        decay_por_mes: Optional[float] = None,
                        h2h_weight: Optional[float] = None,
-                       h2h_min_partidos: int = 3) -> Dict:
+                       h2h_min_partidos: int = 3,
+                       retornar_registros: bool = False) -> Dict:
     """
     Corre el backtest walk-forward completo.
 
@@ -213,11 +248,20 @@ def ejecutar_backtest(shrink_k: Optional[float] = None,
             elo_gap = abs(elo_w - elo_l)
             bucket = next(b[0] for b in ELO_GAP_BUCKETS if b[1] <= elo_gap < b[2])
 
+            p_base = mw["debug"]["ensemble"]
+            dist = engine.prob_total_games(p_base, formato)
+            real_total_games = contar_games_totales(m.get("score", ""))
+
             registros.append({
                 "pred": pred,
                 "surface": superficie,
                 "level": mapear_nivel_torneo(m.get("level", "")),
                 "elo_gap_bucket": bucket,
+                "p_base": p_base,
+                "formato": formato,
+                "total_esp": dist["total_esp"],
+                "std_dev": dist["std_dev"],
+                "real_total_games": real_total_games,
             })
 
         # Actualizar Elo/forma DESPUÉS de predecir (walk-forward real)
@@ -256,7 +300,32 @@ def ejecutar_backtest(shrink_k: Optional[float] = None,
         "por_superficie": _desglose(registros, "surface"),
         "por_nivel_torneo": _desglose(registros, "level"),
         "por_paridad": _desglose(registros, "elo_gap_bucket"),
+        "total_games": _validar_total_games(registros),
     }
+    if retornar_registros:
+        resultado["_registros"] = registros
+    return resultado
+
+
+def _validar_total_games(registros: List[Dict]) -> Dict:
+    """Valida el mercado de Total Games (total_esp + std_dev actuales del
+    motor) contra los games reales — completos únicamente, RET/W/O/DEF
+    excluidos porque contar_games_totales ya devuelve None para esos."""
+    resultado = {}
+    for formato in ("best_of_3", "best_of_5"):
+        rs = [r for r in registros if r["formato"] == formato and r["real_total_games"] is not None]
+        if not rs:
+            resultado[formato] = {"n": 0}
+            continue
+        predichos = [r["total_esp"] for r in rs]
+        reales = [r["real_total_games"] for r in rs]
+        std_dev = rs[0]["std_dev"]
+        resultado[formato] = {
+            "n": len(rs),
+            "mae": round(_mae_total_games(predichos, reales), 3),
+            "sesgo": round(_sesgo_total_games(predichos, reales), 3),
+            "brier_por_umbral": _brier_over_bajo_umbral(predichos, std_dev, reales, formato),
+        }
     return resultado
 
 

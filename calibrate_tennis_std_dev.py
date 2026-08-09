@@ -1,27 +1,37 @@
 #!/usr/bin/env python3
 """
-Calibra el std_dev de la distribución Normal de "total de games" del motor
-de tenis (`TennisImprovedEngine.prob_total_games`) contra partidos reales,
-en vez de la constante hardcodeada (4.5 para BO3, 6.0 para BO5).
+Calibra la distribución Normal de "total de games" del motor de tenis
+(`TennisImprovedEngine.prob_total_games`) contra partidos reales: el
+ANCHO (std_dev, calibrado en P1) y la MEDIA (total_esp, calibrada acá).
 
-Por qué la media no se toca: `total_esp` (la media) ya se calcula por
-partido a partir de la probabilidad de Elo (`prob_total_games()` en
-tennis_improved.py) — varía según cuán parejo esté el enfrentamiento. Lo
-que estaba mal era el ANCHO de esa distribución (std_dev), fijo sin importar
-los jugadores. Este script calcula el std_dev empírico real de "games
-totales por partido completado", separado por formato (BO3/BO5), a partir
-del mismo histórico real usado para calibrar Elo (ver
-src/providers/tennis_data_loader.py — la fuente original de Jeff Sackmann
-en GitHub ya no existe, se usa un mirror activo).
+Historia: `total_esp` era una fórmula heurística nunca calibrada
+(`sets_esp * games_por_set`, con games_por_set fijo entre 10.0-10.375).
+Un backtest walk-forward confirmó que sobreestimaba el total real en
++2.80 games (BO3) / +3.10 games (BO5), en 67.5% de los partidos — sesgo
+sistemático, no ruido — y que el Brier score del modelo de Over/Under
+en umbrales bajos (20.5 en BO3) era 0.31, PEOR que adivinar a ciegas
+(0.25). Esto generaba EV artificialmente inflado (36-56% con cuotas
+justas simétricas) en el mercado de Total Games. Ver
+tennis_backtest_results.md.
 
-Nota de método: se usa la desviación estándar muestral directa de los
-games reales (estimador correcto y no sesgado para el ancho de una Normal),
-en vez de ajustar el std_dev minimizando el error contra un puñado de
-líneas de Over/Under arbitrarias — ese enfoque indirecto es más ruidoso
-(depende de qué thresholds se elijan) y no aporta nada que el std muestral
-no dé ya de forma más robusta. La tabla de validación al final compara
-igual el % real de Over vs el predicho por el modelo calibrado, para
-verificar que el ajuste es razonable.
+Fix: en vez de siquiera intentar ajustar a mano los coeficientes de la
+fórmula heurística, se reemplaza por una regresión lineal simple
+calibrada contra el histórico real, walk-forward (reusa
+`backtest_tennis.ejecutar_backtest(..., retornar_registros=True)`, que
+ya corre la simulación completa con el mismo Elo/forma/decay/H2H que ve
+producción hoy):
+
+    total_esp = a + b * p_base*(1 - p_base)
+
+p_base*(1-p_base) ("competitividad") es la misma variable que ya usaba
+la fórmula vieja — se mantiene la simetría (no importa cuál jugador es
+favorito, solo cuán parejo está el partido), solo se reemplazan los
+coeficientes inventados por unos ajustados por mínimos cuadrados contra
+games reales.
+
+El std_dev (P1) usa la desviación estándar muestral directa de los
+games reales — no se toca en este script, sigue siendo el estimador
+correcto para el ancho.
 
 Uso:
     python calibrate_tennis_std_dev.py
@@ -39,6 +49,7 @@ from scipy.stats import norm
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from src.providers.tennis_data_loader import combinar_archivos, contar_games_totales
+from backtest_tennis import ejecutar_backtest
 
 logging.basicConfig(
     level=logging.INFO,
@@ -81,6 +92,90 @@ def calibrar_formato(games: list[int], formato: str) -> dict:
     return {"std_dev": round(std_obs, 2), "mean": round(mean_obs, 2), "n": n, "calibrado": True}
 
 
+MIN_MUESTRAS_REGRESION = 100
+
+
+def _total_esp_heuristico_original(p: float, formato: str) -> float:
+    """
+    Réplica AUTOCONTENIDA de la fórmula heurística original de
+    total_esp (sets_esp*games_por_set), previa a esta calibración.
+
+    Necesaria para que la comparación "antes/después" sea honesta al
+    re-correr este script una segunda vez: si se leyera
+    TennisImprovedEngine.prob_total_games() directamente, "antes" ya
+    reflejaría los coeficientes calibrados de una corrida anterior (el
+    archivo de salida ya existe) en vez de la fórmula vieja real —
+    comparación circular. Esta copia no depende de ningún estado
+    calibrado, así que "antes" siempre es la misma fórmula que estaba
+    en producción hasta este fix, sin importar cuántas veces se corra.
+    """
+    q = 1.0 - p
+    pq = p * q
+    if formato == "best_of_5":
+        sets_esp = 3.0 + 3.0 * pq
+        competitiveness = min(2.0 * pq, 0.25)
+        games_por_set = 10.5 + 2.0 * competitiveness
+    else:
+        sets_esp = 2.0 + 2.0 * pq
+        competitiveness = min(2.0 * pq, 0.25)
+        games_por_set = 10.0 + 1.5 * competitiveness
+    return sets_esp * games_por_set
+
+
+def calibrar_total_esp() -> tuple[dict, dict]:
+    """
+    Ajusta total_esp = a + b*p_base*(1-p_base) por mínimos cuadrados
+    contra games reales, walk-forward (misma simulación de producción:
+    Elo con burn-in + decay + H2H, todo ya validado).
+
+    Returns:
+        (coeficientes por formato, comparación antes/después por formato)
+    """
+    _log.info("Corriendo simulación walk-forward completa (Elo+forma+decay+H2H) "
+              "para recolectar (p_base, total_games_real) por partido...")
+    resultado_bt = ejecutar_backtest(evaluar_desde="2024-01-01", h2h_weight=0.18,
+                                      h2h_min_partidos=2, retornar_registros=True)
+    registros = resultado_bt["_registros"]
+
+    coefs: dict = {}
+    antes_despues: dict = {}
+    for formato in ("best_of_3", "best_of_5"):
+        rs = [r for r in registros if r["formato"] == formato and r["real_total_games"] is not None]
+        n = len(rs)
+        if n < MIN_MUESTRAS_REGRESION:
+            _log.warning(f"{formato}: solo {n} partidos con p_base+total real, "
+                          f"insuficiente para regresión (< {MIN_MUESTRAS_REGRESION}).")
+            coefs[formato] = None
+            continue
+
+        pq = np.array([r["p_base"] * (1.0 - r["p_base"]) for r in rs])
+        reales = np.array([r["real_total_games"] for r in rs], dtype=float)
+        b, a = np.polyfit(pq, reales, 1)  # grado 1: [pendiente, ordenada]
+
+        predichos_antes = np.array([_total_esp_heuristico_original(r["p_base"], formato) for r in rs])
+        mae_antes = float(np.mean(np.abs(predichos_antes - reales)))
+        sesgo_antes = float(np.mean(predichos_antes - reales))
+
+        predichos_despues = a + b * pq
+        mae_despues = float(np.mean(np.abs(predichos_despues - reales)))
+        sesgo_despues = float(np.mean(predichos_despues - reales))
+
+        _log.info(f"\n{formato} — n={n}")
+        _log.info(f"  ANTES  (fórmula heurística nunca calibrada): "
+                  f"sesgo={sesgo_antes:+.2f}  MAE={mae_antes:.2f}")
+        _log.info(f"  DESPUÉS (regresión total_esp = {a:.2f} + {b:.2f}*p*q): "
+                  f"sesgo={sesgo_despues:+.2f}  MAE={mae_despues:.2f}")
+
+        coefs[formato] = {"a": round(float(a), 3), "b": round(float(b), 3)}
+        antes_despues[formato] = {
+            "n": n,
+            "antes": {"sesgo": round(sesgo_antes, 3), "mae": round(mae_antes, 3)},
+            "despues": {"sesgo": round(sesgo_despues, 3), "mae": round(mae_despues, 3)},
+        }
+
+    return coefs, antes_despues
+
+
 def calibrar_std_dev():
     _log.info("=" * 70)
     _log.info("CALIBRANDO STD_DEV DE TOTAL DE GAMES CON DATOS REALES")
@@ -113,15 +208,26 @@ def calibrar_std_dev():
     resultado_bo3 = calibrar_formato(por_formato["best_of_3"], "best_of_3")
     resultado_bo5 = calibrar_formato(por_formato["best_of_5"], "best_of_5")
 
+    _log.info("\n" + "=" * 70)
+    _log.info("CALIBRANDO total_esp (MEDIA) POR REGRESIÓN CONTRA GAMES REALES")
+    _log.info("=" * 70)
+    coefs_total_esp, antes_despues = calibrar_total_esp()
+
     config = {
         "STD_DEV_BO3": resultado_bo3["std_dev"],
         "STD_DEV_BO5": resultado_bo5["std_dev"],
+        "TOTAL_ESP_BO3": coefs_total_esp.get("best_of_3"),
+        "TOTAL_ESP_BO5": coefs_total_esp.get("best_of_5"),
         "_meta": {
             "fecha": datetime.now(timezone.utc).isoformat(),
-            "metodo": "Desviación estándar muestral de games totales reales por "
-                      "partido completo (RET/W/O/DEF excluidos), separado por best_of.",
+            "metodo_std_dev": "Desviación estándar muestral de games totales reales por "
+                              "partido completo (RET/W/O/DEF excluidos), separado por best_of.",
+            "metodo_total_esp": "Regresión lineal total_esp = a + b*p_base*(1-p_base), "
+                                "ajustada por mínimos cuadrados contra games reales, "
+                                "walk-forward (Elo+forma+decay+H2H, mismo config de producción).",
             "best_of_3": resultado_bo3,
             "best_of_5": resultado_bo5,
+            "total_esp_antes_despues": antes_despues,
         },
     }
 
@@ -132,6 +238,8 @@ def calibrar_std_dev():
     _log.info(f"\nGuardado: {OUTPUT_FILE}")
     _log.info(f"STD_DEV_BO3: {config['STD_DEV_BO3']} (antes: {DEFAULTS['best_of_3']})")
     _log.info(f"STD_DEV_BO5: {config['STD_DEV_BO5']} (antes: {DEFAULTS['best_of_5']})")
+    _log.info(f"TOTAL_ESP_BO3: {config['TOTAL_ESP_BO3']}")
+    _log.info(f"TOTAL_ESP_BO5: {config['TOTAL_ESP_BO5']}")
 
     return True
 

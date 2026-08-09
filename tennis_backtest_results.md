@@ -452,3 +452,81 @@ siempre. Perfil de mejora distinto y más convincente.
 Validado en vivo: Sinner vs Djokovic (H2H real 7-5 a favor de Sinner) →
 `"usa_h2h":true`, `"p_h2h":0.5333`. Sinner vs un par sin historial →
 `"usa_h2h":false`, `"p_h2h":null`, sin romper nada.
+
+## Fix: sesgo sistemático de total_esp (Total Games) — ACTIVADO en producción
+
+Motivado por un patrón observado en producción: el mercado de Total
+Games generaba picks con EV inflado casi siempre, mientras Match Winner
+casi nunca aparecía como pick.
+
+### Diagnóstico (confirmado, no hipótesis)
+
+`total_esp` (la media de la distribución de total de games) nunca fue
+calibrada — a diferencia de `std_dev`, arreglado en P1. Fórmula vieja:
+`sets_esp * games_por_set`, con `games_por_set` fijo entre 10.0-10.375.
+Medido walk-forward contra los 14,320 partidos evaluados (mismo
+config de producción: burn-in + decay + H2H activos):
+
+| | n | Sesgo (predicho − real) | MAE | Partidos sobreestimados |
+|---|---|---|---|---|
+| BO3 (antes) | 12,433 | **+2.81 games** | 5.73 | 67.5% |
+| BO5 (antes) | 1,340 | **+3.10 games** | 8.32 | — |
+
+Brier score de P(Over) contra el umbral 20.5 en BO3: **0.310** — peor
+que adivinar a ciegas (0.25). El modelo de totales no solo estaba mal
+calibrado, era activamente peor que no tener modelo.
+
+### Fix: regresión calibrada, no ajuste manual de la fórmula
+
+`total_esp = a + b * p_base*(1 - p_base)` — misma variable simétrica
+(`p*q`, "competitividad") que ya usaba la fórmula vieja, coeficientes
+ajustados por mínimos cuadrados contra games reales en vez de
+inventados a mano. Calibración walk-forward, reutilizando
+`backtest_tennis.ejecutar_backtest(..., retornar_registros=True)` (la
+misma simulación completa de Elo+forma+decay+H2H que ya corre
+producción hoy, extendida para devolver `p_base`/`total_esp`/
+`real_total_games` por partido).
+
+Nota de método: la primera corrida de este cálculo comparó "antes" contra
+los coeficientes que la corrida ANTERIOR ya había guardado en el mismo
+archivo (`tennis_std_dev_calibrated.json`) — comparación circular, sesgo
+"antes" salía ≈0. Corregido con `_total_esp_heuristico_original()`, una
+copia autocontenida de la fórmula vieja que no depende de ningún estado
+calibrado, para que "antes" sea siempre la fórmula real que estuvo en
+producción, sin importar cuántas veces se recalibre.
+
+| | n | Sesgo | MAE |
+|---|---|---|---|
+| BO3 antes | 12,433 | +2.81 | 5.73 |
+| **BO3 después** | 12,433 | **+0.00** | **4.96** |
+| BO5 antes | 1,340 | +3.10 | 8.32 |
+| **BO5 después** | 1,340 | **+0.00** | **7.75** |
+
+Coeficientes calibrados: `TOTAL_ESP_BO3 = 16.71 + 26.10*p*q`,
+`TOTAL_ESP_BO5 = 24.20 + 58.76*p*q`.
+
+`backtest_tennis.py` ahora valida este mercado de forma permanente
+(`resultado["total_games"]`: MAE, sesgo y Brier por umbral, separado
+por formato) — deja de ser el único mercado sin backtest.
+
+### Activado en producción
+
+- `calibrate_tennis_std_dev.py`: además del `std_dev` (P1), ahora
+  también calibra y exporta `TOTAL_ESP_BO3`/`TOTAL_ESP_BO5` (`a`, `b`)
+  en el mismo `tennis_std_dev_calibrated.json`.
+- `tennis_improved.py`: `prob_total_games()` usa la regresión calibrada
+  cuando está disponible; si el archivo no la tiene (versión vieja),
+  cae a la fórmula heurística original sin romper nada.
+
+Validado en vivo, mismos 3 partidos con cuotas justas simétricas
+(1.90/1.90 en ambos mercados) que expusieron el problema original:
+
+| Partido | `total_esp` antes | `total_esp` después | Pick Total Games antes | Pick después |
+|---|---|---|---|---|
+| Djokovic vs Zverev | ~25.9 | 23.2 | Over 22.5, EV 36.3% | **sin pick** |
+| Sabalenka vs Swiatek | ~25.8 | 23.1 | Over 20.5, EV 54.9% | **sin pick** |
+| Gauff vs Rybakina | ~25.9 | 23.1 | Over 20.5, EV 55.7% | **sin pick** |
+
+Con cuotas justas, Total Games ahora se comporta como Match Winner
+siempre se comportó: sin ventaja artificial, sin pick — el EV inflado
+era 100% un artefacto de la fórmula sin calibrar, confirmado.
