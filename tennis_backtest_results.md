@@ -330,12 +330,50 @@ Validado en vivo: Roger Federer (última fecha registrada 2021-06-28,
 Sinner (gaps normales de semanas entre torneos) reciben un decay leve,
 proporcional.
 
-**Caveat pendiente, real:** el campo `forma` (últimos 10 partidos) no
-tiene su propio decay. En el caso de Federer, `usa_forma` sigue en
-`True` y su `forma: 7 ganados / 3 perdidos` de 2021 (ya no vigente)
-sigue aportando el 30% del ensemble — el Elo decae correctamente a
-1500, pero la forma stale todavía empuja la predicción. No alcanza a
-cambiar el resultado en este caso puntual (Sinner igual queda muy
-favorito), pero es una inconsistencia real: forma y Elo deberían decaer
-juntos. Queda para P2 si se profundiza (ej. invalidar `forma` cuando
-`meses_inactivo` supera cierto umbral).
+## Decay también aplicado a "forma" — RESUELTO
+
+El caveat de arriba (forma vieja sin decay propio) ya está resuelto.
+
+### Mecanismo: `forma_vigente()` (umbral, no decay continuo)
+
+A diferencia del Elo (decay continuo hacia la media), la forma se
+maneja con un corte simple: si `meses_inactivo` supera
+`FORMA_MAX_MESES_INACTIVO=3.0`, la forma se descarta por completo
+(se trata como si no existiera, cae al mismo fallback de Elo puro que ya
+existía cuando faltaba forma real — P0-1). No tiene sentido "encoger"
+gradualmente un win-rate de los últimos 10 partidos: pasados unos meses
+sin jugar, esos 10 partidos ya no son "forma reciente" en absoluto, son
+historia vieja — un corte es más honesto que un decay gradual acá.
+
+Aplica en dos lugares: en el cálculo interno (`prob_match_winner_ensemble`)
+y en el campo `forma` expuesto en la respuesta de `analizar()` — antes
+del fix, `usa_forma` reflejaba correctamente el descarte pero el JSON de
+respuesta seguía mostrando la forma vieja igual (inconsistencia real que
+apareció al escribir el test end-to-end).
+
+### Impacto en el backtest: neutral, como se esperaba
+
+| | Brier | Accuracy |
+|---|---|---|
+| Solo decay de Elo (sin descartar forma) | 0.21921 | 63.97% |
+| Elo + forma vieja descartada | 0.21932 | 63.97% |
+
+Diferencia de 0.00011 (0.05% relativo) — dentro de ruido, ni mejora ni
+empeora de forma medible. Esperable: son pocos los partidos evaluados
+donde un jugador lleva más de 3 meses inactivo Y tiene forma calculada
+de antes de ese parate (la mayoría de los jugadores con `forma` real
+son justamente los que juegan seguido). El valor de este fix es de
+**coherencia del modelo** (Elo y forma decaen juntos, no por separado),
+no de precisión agregada — exactamente como se planteó el pedido.
+
+### Activado en producción
+
+`calibrate_tennis_elo.py`/`tennis_validator.py`/`app.py` ya pasaban
+`meses_inactivo1`/`meses_inactivo2` al motor para el decay de Elo — el
+descarte de forma se activó automáticamente al agregar la lógica al
+motor, sin cambios adicionales de wiring.
+
+Validado en vivo: Federer (inactivo ~61 meses) vs Sinner →
+`"forma":{"j1":null,"j2":{...}}`, `"usa_forma":false`,
+`"metodo":"Elo puro..."` — la forma vieja de Federer (7 ganados / 3
+perdidos de 2021) ya no aparece ni se usa.

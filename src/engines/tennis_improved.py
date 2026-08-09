@@ -133,6 +133,27 @@ def aplicar_decay_inactividad(elo: float, meses_inactivo: Optional[float],
     return elo + (elo_medio - elo) * factor
 
 
+FORMA_MAX_MESES_INACTIVO = 3.0   # más de esto sin jugar, los "últimos 10 partidos" ya no son forma reciente
+
+
+def forma_vigente(meses_inactivo: Optional[float],
+                   max_meses: float = FORMA_MAX_MESES_INACTIVO) -> bool:
+    """
+    False si el jugador lleva más de max_meses sin competir — su forma
+    calculada (últimos 10 partidos) quedó vieja y no debe tratarse como
+    señal de forma actual (mismo problema que motivó el decay de Elo:
+    un jugador retirado o lesionado mucho tiempo, ej. Federer, seguía
+    mostrando la racha de su última temporada activa como si fuera
+    vigente hoy).
+
+    meses_inactivo=None (sin fecha de referencia, ej. Elo explícito en
+    el request) no descarta la forma — no hay con qué evaluarlo.
+    """
+    if meses_inactivo is None:
+        return True
+    return meses_inactivo <= max_meses
+
+
 class TennisImprovedEngine:
     """Motor de tenis mejorado con datos históricos."""
 
@@ -212,7 +233,8 @@ class TennisImprovedEngine:
                                    min_games_superficie: int = SURFACE_MIN_GAMES,
                                    meses_inactivo1: Optional[float] = None,
                                    meses_inactivo2: Optional[float] = None,
-                                   decay_por_mes: float = DECAY_POR_MES) -> Dict:
+                                   decay_por_mes: float = DECAY_POR_MES,
+                                   max_meses_forma: float = FORMA_MAX_MESES_INACTIVO) -> Dict:
         """
         P(ganar partido) combinando Elo + Forma.
 
@@ -238,7 +260,12 @@ class TennisImprovedEngine:
         meses_inactivo{1,2}/decay_por_mes (opcional): acerca el Elo hacia
         la media cuanto más tiempo lleva el jugador sin competir (ver
         aplicar_decay_inactividad). decay_por_mes=0 (default del módulo)
-        desactiva el decay y preserva el comportamiento anterior.
+        desactiva el decay y preserva el comportamiento anterior. Estos
+        mismos meses_inactivo{1,2} también descartan la "forma" (últimos
+        10 partidos) si superan max_meses_forma — un jugador inactivo
+        hace mucho no tiene "forma reciente", tiene una racha vieja (ver
+        forma_vigente). Esto aplica siempre que se pase meses_inactivo,
+        independiente de decay_por_mes.
         """
         elo1_base, uso_surf1 = elegir_elo_superficie(elo1, elo1_superficie, games1_superficie, min_games_superficie)
         elo2_base, uso_surf2 = elegir_elo_superficie(elo2, elo2_superficie, games2_superficie, min_games_superficie)
@@ -253,9 +280,9 @@ class TennisImprovedEngine:
         # Probabilidad por Elo
         p_elo = self.prob_from_elo(elo1_calc, elo2_calc, superficie, aplicar_factor)
 
-        # Probabilidad por Forma (solo si hay datos reales de ambos)
-        form1 = self.get_form(player1)
-        form2 = self.get_form(player2)
+        # Probabilidad por Forma (solo si hay datos reales de ambos Y siguen vigentes)
+        form1 = self.get_form(player1) if forma_vigente(meses_inactivo1, max_meses_forma) else None
+        form2 = self.get_form(player2) if forma_vigente(meses_inactivo2, max_meses_forma) else None
         usa_forma = form1 is not None and form2 is not None
 
         if usa_forma:
@@ -370,7 +397,8 @@ class TennisImprovedEngine:
                 games2_superficie: Optional[int] = None,
                 meses_inactivo1: Optional[float] = None,
                 meses_inactivo2: Optional[float] = None,
-                decay_por_mes: float = DECAY_POR_MES) -> Dict:
+                decay_por_mes: float = DECAY_POR_MES,
+                max_meses_forma: float = FORMA_MAX_MESES_INACTIVO) -> Dict:
         """
         Análisis completo con Elo + Forma.
 
@@ -385,7 +413,8 @@ class TennisImprovedEngine:
 
         meses_inactivo{1,2}/decay_por_mes (opcional): activa el decay de
         Elo por inactividad (ver aplicar_decay_inactividad). Default
-        desactivado.
+        desactivado. Los mismos meses_inactivo{1,2} también descartan la
+        forma si superan max_meses_forma (ver forma_vigente).
         """
         # Obtener probabilidades (Elo + Forma)
         mw_result = self.prob_match_winner_ensemble(
@@ -393,7 +422,7 @@ class TennisImprovedEngine:
             elo1_superficie, elo2_superficie, games1_superficie, games2_superficie,
             min_games_superficie=SURFACE_MIN_GAMES,
             meses_inactivo1=meses_inactivo1, meses_inactivo2=meses_inactivo2,
-            decay_por_mes=decay_por_mes,
+            decay_por_mes=decay_por_mes, max_meses_forma=max_meses_forma,
         )
         p_base = mw_result["debug"]["ensemble"]  # Probabilidad ensemble
 
@@ -403,8 +432,10 @@ class TennisImprovedEngine:
             "p_base_j1": round(p_base, 4),
             "elo": {"j1": elo1, "j2": elo2},
             "forma": {
-                "j1": self.get_form(player1),  # None si no hay datos reales
-                "j2": self.get_form(player2),
+                # None si no hay datos reales, o si el jugador lleva más de
+                # max_meses_forma sin jugar (forma vieja, no reciente).
+                "j1": self.get_form(player1) if forma_vigente(meses_inactivo1, max_meses_forma) else None,
+                "j2": self.get_form(player2) if forma_vigente(meses_inactivo2, max_meses_forma) else None,
             },
             "match_winner": mw_result,
             "total_games": self.prob_total_games(p_base, formato),

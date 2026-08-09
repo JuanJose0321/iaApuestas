@@ -229,6 +229,15 @@ No hay datos históricos de picks de tenis registrados de forma separable hoy (t
 > meses de inactividad, `app.py` usa `DECAY_POR_MES_ACTIVO=0.25`.
 > Validado en vivo: Federer (inactivo desde 2021) cae a Elo 1500 puro.
 > Detalle completo en `tennis_backtest_results.md`.
+>
+> **Actualización 2026-08-09 (forma también decae — resuelto):** el
+> caveat pendiente ("forma vieja de Federer seguía activa aunque su Elo
+> ya decayó") quedó resuelto — `forma_vigente()` descarta la forma
+> completa (corte simple, no decay gradual) cuando `meses_inactivo`
+> supera 3 meses, reusando el mismo fallback de Elo puro de P0-1.
+> Impacto en el backtest: neutral (Brier 0.21921→0.21932, dentro de
+> ruido) — es un fix de coherencia del modelo, no de precisión agregada.
+> Validado en vivo: Federer ya no muestra `forma` en la respuesta.
 
 ## 9. AUDITORÍA DE PRECISIÓN — FASE 2 (2026-08-09)
 
