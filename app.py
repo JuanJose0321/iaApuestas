@@ -13,6 +13,8 @@ GET  /api/historial             historial filtrado
 POST /api/actualizar_resultado  actualizar resultado
 GET  /api/verificar_resultados  verificar pendientes
 POST /api/analizar_tenis        analizar partido de tenis
+POST /api/tenis/resultado       cargar resultado real de un análisis logueado
+GET  /api/tenis/predicciones    predicciones logueadas + precisión acumulada
 """
 import logging
 import sys
@@ -62,6 +64,12 @@ from src.providers.league_manager import get_teams
 from src.providers.player_manager import get_players as get_tennis_players
 from src.engines.tennis_improved import TennisImprovedEngine
 from src.engines.tennis_validator import validar_entrada_tenis
+from src.services.tennis_predictions import (
+    registrar_prediccion as _registrar_prediccion_tenis,
+    cargar_resultado as _cargar_resultado_tenis,
+    leer_predicciones as _leer_predicciones_tenis,
+    calcular_precision as _calcular_precision_tenis,
+)
 
 app = Flask(__name__, template_folder="templates", static_folder="static")
 app.config["JSON_SORT_KEYS"] = False
@@ -491,7 +499,67 @@ def api_analizar_tenis():
         )
 
     resultado["bankroll"] = bankroll
+
+    # Log de predicciones: registra CADA análisis (con o sin pick) para medir
+    # precisión real en vivo, aparte del historial de apuestas con dinero.
+    mw = resultado["modelo"]["match_winner"]
+    favorito = j1 if mw["prob_j1"] >= mw["prob_j2"] else j2
+    prob_favorito = max(mw["prob_j1"], mw["prob_j2"])
+    todos_los_picks = resultado["picks_verdes"] + resultado["picks_amarillos"]
+    try:
+        log = _registrar_prediccion_tenis({
+            "fecha_partido": data.get("fecha_partido", ""),
+            "jugador1": j1, "jugador2": j2,
+            "favorito": favorito, "prob_favorito": prob_favorito,
+            "superficie": superficie, "formato": formato,
+            "total_esp": resultado["modelo"]["total_games"]["total_esp"],
+            "tuvo_pick": bool(todos_los_picks),
+            "tipo_pick": ", ".join(p["mercado"] for p in todos_los_picks),
+        })
+        resultado["prediccion_id"] = log["id"]
+    except Exception as exc:
+        _log.error("No se pudo loguear la predicción de tenis: %s", exc, exc_info=True)
+
     return jsonify(resultado)
+
+
+@app.route("/api/tenis/resultado", methods=["POST"])
+def api_tenis_resultado():
+    """
+    Carga el resultado real de un análisis ya logueado.
+
+    Body JSON: {"id": 12, "ganador_real": "Jannik Sinner", "total_games_real": 24}
+    ganador_real y total_games_real son ambos opcionales (al menos uno).
+    """
+    data = request.get_json(silent=True) or {}
+    id_prediccion = data.get("id")
+    if not id_prediccion:
+        return jsonify({"error": "Falta id"}), 400
+
+    try:
+        return jsonify(_cargar_resultado_tenis(
+            int(id_prediccion),
+            ganador_real=data.get("ganador_real"),
+            total_games_real=data.get("total_games_real"),
+        ))
+    except ValueError as exc:
+        return jsonify({"error": str(exc)}), 400
+    except Exception as exc:
+        _log.exception("Error cargando resultado de predicción de tenis")
+        return jsonify({"error": str(exc)}), 500
+
+
+@app.route("/api/tenis/predicciones")
+def api_tenis_predicciones():
+    """Predicciones logueadas (más recientes primero) + precisión acumulada."""
+    try:
+        predicciones = list(reversed(_leer_predicciones_tenis()))
+        return jsonify({
+            "predicciones": predicciones,
+            "precision": _calcular_precision_tenis(),
+        })
+    except Exception as exc:
+        return jsonify({"error": str(exc)}), 500
 
 
 # ── Error handlers ────────────────────────────────────────────────────────────

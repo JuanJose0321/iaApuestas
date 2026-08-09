@@ -578,6 +578,11 @@ class TennisImprovedEngine:
                 linea = float(tg["linea"])
                 dist = modelo["total_games"]
 
+                # Over y Under se evalúan por separado (mismo patrón que
+                # Match Winner con jugador1/jugador2, sección 12 del audit) —
+                # antes solo se chequeaba "over"; una cuota de "under" con
+                # valor real, aunque el frontend la mandara, se descartaba
+                # en silencio sin generar pick.
                 if "over" in tg:
                     p_over = float(1.0 - norm_cdf(
                         linea, loc=dist["total_esp"], scale=dist["std_dev"]
@@ -591,6 +596,31 @@ class TennisImprovedEngine:
                                 "mercado": f"Total Games Over {linea}",
                                 "pick": f"Over {linea} games",
                                 "prob": p_over,
+                                "cuota": cuota,
+                                "ev": val["ev"],
+                                "kelly_pct": val["kelly_pct"],
+                                "confianza": confianza,
+                                "confianza_nivel": self._nivel_confianza(confianza),
+                                "total_esp": dist["total_esp"],
+                            }
+                            if confianza >= UMBRAL_VERDE:
+                                picks_verdes.append(pick)
+                            elif confianza >= UMBRAL_AMARILLO:
+                                picks_amarillos.append(pick)
+
+                if "under" in tg:
+                    p_under = float(norm_cdf(
+                        linea, loc=dist["total_esp"], scale=dist["std_dev"]
+                    ))
+                    cuota = float(tg["under"])
+                    if cuota_min <= cuota <= cuota_max:
+                        val = self.evaluar_value(p_under, cuota)
+                        if val["tiene_value"]:
+                            confianza = self._calc_confianza(p_under, val["ev"])
+                            pick = {
+                                "mercado": f"Total Games Under {linea}",
+                                "pick": f"Under {linea} games",
+                                "prob": p_under,
                                 "cuota": cuota,
                                 "ev": val["ev"],
                                 "kelly_pct": val["kelly_pct"],

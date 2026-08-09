@@ -107,6 +107,41 @@ def _brier_over_bajo_umbral(total_esp_list: List[float], std_dev: float,
     return resultado
 
 
+def _bucket_games(games_min: int) -> str:
+    """Bucket por tamaño de muestra del jugador con MENOS partidos previos
+    de los dos (ej. un qualifier/ITF contra un top-100) — para ver si el
+    modelo degrada con gracia o queda sobreconfiado con muestra chica."""
+    if games_min < 10:
+        return "1. <10 (muestra muy chica)"
+    if games_min < 20:
+        return "2. 10-20 (muestra chica)"
+    if games_min < 50:
+        return "3. 20-50"
+    return "4. 50+"
+
+
+def _bucket_certeza(pred: float) -> str:
+    """Bucket por certeza del modelo en el lado que favoreció, sin
+    importar si acertó (max(pred, 1-pred)) — sirve para validar si los
+    umbrales verde/amarillo (UMBRAL_VERDE=0.65, UMBRAL_AMARILLO=0.50)
+    realmente separan tramos de distinta accuracy real, o son arbitrarios."""
+    certeza = max(pred, 1.0 - pred)
+    if certeza >= 0.80:
+        return "4. 0.80+"
+    if certeza >= 0.70:
+        return "3. 0.70-0.80"
+    if certeza >= 0.65:
+        return "2. 0.65-0.70 (equiv. verde)"
+    if certeza >= 0.55:
+        return "1. 0.55-0.65 (equiv. amarillo)"
+    return "0. 0.50-0.55"
+
+
+BASELINE_DECAY_POR_MES = 0.25
+BASELINE_H2H_WEIGHT = 0.18
+BASELINE_H2H_MIN_PARTIDOS = 2
+
+
 def ejecutar_backtest(shrink_k: Optional[float] = None,
                        evaluar_desde: Optional[str] = None,
                        usar_superficie: bool = False,
@@ -114,7 +149,8 @@ def ejecutar_backtest(shrink_k: Optional[float] = None,
                        decay_por_mes: Optional[float] = None,
                        h2h_weight: Optional[float] = None,
                        h2h_min_partidos: int = 3,
-                       retornar_registros: bool = False) -> Dict:
+                       retornar_registros: bool = False,
+                       sobre_baseline: bool = False) -> Dict:
     """
     Corre el backtest walk-forward completo.
 
@@ -146,6 +182,14 @@ def ejecutar_backtest(shrink_k: Optional[float] = None,
     (solo partidos previos a este, nunca futuros) y solo se usa si hay
     al menos h2h_min_partidos enfrentamientos previos entre ese par
     específico.
+
+    sobre_baseline: si True, combina TODO lo que se pase (shrink_k y/o
+    usar_superficie) ENCIMA del baseline ya validado y activo en
+    producción (decay=0.25 + H2H weight=0.18/min=2), en vez de probarlo
+    en aislamiento contra un baseline viejo sin esas mejoras — evita
+    repetir el error de medir shrink_elo/superficie contra un punto de
+    referencia que ya no es el que ve producción. decay_por_mes/
+    h2h_weight explícitos siguen ganando si se pasan junto con esto.
     """
     matches = combinar_archivos()
     hoy = datetime.now(timezone.utc).strftime("%Y-%m-%d")
@@ -194,7 +238,19 @@ def ejecutar_backtest(shrink_k: Optional[float] = None,
         surf_calc = elo_calc_surf.setdefault(superficie, TennisEloCalculator())
 
         if evaluar_este:
-            if usar_superficie:
+            if sobre_baseline:
+                mw = _predecir_combinado(
+                    engine, elo_w, elo_l, winner, loser, superficie, formato,
+                    games_w, games_l, meses_inactivo_w, meses_inactivo_l,
+                    h2h_ganados_winner, h2h_total_prev,
+                    shrink_k=shrink_k,
+                    decay_por_mes=decay_por_mes if decay_por_mes is not None else BASELINE_DECAY_POR_MES,
+                    h2h_weight=h2h_weight if h2h_weight is not None else BASELINE_H2H_WEIGHT,
+                    h2h_min_partidos=h2h_min_partidos,
+                    usar_superficie=usar_superficie, surf_calc=surf_calc,
+                    min_games_superficie=min_games_superficie,
+                )
+            elif usar_superficie:
                 elo_w_s = surf_calc.get_elo(winner)
                 elo_l_s = surf_calc.get_elo(loser)
                 games_w_s = surf_calc.players[winner].games_played if winner in surf_calc.players else 0
@@ -262,6 +318,9 @@ def ejecutar_backtest(shrink_k: Optional[float] = None,
                 "total_esp": dist["total_esp"],
                 "std_dev": dist["std_dev"],
                 "real_total_games": real_total_games,
+                "genero": m.get("genero", "M"),
+                "games_bucket": _bucket_games(min(games_w, games_l)),
+                "certeza_bucket": _bucket_certeza(pred),
             })
 
         # Actualizar Elo/forma DESPUÉS de predecir (walk-forward real)
@@ -300,6 +359,9 @@ def ejecutar_backtest(shrink_k: Optional[float] = None,
         "por_superficie": _desglose(registros, "surface"),
         "por_nivel_torneo": _desglose(registros, "level"),
         "por_paridad": _desglose(registros, "elo_gap_bucket"),
+        "por_genero": _desglose(registros, "genero"),
+        "por_muestra": _desglose(registros, "games_bucket"),
+        "por_certeza": _desglose(registros, "certeza_bucket"),
         "total_games": _validar_total_games(registros),
     }
     if retornar_registros:
@@ -337,6 +399,43 @@ def _predecir_con_k(engine, elo_w, elo_l, winner, loser, superficie, formato, ga
     return engine.prob_match_winner_ensemble(elo_w_s, elo_l_s, winner, loser, superficie, formato)
 
 
+def _predecir_combinado(engine, elo_w, elo_l, winner, loser, superficie, formato,
+                         games_w, games_l, meses_inactivo_w, meses_inactivo_l,
+                         h2h_ganados_winner, h2h_total_prev,
+                         shrink_k, decay_por_mes, h2h_weight, h2h_min_partidos,
+                         usar_superficie, surf_calc, min_games_superficie):
+    """Combina shrink_k y/o usar_superficie ENCIMA del baseline de
+    producción (decay + H2H) en una sola llamada al engine, en vez de
+    medir cada mejora en aislamiento contra un baseline que ya no es el
+    real (ver docstring de sobre_baseline en ejecutar_backtest)."""
+    from src.engines.tennis_improved import shrink_elo
+
+    elo_w_calc, elo_l_calc = elo_w, elo_l
+    if shrink_k is not None:
+        elo_w_calc = shrink_elo(elo_w, games_w, k=shrink_k)
+        elo_l_calc = shrink_elo(elo_l, games_l, k=shrink_k)
+
+    kwargs = dict(
+        meses_inactivo1=meses_inactivo_w, meses_inactivo2=meses_inactivo_l,
+        decay_por_mes=decay_por_mes,
+        h2h_ganados_j1=h2h_ganados_winner, h2h_total=h2h_total_prev,
+        h2h_weight=h2h_weight, h2h_min_partidos=h2h_min_partidos,
+    )
+    if usar_superficie:
+        elo_w_s = surf_calc.get_elo(winner)
+        elo_l_s = surf_calc.get_elo(loser)
+        games_w_s = surf_calc.players[winner].games_played if winner in surf_calc.players else 0
+        games_l_s = surf_calc.players[loser].games_played if loser in surf_calc.players else 0
+        kwargs.update(elo1_superficie=elo_w_s, elo2_superficie=elo_l_s,
+                       games1_superficie=games_w_s, games2_superficie=games_l_s)
+        if min_games_superficie is not None:
+            kwargs["min_games_superficie"] = min_games_superficie
+
+    return engine.prob_match_winner_ensemble(
+        elo_w_calc, elo_l_calc, winner, loser, superficie, formato, **kwargs
+    )
+
+
 def _desglose(registros: List[Dict], campo: str) -> Dict:
     grupos: Dict[str, List[float]] = defaultdict(list)
     for r in registros:
@@ -363,11 +462,16 @@ if __name__ == "__main__":
                          help="Activa H2H con este peso (se aplica junto al decay ya validado)")
     parser.add_argument("--h2h-min-partidos", type=int, default=3,
                          help="Enfrentamientos previos mínimos para confiar en el H2H")
+    parser.add_argument("--sobre-baseline", action="store_true",
+                         help="Combina shrink-k/usar-superficie ENCIMA del baseline de "
+                              "producción (decay=0.25 + H2H weight=0.18/min=2) en vez de "
+                              "probarlos en aislamiento")
     args = parser.parse_args()
 
     resultado = ejecutar_backtest(shrink_k=args.shrink_k, evaluar_desde=args.evaluar_desde,
                                    usar_superficie=args.usar_superficie,
                                    decay_por_mes=args.decay_por_mes,
                                    h2h_weight=args.h2h_weight,
-                                   h2h_min_partidos=args.h2h_min_partidos)
+                                   h2h_min_partidos=args.h2h_min_partidos,
+                                   sobre_baseline=args.sobre_baseline)
     print(json.dumps(resultado, indent=2, ensure_ascii=False))

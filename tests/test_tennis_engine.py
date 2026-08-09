@@ -116,9 +116,20 @@ def test_metodo_refleja_lo_que_realmente_se_uso():
 def client():
     os.environ.setdefault("FLASK_TESTING", "1")
     import app as flask_app
+    from src.services import tennis_predictions as _tp
     flask_app.app.config["TESTING"] = True
-    with flask_app.app.test_client() as c:
-        yield c
+
+    # El endpoint loguea cada análisis en tennis_predictions.CSV_PATH — se
+    # redirige a un archivo temporal para no ensuciar src/data/predicciones_tenis.csv
+    # (el archivo real que usa la app) con partidos de test.
+    import tempfile
+    orig_csv_path = _tp.CSV_PATH
+    _tp.CSV_PATH = Path(tempfile.mkdtemp()) / "predicciones_tenis_test.csv"
+    try:
+        with flask_app.app.test_client() as c:
+            yield c
+    finally:
+        _tp.CSV_PATH = orig_csv_path
 
 
 def test_endpoint_analizar_tenis_forma_es_coherente(client):

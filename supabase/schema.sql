@@ -45,7 +45,35 @@ CREATE TABLE IF NOT EXISTS bankroll_config (
   fecha_inicio           DATE DEFAULT CURRENT_DATE
 );
 
+-- Log de CADA análisis de tenis corrido (con o sin pick de value), para medir
+-- precisión real del modelo — independiente de `apuestas` (que solo guarda lo
+-- que el usuario decidió apostar). Ver src/services/tennis_predictions.py.
+-- std_dev no se guarda: es constante por formato (best_of_3/best_of_5), se
+-- deriva de STD_GAMES al cargar el resultado, no depende del partido.
+CREATE TABLE IF NOT EXISTS predicciones_tenis (
+  id                 BIGSERIAL PRIMARY KEY,
+  fecha_registro     TIMESTAMPTZ DEFAULT NOW(),
+  fecha_partido      TEXT,
+  jugador1           TEXT,
+  jugador2           TEXT,
+  favorito           TEXT,
+  prob_favorito      NUMERIC(5, 4),
+  superficie         TEXT,
+  formato            TEXT,
+  total_esp          NUMERIC(5, 2),
+  tuvo_pick          BOOLEAN DEFAULT FALSE,
+  tipo_pick          TEXT,
+  ganador_real       TEXT,
+  total_games_real   INTEGER,
+  acerto_ganador     BOOLEAN,
+  acerto_total       BOOLEAN,
+  resultado_cargado  TIMESTAMPTZ
+);
+
+CREATE INDEX IF NOT EXISTS idx_predicciones_fecha ON predicciones_tenis(fecha_partido);
+
 -- Row Level Security: la app accede solo con la service_role key (bypassa RLS),
 -- así que estas tablas quedan cerradas para las claves públicas (anon/publishable).
 ALTER TABLE apuestas ENABLE ROW LEVEL SECURITY;
 ALTER TABLE bankroll_config ENABLE ROW LEVEL SECURITY;
+ALTER TABLE predicciones_tenis ENABLE ROW LEVEL SECURITY;

@@ -112,6 +112,27 @@
 
   .ganancia.pos { color: var(--green); font-weight: 600; }
   .ganancia.neg { color: var(--red);   font-weight: 600; }
+
+  .tabs { display: flex; gap: 4px; margin-bottom: 20px; border-bottom: 1px solid var(--border); }
+  .tab-btn {
+    background: transparent; border: none; color: var(--muted);
+    padding: 10px 16px; font-size: 14px; cursor: pointer;
+    border-bottom: 2px solid transparent; margin-bottom: -1px;
+  }
+  .tab-btn:hover { color: var(--fg); }
+  .tab-btn.active { color: var(--cyan); border-bottom-color: var(--cyan); font-weight: 600; }
+
+  .acerto-badge { display: inline-block; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 999px; }
+  .acerto-badge.si  { background: #1a4d32; color: var(--green); border: 1px solid var(--green); }
+  .acerto-badge.no  { background: #3a1010; color: var(--red);   border: 1px solid var(--red); }
+  .acerto-badge.pendiente { background: #2a2f3a; color: var(--muted); border: 1px solid var(--border); }
+
+  .cargar-resultado { display: flex; flex-direction: column; gap: 4px; }
+  .cargar-resultado .fila { display: flex; gap: 4px; align-items: center; }
+  .cargar-resultado input[type=number] {
+    width: 60px; background: var(--bg3); border: 1px solid var(--border);
+    color: var(--fg); padding: 3px 6px; border-radius: 6px; font-size: 12px;
+  }
 </style>
 </head>
 <body>
@@ -132,6 +153,12 @@
 </div>
 
 <main>
+  <div class="tabs">
+    <button class="tab-btn active" id="tabApuestasBtn" onclick="mostrarTab('apuestas')">Apuestas</button>
+    <button class="tab-btn" id="tabTenisBtn" onclick="mostrarTab('tenis')">Precisión Tenis</button>
+  </div>
+
+  <div id="apuestasView">
   <div class="metrics-grid">
     <div class="metric-card">
       <div class="label">Total apuestas</div>
@@ -219,6 +246,46 @@
         <tr><td colspan="11" class="empty">Cargando...</td></tr>
       </tbody>
     </table>
+  </div>
+  </div>
+
+  <div id="tenisView" style="display:none">
+    <div class="metrics-grid" style="grid-template-columns: repeat(2, 1fr);">
+      <div class="metric-card">
+        <div class="label">Precisión: quién gana</div>
+        <div class="value cyan" id="tPrecisionGanador">—</div>
+        <div class="sub" id="tSubGanador">sobre 0 partidos con resultado cargado</div>
+      </div>
+      <div class="metric-card">
+        <div class="label">Precisión: total de games</div>
+        <div class="value cyan" id="tPrecisionTotal">—</div>
+        <div class="sub" id="tSubTotal">sobre 0 partidos con resultado cargado</div>
+      </div>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Fecha</th>
+            <th>Partido</th>
+            <th>Superficie / Formato</th>
+            <th>Favorito</th>
+            <th>Prob.</th>
+            <th>Total esp.</th>
+            <th>Pick</th>
+            <th>Ganador real</th>
+            <th>Total real</th>
+            <th>Acertó</th>
+            <th>Cargar resultado</th>
+          </tr>
+        </thead>
+        <tbody id="tenisTablaBody">
+          <tr><td colspan="12" class="empty">Cargando...</td></tr>
+        </tbody>
+      </table>
+    </div>
   </div>
 </main>
 
@@ -465,6 +532,127 @@ document.getElementById("filtrarBtn").addEventListener("click", async function()
 /* ── Init ── */
 cargarMetricas();
 cargarHistorial();
+
+/* ── Tabs ── */
+function mostrarTab(tab) {
+  const esTenis = tab === "tenis";
+  document.getElementById("apuestasView").style.display = esTenis ? "none" : "block";
+  document.getElementById("tenisView").style.display     = esTenis ? "block" : "none";
+  document.getElementById("tabApuestasBtn").classList.toggle("active", !esTenis);
+  document.getElementById("tabTenisBtn").classList.toggle("active", esTenis);
+  if (esTenis) cargarPrecisionTenis();
+}
+
+/* ── Precisión Tenis ── */
+function fmtPct(v) { return v === null || v === undefined ? "—" : v + "%"; }
+
+async function cargarPrecisionTenis() {
+  try {
+    const r = await fetch("/api/tenis/predicciones");
+    const j = await r.json();
+    if (j.error) throw new Error(j.error);
+
+    const p = j.precision;
+    document.getElementById("tPrecisionGanador").textContent = fmtPct(p.precision_ganador_pct);
+    document.getElementById("tSubGanador").textContent =
+      "sobre " + p.n_con_ganador_cargado + " partidos con resultado cargado";
+    document.getElementById("tPrecisionTotal").textContent = fmtPct(p.precision_total_pct);
+    document.getElementById("tSubTotal").textContent =
+      "sobre " + p.n_con_total_cargado + " partidos con resultado cargado";
+
+    renderTablaTenis(j.predicciones || []);
+  } catch (e) {
+    document.getElementById("tenisTablaBody").innerHTML =
+      '<tr><td colspan="12" class="empty">Error cargando predicciones</td></tr>';
+  }
+}
+
+function acertoBadge(valor) {
+  if (valor === "" || valor === null || valor === undefined) {
+    return '<span class="acerto-badge pendiente">—</span>';
+  }
+  const si = String(valor) === "True" || valor === true;
+  return '<span class="acerto-badge ' + (si ? "si" : "no") + '">' + (si ? "Sí" : "No") + '</span>';
+}
+
+function renderTablaTenis(rows) {
+  const tbody = document.getElementById("tenisTablaBody");
+  if (!rows.length) {
+    tbody.innerHTML = '<tr><td colspan="12" class="empty">Sin predicciones registradas todavía — analiza un partido de tenis en el Chat</td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = rows.map(function(r) {
+    const tieneGanador = r.ganador_real !== "" && r.ganador_real !== null && r.ganador_real !== undefined;
+    const tieneTotal    = r.total_games_real !== "" && r.total_games_real !== null && r.total_games_real !== undefined;
+
+    let cargarHtml = '<div class="cargar-resultado">';
+    if (!tieneGanador) {
+      cargarHtml += '<div class="fila">' +
+        '<button class="btn" style="font-size:11px;padding:3px 8px" onclick="cargarGanador(' + r.id + ',\'' +
+          safeText(r.jugador1).replace(/'/g, "\\'") + '\')">' + safeText(r.jugador1) + ' ganó</button>' +
+        '<button class="btn" style="font-size:11px;padding:3px 8px" onclick="cargarGanador(' + r.id + ',\'' +
+          safeText(r.jugador2).replace(/'/g, "\\'") + '\')">' + safeText(r.jugador2) + ' ganó</button>' +
+      '</div>';
+    }
+    if (!tieneTotal) {
+      cargarHtml += '<div class="fila">' +
+        '<input type="number" step="1" id="totalInput_' + r.id + '" placeholder="games">' +
+        '<button class="btn" style="font-size:11px;padding:3px 8px" onclick="cargarTotalReal(' + r.id + ')">Guardar</button>' +
+      '</div>';
+    }
+    if (tieneGanador && tieneTotal) cargarHtml += '<span style="color:var(--muted);font-size:12px">Completo</span>';
+    cargarHtml += '</div>';
+
+    return '<tr>' +
+      '<td style="color:var(--muted)">' + safeText(r.id) + '</td>' +
+      '<td style="color:var(--muted);white-space:nowrap">' + safeText((r.fecha_registro || "").slice(0, 16).replace("T", " ")) + '</td>' +
+      '<td><b>' + safeText(r.jugador1) + '</b> vs <b>' + safeText(r.jugador2) + '</b></td>' +
+      '<td>' + safeText(r.superficie) + ' · ' + safeText(r.formato) + '</td>' +
+      '<td>' + safeText(r.favorito) + '</td>' +
+      '<td>' + (r.prob_favorito ? (parseFloat(r.prob_favorito) * 100).toFixed(1) + "%" : "—") + '</td>' +
+      '<td>' + fmtNum(r.total_esp, 1) + '</td>' +
+      '<td style="font-size:11px;color:var(--muted)">' + (String(r.tuvo_pick) === "True" ? safeText(r.tipo_pick || "Sí") : "—") + '</td>' +
+      '<td>' + (tieneGanador ? safeText(r.ganador_real) : "—") + '</td>' +
+      '<td>' + (tieneTotal ? fmtNum(r.total_games_real, 0) : "—") + '</td>' +
+      '<td>' + acertoBadge(r.acerto_ganador) + ' ' + acertoBadge(r.acerto_total) + '</td>' +
+      '<td>' + cargarHtml + '</td>' +
+    '</tr>';
+  }).join("");
+}
+
+async function cargarGanador(id, ganador) {
+  try {
+    const r = await fetch("/api/tenis/resultado", {
+      method: "POST",
+      headers: {"Content-Type": "application/json"},
+      body: JSON.stringify({id: id, ganador_real: ganador}),
+    });
+    const j = await r.json();
+    if (j.error) { alert("Error: " + j.error); return; }
+    await cargarPrecisionTenis();
+  } catch (e) {
+    alert("Error de red: " + e.message);
+  }
+}
+
+async function cargarTotalReal(id) {
+  const input = document.getElementById("totalInput_" + id);
+  const val = input.value;
+  if (!val) return;
+  try {
+    const r = await fetch("/api/tenis/resultado", {
+      method: "POST",
+      headers: {"Content-Type": "application/json"},
+      body: JSON.stringify({id: id, total_games_real: parseFloat(val)}),
+    });
+    const j = await r.json();
+    if (j.error) { alert("Error: " + j.error); return; }
+    await cargarPrecisionTenis();
+  } catch (e) {
+    alert("Error de red: " + e.message);
+  }
+}
 </script>
 </body>
 </html>

@@ -503,3 +503,137 @@ favorito real del modelo, prob=0.846) con cuota 1.35 para Sinner
 (generosa frente a la cuota justa 1.18) — antes del fix, cero picks
 sin importar el valor real; después, `"Jannik Sinner gana"`, EV=14.2%,
 verde. 4 tests nuevos (`tests/test_tennis_pick_ambos_jugadores.py`).
+
+## 13. DIAGNÓSTICO: consolidación de 6 cabos sueltos (2026-08-09)
+
+Diagnóstico de estado puro — sin activar nada. Baseline de referencia
+en todos los backtests: producción actual (decay=0.25 + H2H
+weight=0.18/min=2), evaluado sobre partidos desde 2024-01-01 (n=14,320):
+**Brier 0.21895, accuracy 64.21%** (vs. coinflip 50%/0.25 y ranking
+oficial ATP/WTA 63.45%). Detalle completo, con las 3 corridas de grid,
+en `tennis_backtest_results.md`.
+
+1. **shrink_elo() sobre baseline actual — RESUELTO, no activar.**
+   Antes solo se había probado contra un baseline sin decay/H2H. Re-
+   corrido con `sobre_baseline=True`, grid k=10/20/30/50: brier y
+   accuracy empeoran de forma monótona con k (accuracy 64.06% → 63.74%
+   a medida que k crece). Confirma la conclusión original con el
+   baseline correcto: no aporta.
+
+2. **Elo por superficie sobre baseline actual — RESUELTO, no activar.**
+   Mismo re-test, grid min_games=5/10/20: empeora en los tres casos
+   (accuracy 62.6-62.8% vs 64.21% del baseline) — peor que en el test
+   original contra el baseline viejo. Confirmado, no activar.
+
+3. **WTA vs ATP — IRRELEVANTE, sin asimetría real.** Desglose por
+   género sobre el baseline: femenino brier 0.21787/accuracy 64.43%,
+   masculino brier 0.21993/accuracy 64.01%. Diferencia de 0.4pp,
+   dentro de ruido. No hay sesgo de género que corregir.
+
+4. **Jugadores de muestra chica — OPORTUNIDAD REAL PENDIENTE (con
+   matiz).** Desglose por games jugados del jugador con menos historial
+   de los dos: `<10` games (n=1684) accuracy 62.62%/brier 0.219,
+   `10-20` (n=1167) accuracy 60.50%/**brier 0.241 (peor de los 4
+   buckets)**, `20-50` (n=2460) accuracy 63.19%, `50+` (n=9009)
+   accuracy 65.27%/brier 0.215 (mejor). No hay degradación catastrófica
+   ni sobreconfianza — el bucket `<10` no es el peor, lo es `10-20`
+   (probablemente zona de transición donde el burn-in ya soltó al
+   jugador pero el Elo aún no convergió). Con n=1167 el intervalo de
+   confianza es ancho; vale la pena investigar pero no está confirmado
+   como problema estadísticamente sólido todavía.
+
+5. **Mercados: validador soporta 6, `analizar()` solo resuelve 2 —
+   OPORTUNIDAD REAL PENDIENTE, con un bug concreto de por medio.**
+   `tennis_validator.py` acepta `match_winner`, `primer_set`,
+   `set_handicap`, `total_games`, `game_handicap`, `sets_winners`.
+   `analizar()` (tennis_improved.py:544-604) solo genera picks para
+   `match_winner` y `total_games` — `primer_set`/`set_handicap`/
+   `game_handicap`/`sets_winners` se validan pero nunca se convierten
+   en picks (código muerto desde la UI, que ni siquiera los junta en
+   el payload). Además, dentro de `total_games` **solo se evalúa
+   `"over"`** (línea 581: `if "over" in tg`) — pero el frontend
+   (`templates/index.html:1381`) sí junta `cuotas.total_games.under`
+   si el usuario lo completa. Si alguien carga solo la cuota de
+   "under" (sin "over"), hoy se descarta en silencio sin generar pick,
+   con valor real potencialmente ignorado — mismo patrón de bug que la
+   sección 12, sin arreglar todavía.
+
+6. **Umbrales verde/amarillo — VALIDADO (con matiz sobre dónde cae el
+   corte real).** Desglose por certeza del modelo (`max(pred,1-pred)`,
+   proxy de la "confianza" real que además suma el EV): 0.50-0.55
+   accuracy 52.46%, 0.55-0.65 (≈amarillo) 57.22%, 0.65-0.70 (≈verde)
+   62.58%, 0.70-0.80 accuracy 71.37%, 0.80+ accuracy 83.25%/brier
+   0.138. La relación es monótona y sin inversiones — los umbrales SÍ
+   separan tramos de accuracy real, no son arbitrarios. Matiz: el
+   salto de calidad grande está en ~0.70, no en 0.65 — el tramo
+   0.65-0.70 (justo el mínimo de "verde") todavía ronda 62.6% de
+   accuracy, no muy por encima del amarillo alto. No es un error, pero
+   subir el corte de verde a 0.70 daría una separación más limpia.
+
+**Prioridad para implementar (ninguna implementada todavía):**
+1. Arreglar el bug de `total_games` "under" nunca evaluado (punto 5) —
+   mismo patrón exacto que la sección 12, bajo esfuerzo, bug real y
+   concreto (no solo una hipótesis de mejora).
+2. Investigar el bucket 10-20 games con más datos/otro corte de bucket
+   antes de decidir una acción concreta (punto 4) — todavía no hay
+   fix claro, solo una señal a seguir.
+3. Evaluar subir `UMBRAL_VERDE` de 0.65 a 0.70 (punto 6) — bajo
+   esfuerzo, pero cambia qué se le muestra al usuario como "alta
+   confianza"; conviene decidirlo con el usuario, no solo por Brier.
+4. Mercados sin resolver (primer_set/set_handicap/game_handicap/
+   sets_winners, punto 5) — esfuerzo alto (UI + backtest de cada
+   mercado nuevo), sin urgencia mientras no haya demanda de usarlos.
+5. Puntos 1, 2 y 3: cerrados, no requieren acción.
+
+## 14. FIX: Total Games "Under" nunca se evaluaba + FEATURE: log de
+predicciones para trackear precisión en vivo (2026-08-09)
+
+**Fix.** Mismo bug que la sección 12 (Match Winner J1/J2), ahora en
+Total Games: `analizar()` solo miraba `cuotas["total_games"]["over"]`
+— `"under"` se descartaba en silencio aunque el frontend ya lo manda
+si el usuario completa esa cuota. Se agregó el bloque simétrico que
+evalúa `"under"` de forma independiente (mismo patrón: no es "el mejor
+de los dos", cada lado tiene su propio EV/confianza/pick). Como el fix
+es de qué se **muestra**, no de cómo el modelo **predice**, se
+reconfirmó el baseline de producción sin cambios: Brier 0.21895 /
+accuracy 64.21% idénticos al valor de referencia de la sección 13.
+Ejemplo real: Djokovic (1650) vs rival (1500), best_of_3, línea 26.5 —
+p(under)=0.765, cuota 1.50 (generosa sobre la justa 1.31) → antes del
+fix, cero picks sin importar el valor; después, `"Under 26.5 games"`,
+EV=14.8%, amarillo. 5 tests nuevos
+(`tests/test_tennis_total_games_under.py`).
+
+**Feature: log de predicciones.** Hasta ahora solo se registraban en
+`apuestas` las predicciones donde el usuario decidió apostar. Nuevo
+módulo `src/services/tennis_predictions.py` (mismo patrón dual
+CSV/Supabase que `tracking.py`) registra **cada** análisis de tenis
+corrido desde `/api/analizar_tenis` — tenga pick de value o no — y
+permite cargar el resultado real después (`POST /api/tenis/resultado`)
+para calcular automáticamente:
+- `acerto_ganador`: `favorito predicho == ganador real`.
+- `acerto_total`: `|total_games_real - total_esp| <= std_dev` del
+  formato (no un umbral arbitrario — la misma desviación estándar
+  calibrada que ya usa el modelo para su propia distribución).
+
+Nueva pestaña "Precisión Tenis" en `/historial` (`templates/historial.html`):
+tabla de todas las predicciones logueadas, botones para cargar
+ganador/total real por fila, y dos métricas destacadas arriba
+("Precisión: quién gana" / "Precisión: total de games", cada una con su
+propio N de partidos con resultado cargado — no siempre se cargan
+juntos).
+
+Tabla `predicciones_tenis` en Supabase (`supabase/schema.sql`) —
+`std_dev` no se guarda por fila porque es constante por formato, se
+deriva de `STD_GAMES` al cargar el resultado. 11 tests nuevos
+(`tests/test_tennis_predictions.py`).
+
+**Bug encontrado y corregido durante el trabajo (no en producción):**
+`_init()` del nuevo módulo tocaba el CSV por defecto sin importar el
+`csv_path` explícito del caller — hacía que corridas de test (que sí
+pasan un `csv_path` temporal) igual crearan
+`src/data/predicciones_tenis.csv` vacío en disco. Corregido para que
+`_init()` respete el `csv_path` recibido. De paso, se detectó que
+`src/data/apuestas_registradas.csv` (historial real de apuestas) quedó
+fuera de `.gitignore` desde que se sacó de git tracking — sigue sin
+subirse, pero conviene agregarlo al `.gitignore` para que no vuelva a
+aparecer como "untracked" en cada `git status`.

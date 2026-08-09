@@ -55,6 +55,33 @@ def actualizar_apuesta(id_apuesta: int, cambios: dict) -> Optional[dict]:
     return result.data[0] if result.data else None
 
 
+def insertar_prediccion(fila: dict) -> dict:
+    """Inserta una fila en `predicciones_tenis` (mismas claves que
+    tennis_predictions.COLUMNS, sin 'id')."""
+    fila = {k: v for k, v in fila.items() if k != "id"}
+    result = _get_client().table("predicciones_tenis").insert(fila).execute()
+    return result.data[0] if result.data else {}
+
+
+def leer_predicciones_tenis() -> list[dict]:
+    """Todas las filas de `predicciones_tenis`, orden cronológico (igual
+    que leer el CSV de arriba a abajo) — quien llama decide si invertir."""
+    result = (
+        _get_client().table("predicciones_tenis").select("*")
+        .order("id", desc=False).execute()
+    )
+    return result.data or []
+
+
+def actualizar_prediccion(id_prediccion: int, cambios: dict) -> Optional[dict]:
+    """Actualiza columnas de una predicción por id. None si no existía."""
+    result = (
+        _get_client().table("predicciones_tenis")
+        .update(cambios).eq("id", id_prediccion).execute()
+    )
+    return result.data[0] if result.data else None
+
+
 def leer_config() -> Optional[dict]:
     """Fila única de `bankroll_config` (id=1). None si aún no existe."""
     result = (
