@@ -91,6 +91,7 @@ def calibrar_elo():
     recientes: Dict[str, deque] = defaultdict(lambda: deque(maxlen=FORMA_VENTANA))
     ultima_fecha: Dict[str, str] = {}
     h2h_record: Dict[frozenset, Dict[str, int]] = {}
+    genero_jugador: Dict[str, str] = {}   # "M"/"F", derivado de si jugó en atp_matches_* o wta_matches_*
 
     procesados = 0
     omitidos = 0
@@ -119,6 +120,8 @@ def calibrar_elo():
             pair_key = frozenset({winner, loser})
             h2h_record.setdefault(pair_key, {})
             h2h_record[pair_key][winner] = h2h_record[pair_key].get(winner, 0) + 1
+            genero_jugador[winner] = match.get("genero", "M")
+            genero_jugador[loser] = match.get("genero", "M")
             procesados += 1
 
             if (i + 1) % 5000 == 0:
@@ -165,6 +168,8 @@ def calibrar_elo():
             }
         if name in ultima_fecha:
             entry["ultima_fecha"] = ultima_fecha[name]
+        if name in genero_jugador:
+            entry["genero"] = genero_jugador[name]
         ratings_export["jugadores"][name] = entry
 
     OUTPUT_FILE.parent.mkdir(parents=True, exist_ok=True)
@@ -204,6 +209,12 @@ def calibrar_elo():
     top = elo_calc.get_ranking(10)
     for rank, (name, elo) in enumerate(top, 1):
         _log.info(f"  {rank:2d}. {name:30s} {elo:7.1f}")
+
+    _log.info("\n[PASO 6] Regenerando selector de jugadores (jugadores_por_genero.json)...")
+    from generar_jugadores_por_genero import generar as _generar_jugadores_por_genero
+    if not _generar_jugadores_por_genero(elo_ratings_path=OUTPUT_FILE):
+        _log.warning("No se pudo regenerar jugadores_por_genero.json — el selector puede "
+                      "quedar desincronizado del Elo recién calibrado.")
 
     return True
 

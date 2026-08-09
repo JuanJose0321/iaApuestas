@@ -437,3 +437,28 @@ o si solo agrega ruido/overfitting a un histórico de apenas 2 años. Una
 vez que exista ese baseline, P0-2 (regresión a la media) y P1-3 (Elo por
 superficie) son los siguientes candidatos naturales porque no requieren
 datos nuevos y su efecto se puede medir contra el mismo baseline.
+
+## 10. FIX: Selector de jugadores desincronizado del Elo real (2026-08-09)
+
+No relacionado a la precisión del modelo (secciones 1-9) — un bug de
+sincronización de datos encontrado por el usuario: el selector de
+jugadores de la app (`GET /api/players`) nunca usó
+`tennis_elo_ratings.json`. Usaba `src/data/jugadores_por_genero.json`,
+una lista **curada a mano** de 226 jugadores ("actualizado mayo 2026"
+según su propio `_meta`) que nunca se sincronizó con el Elo real
+calibrado. Tras el burn-in de 12 años (sección 9), 2,282 jugadores con
+Elo real quedaron invisibles en el selector — incluyendo Nadal, Federer,
+Serena Williams, Osaka, Halep, Barty, Tiafoe.
+
+**Fix:** `jugadores_por_genero.json` ya no se mantiene a mano — se
+deriva de `tennis_elo_ratings.json` (`generar_jugadores_por_genero.py`,
+corrido automáticamente al final de `calibrate_tennis_elo.py`). El
+género de cada jugador se deriva de la fuente real (si jugó en archivos
+`atp_matches_*` o `wta_matches_*`, agregado como campo `"genero"` en
+`tennis_elo_ratings.json` durante la calibración), no de una heurística
+por nombre.
+
+Resultado: selector pasa de 226 a **2,467 jugadores** (1,247 masculino +
+1,220 femenino). Validado en vivo: Nadal, Federer, Serena Williams,
+Osaka y Barty ya aparecen y son analizables. 6 tests nuevos
+(`tests/test_generar_jugadores_por_genero.py`).

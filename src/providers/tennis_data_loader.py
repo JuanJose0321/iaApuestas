@@ -220,7 +220,9 @@ def combinar_archivos(patron_prefijos: tuple[str, ...] = ("atp_matches_", "wta_m
     Returns:
         Lista de partidos como dicts con: date (YYYY-MM-DD), tournament,
         level, surface, winner, loser, score, best_of, winner_rank,
-        loser_rank, round.
+        loser_rank, round, genero ("M" o "F", derivado de si el archivo
+        es atp_matches_* o wta_matches_* — señal confiable de la fuente,
+        no una heurística por nombre).
     """
     DATA_DIR.mkdir(parents=True, exist_ok=True)
     matches = []
@@ -228,6 +230,7 @@ def combinar_archivos(patron_prefijos: tuple[str, ...] = ("atp_matches_", "wta_m
     for csv_file in sorted(DATA_DIR.glob("*.csv")):
         if not csv_file.name.startswith(patron_prefijos):
             continue
+        genero = "M" if csv_file.name.startswith("atp_matches_") else "F"
         try:
             with open(csv_file, "r", encoding="utf-8") as f:
                 reader = csv.DictReader(f)
@@ -249,6 +252,7 @@ def combinar_archivos(patron_prefijos: tuple[str, ...] = ("atp_matches_", "wta_m
                         "winner_rank": row.get("winner_rank", ""),
                         "loser_rank": row.get("loser_rank", ""),
                         "round": row.get("round", ""),
+                        "genero": genero,
                     })
                     count += 1
             _log.info(f"Cargados {count} partidos de {csv_file.name}")
