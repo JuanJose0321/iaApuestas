@@ -537,29 +537,39 @@ class TennisImprovedEngine:
         picks_verdes = []
         picks_amarillos = []
 
-        # Pick: Match Winner J1
+        # Pick: Match Winner — se evalúan los dos lados por separado (antes
+        # solo se chequeaba jugador1; una apuesta con valor real a favor de
+        # jugador2 nunca se detectaba, aunque el modelo lo tuviera como
+        # favorito — ver report_tennis_audit.md).
         if "match_winner" in cuotas:
             mw = cuotas["match_winner"]
-            if "1" in mw:
-                cuota = float(mw["1"])
-                if cuota_min <= cuota <= cuota_max:
-                    val = self.evaluar_value(mw_result["prob_j1"], cuota)
-                    if val["tiene_value"]:
-                        confianza = self._calc_confianza(mw_result["prob_j1"], val["ev"])
-                        pick = {
-                            "mercado": "Match Winner",
-                            "pick": f"{player1} gana",
-                            "prob": mw_result["prob_j1"],
-                            "cuota": cuota,
-                            "ev": val["ev"],
-                            "kelly_pct": val["kelly_pct"],
-                            "confianza": confianza,
-                            "confianza_nivel": self._nivel_confianza(confianza),
-                        }
-                        if confianza >= UMBRAL_VERDE:
-                            picks_verdes.append(pick)
-                        elif confianza >= UMBRAL_AMARILLO:
-                            picks_amarillos.append(pick)
+            for jugador, clave_cuota, prob in (
+                (player1, "1", mw_result["prob_j1"]),
+                (player2, "2", mw_result["prob_j2"]),
+            ):
+                if clave_cuota not in mw:
+                    continue
+                cuota = float(mw[clave_cuota])
+                if not (cuota_min <= cuota <= cuota_max):
+                    continue
+                val = self.evaluar_value(prob, cuota)
+                if not val["tiene_value"]:
+                    continue
+                confianza = self._calc_confianza(prob, val["ev"])
+                pick = {
+                    "mercado": "Match Winner",
+                    "pick": f"{jugador} gana",
+                    "prob": prob,
+                    "cuota": cuota,
+                    "ev": val["ev"],
+                    "kelly_pct": val["kelly_pct"],
+                    "confianza": confianza,
+                    "confianza_nivel": self._nivel_confianza(confianza),
+                }
+                if confianza >= UMBRAL_VERDE:
+                    picks_verdes.append(pick)
+                elif confianza >= UMBRAL_AMARILLO:
+                    picks_amarillos.append(pick)
 
         # Pick: Total Games
         if "total_games" in cuotas:

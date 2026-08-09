@@ -481,3 +481,25 @@ valida este mercado de forma permanente. Validado en vivo: los mismos 3
 partidos de ejemplo con cuotas justas pasan de EV 36-56% a **sin pick**,
 igual que Match Winner siempre se comportó correctamente. Detalle
 completo en `tennis_backtest_results.md`.
+
+## 12. FIX: el motor nunca evaluaba si jugador2 tenía valor (2026-08-09)
+
+Segunda causa (independiente de la sección 11) de por qué "Match Winner
+casi nunca aparecía como pick": `analizar()` solo evaluaba
+`cuotas["match_winner"]["1"]` (jugador1) — nunca chequeaba `["2"]`, sin
+importar cuánto valor real tuviera jugador2 aunque fuera el favorito del
+modelo. Confirmado leyendo el código, no una hipótesis.
+
+Fix: mismo bloque de evaluación, ahora recorre `(player1, "1", prob_j1)`
+y `(player2, "2", prob_j2)` de forma independiente (mismo patrón que ya
+usa Total Games para Over — cada lado se evalúa por separado, no es
+"el mejor de los dos"). No cambia `prob_j1`/`prob_j2` — confirmado con
+backtest: Brier 0.21895 / accuracy 64.21% idéntico al valor de
+referencia, porque este fix es de qué se **muestra**, no de cómo
+**predice** el modelo.
+
+Validado en vivo: Rafael Jodar (jugador1) vs Jannik Sinner (jugador2,
+favorito real del modelo, prob=0.846) con cuota 1.35 para Sinner
+(generosa frente a la cuota justa 1.18) — antes del fix, cero picks
+sin importar el valor real; después, `"Jannik Sinner gana"`, EV=14.2%,
+verde. 4 tests nuevos (`tests/test_tennis_pick_ambos_jugadores.py`).
