@@ -238,6 +238,20 @@ No hay datos históricos de picks de tenis registrados de forma separable hoy (t
 > Impacto en el backtest: neutral (Brier 0.21921→0.21932, dentro de
 > ruido) — es un fix de coherencia del modelo, no de precisión agregada.
 > Validado en vivo: Federer ya no muestra `forma` en la respuesta.
+>
+> **Actualización 2026-08-09 (H2H — SÍ ACTIVADO, última pieza de esta
+> sección):** grid de peso (0.10-0.30) × enfrentamientos previos mínimos
+> (2/3/5) sobre el baseline con decay ya activo (Brier 0.21921 / accuracy
+> 63.97%). Mejor punto: `min_partidos=2, weight=0.18` → Brier 0.21895
+> (+0.12%), accuracy 64.21% (+0.24pp) — curva suave confirmada con grid
+> fino, no un pico aislado. A diferencia de shrink_elo (Brier similar
+> pero accuracy siempre peor), H2H mejora ambas métricas de forma
+> consistente. Activado: `calibrate_tennis_elo.py` exporta
+> `tennis_h2h.json` (38,095 pares), `tennis_validator.py` lo consulta,
+> `app.py` usa `H2H_WEIGHT_ACTIVO=0.18`. Con esto quedan resueltas las 4
+> mejoras P0/P1 de esta sección (backtesting, regresión a la media,
+> decay de inactividad, H2H) — Elo por superficie fue la única que no
+> se activó por falta de evidencia. Detalle en `tennis_backtest_results.md`.
 
 ## 9. AUDITORÍA DE PRECISIÓN — FASE 2 (2026-08-09)
 

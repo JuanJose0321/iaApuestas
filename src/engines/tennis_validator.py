@@ -17,29 +17,33 @@ def validar_entrada_tenis(data: dict) -> tuple:
 
     Returns:
         (jugador1, jugador2, elo1, elo2, meses_inactivo1, meses_inactivo2,
-         superficie, formato, cuotas, error_msg)
+         h2h_ganados_j1, h2h_total, superficie, formato, cuotas, error_msg)
 
         meses_inactivo{1,2} es None salvo que el Elo se haya cargado desde
         ratings calibrados y el jugador tenga una "ultima_fecha" registrada
         (ver aplicar_decay_inactividad en tennis_improved.py) — no hay
         forma de saberlo si el Elo vino explícito en el request.
+
+        h2h_ganados_j1/h2h_total: historial de enfrentamientos directos
+        entre j1 y j2 (ver tennis_h2h.json / prob_from_h2h). None si no
+        hay ningún enfrentamiento registrado entre este par específico.
     """
     j1 = (data.get("jugador1") or "").strip()
     j2 = (data.get("jugador2") or "").strip()
 
     if not j1:
-        return (None,) * 9 + ("Falta el jugador 1",)
+        return (None,) * 11 + ("Falta el jugador 1",)
     if not j2:
-        return (None,) * 9 + ("Falta el jugador 2",)
+        return (None,) * 11 + ("Falta el jugador 2",)
     if j1.lower() == j2.lower():
-        return (None,) * 9 + ("Los jugadores no pueden ser el mismo",)
+        return (None,) * 11 + ("Los jugadores no pueden ser el mismo",)
 
     # Cargar Elos del formulario O desde ratings calibrados
     try:
         elo1 = float(data.get("elo1")) if data.get("elo1") else None  # type: ignore[arg-type]
         elo2 = float(data.get("elo2")) if data.get("elo2") else None  # type: ignore[arg-type]
     except (TypeError, ValueError):
-        return (None,) * 9 + ("Elo debe ser un número",)
+        return (None,) * 11 + ("Elo debe ser un número",)
 
     meses_inactivo1 = None
     meses_inactivo2 = None
@@ -73,26 +77,28 @@ def validar_entrada_tenis(data: dict) -> tuple:
 
     err = _validar_elo(elo1, "elo1")
     if err:
-        return (None,) * 9 + (err,)
+        return (None,) * 11 + (err,)
     err = _validar_elo(elo2, "elo2")
     if err:
-        return (None,) * 9 + (err,)
+        return (None,) * 11 + (err,)
+
+    h2h_ganados_j1, h2h_total = _cargar_h2h(j1, j2)
 
     superficie = (data.get("superficie") or "hard").lower().strip()
     if superficie not in SUPERFICIES_VALIDAS:
-        return (None,) * 9 + (
+        return (None,) * 11 + (
             f"Superficie '{superficie}' inválida. Opciones: {sorted(SUPERFICIES_VALIDAS)}",
         )
 
     formato = (data.get("formato") or "best_of_3").lower().strip()
     if formato not in FORMATOS_VALIDOS:
-        return (None,) * 9 + (
+        return (None,) * 11 + (
             f"Formato '{formato}' inválido. Opciones: {sorted(FORMATOS_VALIDOS)}",
         )
 
     cuotas = data.get("cuotas") or {}
     if not cuotas:
-        return (None,) * 9 + ("Falta al menos un mercado en cuotas",)
+        return (None,) * 11 + ("Falta al menos un mercado en cuotas",)
 
     validators = {
         "match_winner":  validar_match_winner,
@@ -102,29 +108,30 @@ def validar_entrada_tenis(data: dict) -> tuple:
         if mercado in cuotas:
             err = fn(cuotas[mercado])
             if err:
-                return (None,) * 9 + (err,)
+                return (None,) * 11 + (err,)
 
     if "set_handicap" in cuotas:
         err = validar_set_handicap(cuotas["set_handicap"], formato)
         if err:
-            return (None,) * 9 + (err,)
+            return (None,) * 11 + (err,)
 
     if "total_games" in cuotas:
         err = validar_total_games(cuotas["total_games"], formato)
         if err:
-            return (None,) * 9 + (err,)
+            return (None,) * 11 + (err,)
 
     if "game_handicap" in cuotas:
         err = validar_game_handicap(cuotas["game_handicap"], formato)
         if err:
-            return (None,) * 9 + (err,)
+            return (None,) * 11 + (err,)
 
     if "sets_winners" in cuotas:
         err = validar_sets_winners(cuotas["sets_winners"], formato)
         if err:
-            return (None,) * 9 + (err,)
+            return (None,) * 11 + (err,)
 
-    return j1, j2, elo1, elo2, meses_inactivo1, meses_inactivo2, superficie, formato, cuotas, None
+    return (j1, j2, elo1, elo2, meses_inactivo1, meses_inactivo2,
+            h2h_ganados_j1, h2h_total, superficie, formato, cuotas, None)
 
 
 # ── Validadores por mercado ───────────────────────────────────────────────────
@@ -290,3 +297,37 @@ def _meses_desde(fecha_iso: str | None, hoy) -> float | None:
         return max(0.0, (hoy - d).days / 30.44)
     except ValueError:
         return None
+
+
+_h2h_cache: dict | None = None
+
+
+def _cargar_h2h(j1: str, j2: str) -> tuple[int | None, int | None]:
+    """
+    Busca el historial de enfrentamientos directos entre j1 y j2 en
+    tennis_h2h.json (generado por calibrate_tennis_elo.py). Devuelve
+    (h2h_ganados_j1, h2h_total), o (None, None) si no hay ningún
+    enfrentamiento registrado entre este par específico.
+
+    Cachea el archivo en memoria entre llamadas (no cambia salvo que se
+    recorra calibrate_tennis_elo.py, que solo corre offline/manualmente).
+    """
+    global _h2h_cache
+    if _h2h_cache is None:
+        import json
+        from pathlib import Path
+        h2h_path = Path(__file__).parent.parent / "data" / "tennis_h2h.json"
+        try:
+            with open(h2h_path, "r", encoding="utf-8") as f:
+                _h2h_cache = json.load(f).get("pares", {})
+        except Exception as e:
+            _log.warning(f"Error cargando H2H: {e}")
+            _h2h_cache = {}
+
+    a, b = sorted([j1, j2])
+    par = _h2h_cache.get(f"{a}|||{b}")
+    if not par:
+        return None, None
+    total = sum(par.values())
+    ganados_j1 = par.get(j1, 0)
+    return ganados_j1, total

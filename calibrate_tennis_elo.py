@@ -34,6 +34,7 @@ logging.basicConfig(
 _log = logging.getLogger("calibrate_elo")
 
 OUTPUT_FILE = Path(__file__).parent / "src" / "data" / "tennis_elo_ratings.json"
+H2H_OUTPUT_FILE = Path(__file__).parent / "src" / "data" / "tennis_h2h.json"
 
 FORMA_VENTANA = 10       # últimos N partidos considerados para "forma"
 FORMA_MIN_PARTIDOS = 3   # con menos que esto, no se reporta forma (ruido)
@@ -89,6 +90,7 @@ def calibrar_elo():
     elo_calc = TennisEloCalculator()
     recientes: Dict[str, deque] = defaultdict(lambda: deque(maxlen=FORMA_VENTANA))
     ultima_fecha: Dict[str, str] = {}
+    h2h_record: Dict[frozenset, Dict[str, int]] = {}
 
     procesados = 0
     omitidos = 0
@@ -114,6 +116,9 @@ def calibrar_elo():
             recientes[loser].append(False)
             ultima_fecha[winner] = match["date"]
             ultima_fecha[loser] = match["date"]
+            pair_key = frozenset({winner, loser})
+            h2h_record.setdefault(pair_key, {})
+            h2h_record[pair_key][winner] = h2h_record[pair_key].get(winner, 0) + 1
             procesados += 1
 
             if (i + 1) % 5000 == 0:
@@ -170,6 +175,30 @@ def calibrar_elo():
 
     con_forma = sum(1 for v in ratings_export["jugadores"].values() if "forma" in v)
     _log.info(f"Jugadores con forma real calculada: {con_forma}/{len(elo_calc.players)}")
+
+    _log.info("\n[PASO 5] Exportando H2H (head-to-head) por par de jugadores...")
+    h2h_export = {
+        "pares": {},
+        "_meta": {
+            "fecha": datetime.now(timezone.utc).isoformat(),
+            "total_pares": len(h2h_record),
+            "metodo": "Enfrentamientos directos acumulados de todo el histórico real "
+                      "procesado (mismo rango que tennis_elo_ratings.json).",
+        },
+    }
+    for pair_key, wins in h2h_record.items():
+        a, b = sorted(pair_key)
+        clave = f"{a}|||{b}"
+        h2h_export["pares"][clave] = {
+            a: wins.get(a, 0),
+            b: wins.get(b, 0),
+        }
+
+    H2H_OUTPUT_FILE.parent.mkdir(parents=True, exist_ok=True)
+    with open(H2H_OUTPUT_FILE, "w", encoding="utf-8") as f:
+        json.dump(h2h_export, f, indent=2, ensure_ascii=False)
+
+    _log.info(f"Guardado: {H2H_OUTPUT_FILE} ({len(h2h_record)} pares)")
 
     _log.info("\n[TOP 10 JUGADORES POR ELO]")
     top = elo_calc.get_ranking(10)

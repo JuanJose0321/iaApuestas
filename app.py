@@ -88,6 +88,14 @@ _tennis_engine = None
 # "congelado" indefinidamente. Ver tennis_backtest_results.md.
 DECAY_POR_MES_ACTIVO = 0.25
 
+# H2H (head-to-head): valores elegidos por backtest walk-forward (grid de
+# weight 0.10-0.30 x min_partidos 2/3/5, óptimo estable en weight~0.16-0.20
+# con min_partidos=2) — mejora Brier ~0.12% y accuracy ~0.24pp sobre el
+# baseline con decay ya activo, curva suave (no un pico aislado). Ver
+# tennis_backtest_results.md.
+H2H_WEIGHT_ACTIVO = 0.18
+H2H_MIN_PARTIDOS_ACTIVO = 2
+
 def _get_tennis_engine():
     """Carga motor de tenis con Elo calibrado."""
     global _tennis_engine
@@ -449,7 +457,8 @@ def api_analizar_tenis():
     """
     data = request.get_json(silent=True) or {}
 
-    j1, j2, elo1, elo2, meses_inactivo1, meses_inactivo2, superficie, formato, cuotas, err = (
+    (j1, j2, elo1, elo2, meses_inactivo1, meses_inactivo2,
+     h2h_ganados_j1, h2h_total, superficie, formato, cuotas, err) = (
         validar_entrada_tenis(data)
     )
     if err:
@@ -468,6 +477,8 @@ def api_analizar_tenis():
             cuota_min=cuota_min, cuota_max=cuota_max,
             meses_inactivo1=meses_inactivo1, meses_inactivo2=meses_inactivo2,
             decay_por_mes=DECAY_POR_MES_ACTIVO,
+            h2h_ganados_j1=h2h_ganados_j1, h2h_total=h2h_total,
+            h2h_weight=H2H_WEIGHT_ACTIVO, h2h_min_partidos=H2H_MIN_PARTIDOS_ACTIVO,
         )
     except Exception as exc:
         _log.exception("Error en TennisEngine.analizar")

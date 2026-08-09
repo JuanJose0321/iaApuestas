@@ -77,7 +77,9 @@ def ejecutar_backtest(shrink_k: Optional[float] = None,
                        evaluar_desde: Optional[str] = None,
                        usar_superficie: bool = False,
                        min_games_superficie: Optional[int] = None,
-                       decay_por_mes: Optional[float] = None) -> Dict:
+                       decay_por_mes: Optional[float] = None,
+                       h2h_weight: Optional[float] = None,
+                       h2h_min_partidos: int = 3) -> Dict:
     """
     Corre el backtest walk-forward completo.
 
@@ -102,6 +104,13 @@ def ejecutar_backtest(shrink_k: Optional[float] = None,
     la media según los meses transcurridos desde su partido anterior
     (walk-forward: la fecha de referencia es siempre la del último
     partido REALMENTE jugado antes de este, ver aplicar_decay_inactividad).
+
+    h2h_weight: si se pasa (>0), mezcla la señal de head-to-head sobre
+    el ensemble ya calculado (ver prob_from_h2h). El historial de
+    enfrentamientos directos se arma walk-forward por par de jugadores
+    (solo partidos previos a este, nunca futuros) y solo se usa si hay
+    al menos h2h_min_partidos enfrentamientos previos entre ese par
+    específico.
     """
     matches = combinar_archivos()
     hoy = datetime.now(timezone.utc).strftime("%Y-%m-%d")
@@ -111,6 +120,7 @@ def ejecutar_backtest(shrink_k: Optional[float] = None,
     elo_calc_surf: Dict[str, TennisEloCalculator] = {s: TennisEloCalculator() for s in SURFACES}
     recientes: Dict[str, deque] = defaultdict(lambda: deque(maxlen=FORMA_VENTANA))
     ultima_fecha: Dict[str, str] = {}
+    h2h_record: Dict[frozenset, Dict[str, int]] = {}
     engine = TennisImprovedEngine()
 
     registros = []
@@ -128,6 +138,12 @@ def ejecutar_backtest(shrink_k: Optional[float] = None,
 
         meses_inactivo_w = _meses_entre(ultima_fecha[winner], m["date"]) if winner in ultima_fecha else None
         meses_inactivo_l = _meses_entre(ultima_fecha[loser], m["date"]) if loser in ultima_fecha else None
+
+        # H2H walk-forward: solo enfrentamientos previos a este partido
+        pair_key = frozenset({winner, loser})
+        h2h_prev = h2h_record.get(pair_key, {})
+        h2h_total_prev = sum(h2h_prev.values())
+        h2h_ganados_winner = h2h_prev.get(winner, 0)
 
         # Forma walk-forward: solo lo visto ANTES de este partido
         hist_w = recientes.get(winner)
@@ -160,6 +176,17 @@ def ejecutar_backtest(shrink_k: Optional[float] = None,
             elif shrink_k is not None:
                 mw = _predecir_con_k(engine, elo_w, elo_l, winner, loser, superficie, formato,
                                       games_w, games_l, shrink_k)
+            elif h2h_weight is not None:
+                # El baseline actual ya incluye el decay validado (0.25) —
+                # se prueba H2H ENCIMA de eso, no en aislamiento contra un
+                # baseline viejo sin decay.
+                mw = engine.prob_match_winner_ensemble(
+                    elo_w, elo_l, winner, loser, superficie, formato,
+                    meses_inactivo1=meses_inactivo_w, meses_inactivo2=meses_inactivo_l,
+                    decay_por_mes=0.25,
+                    h2h_ganados_j1=h2h_ganados_winner, h2h_total=h2h_total_prev,
+                    h2h_weight=h2h_weight, h2h_min_partidos=h2h_min_partidos,
+                )
             elif decay_por_mes is not None:
                 mw = engine.prob_match_winner_ensemble(
                     elo_w, elo_l, winner, loser, superficie, formato,
@@ -206,6 +233,8 @@ def ejecutar_backtest(shrink_k: Optional[float] = None,
         recientes[loser].append(False)
         ultima_fecha[winner] = m["date"]
         ultima_fecha[loser] = m["date"]
+        h2h_record.setdefault(pair_key, {})
+        h2h_record[pair_key][winner] = h2h_record[pair_key].get(winner, 0) + 1
 
     preds = [r["pred"] for r in registros]
 
@@ -214,6 +243,8 @@ def ejecutar_backtest(shrink_k: Optional[float] = None,
         "shrink_k": shrink_k,
         "usar_superficie": usar_superficie,
         "decay_por_mes": decay_por_mes,
+        "h2h_weight": h2h_weight,
+        "h2h_min_partidos": h2h_min_partidos if h2h_weight is not None else None,
         "brier": round(_brier(preds), 5),
         "log_loss": round(_log_loss(preds), 5),
         "accuracy": round(_accuracy(preds) * 100, 2),
@@ -259,9 +290,15 @@ if __name__ == "__main__":
                          help="Usa Elo específico por superficie (con fallback al overall)")
     parser.add_argument("--decay-por-mes", type=float, default=None,
                          help="Activa el decay de Elo por inactividad con esta tasa mensual")
+    parser.add_argument("--h2h-weight", type=float, default=None,
+                         help="Activa H2H con este peso (se aplica junto al decay ya validado)")
+    parser.add_argument("--h2h-min-partidos", type=int, default=3,
+                         help="Enfrentamientos previos mínimos para confiar en el H2H")
     args = parser.parse_args()
 
     resultado = ejecutar_backtest(shrink_k=args.shrink_k, evaluar_desde=args.evaluar_desde,
                                    usar_superficie=args.usar_superficie,
-                                   decay_por_mes=args.decay_por_mes)
+                                   decay_por_mes=args.decay_por_mes,
+                                   h2h_weight=args.h2h_weight,
+                                   h2h_min_partidos=args.h2h_min_partidos)
     print(json.dumps(resultado, indent=2, ensure_ascii=False))

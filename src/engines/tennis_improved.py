@@ -154,6 +154,26 @@ def forma_vigente(meses_inactivo: Optional[float],
     return meses_inactivo <= max_meses
 
 
+H2H_MIN_PARTIDOS = 3   # enfrentamientos previos mínimos para confiar en el H2H — con menos, es ruido
+H2H_WEIGHT = 0.0       # 0.0 = desactivado por default hasta validar por backtest (ver tennis_backtest_results.md)
+
+
+def prob_from_h2h(h2h_ganados_j1: int, h2h_total: int) -> float:
+    """
+    P(J1 gana) basada en el historial de enfrentamientos directos.
+
+    Mismo suavizado que prob_from_form (evita que un H2H perfecto tipo
+    3-0 produzca una probabilidad extrema de 1.0): rango [0.3, 0.7].
+    """
+    pct = h2h_ganados_j1 / h2h_total
+    return 0.3 + 0.4 * pct
+
+
+def h2h_vigente(h2h_total: Optional[int], min_partidos: int = H2H_MIN_PARTIDOS) -> bool:
+    """True si hay suficiente historial de enfrentamientos directos para usarlo."""
+    return h2h_total is not None and h2h_total >= min_partidos
+
+
 class TennisImprovedEngine:
     """Motor de tenis mejorado con datos históricos."""
 
@@ -234,7 +254,11 @@ class TennisImprovedEngine:
                                    meses_inactivo1: Optional[float] = None,
                                    meses_inactivo2: Optional[float] = None,
                                    decay_por_mes: float = DECAY_POR_MES,
-                                   max_meses_forma: float = FORMA_MAX_MESES_INACTIVO) -> Dict:
+                                   max_meses_forma: float = FORMA_MAX_MESES_INACTIVO,
+                                   h2h_ganados_j1: Optional[int] = None,
+                                   h2h_total: Optional[int] = None,
+                                   h2h_weight: float = H2H_WEIGHT,
+                                   h2h_min_partidos: int = H2H_MIN_PARTIDOS) -> Dict:
         """
         P(ganar partido) combinando Elo + Forma.
 
@@ -266,6 +290,14 @@ class TennisImprovedEngine:
         hace mucho no tiene "forma reciente", tiene una racha vieja (ver
         forma_vigente). Esto aplica siempre que se pase meses_inactivo,
         independiente de decay_por_mes.
+
+        h2h_ganados_j1/h2h_total/h2h_weight (opcional): mezcla la
+        probabilidad del historial de enfrentamientos directos (ver
+        prob_from_h2h) SOBRE el ensemble de Elo+Forma ya calculado, con
+        peso h2h_weight — no reemplaza Elo/Forma, se aplica encima. Solo
+        si hay al menos h2h_min_partidos enfrentamientos previos (ver
+        h2h_vigente); si no, se ignora y el resultado es idéntico a no
+        pasar estos parámetros. h2h_weight=0 (default) desactiva el H2H.
         """
         elo1_base, uso_surf1 = elegir_elo_superficie(elo1, elo1_superficie, games1_superficie, min_games_superficie)
         elo2_base, uso_surf2 = elegir_elo_superficie(elo2, elo2_superficie, games2_superficie, min_games_superficie)
@@ -292,6 +324,15 @@ class TennisImprovedEngine:
             p_form = None
             p_j1 = p_elo
 
+        # H2H: se mezcla ENCIMA del ensemble de Elo+Forma ya calculado,
+        # no lo reemplaza — solo si hay suficiente historial directo.
+        usa_h2h = h2h_weight > 0 and h2h_vigente(h2h_total, h2h_min_partidos)
+        if usa_h2h:
+            p_h2h = prob_from_h2h(h2h_ganados_j1, h2h_total)
+            p_j1 = (1.0 - h2h_weight) * p_j1 + h2h_weight * p_h2h
+        else:
+            p_h2h = None
+
         # Combinatoria para sets (igual que antes)
         q = 1.0 - p_j1
         if formato == "best_of_5":
@@ -310,6 +351,8 @@ class TennisImprovedEngine:
                 "elo1_ajustado": round(elo1_calc, 1),
                 "elo2_ajustado": round(elo2_calc, 1),
                 "uso_elo_superficie": {"j1": uso_surf1, "j2": uso_surf2},
+                "p_h2h": round(p_h2h, 4) if p_h2h is not None else None,
+                "usa_h2h": usa_h2h,
             }
         }
 
@@ -398,7 +441,11 @@ class TennisImprovedEngine:
                 meses_inactivo1: Optional[float] = None,
                 meses_inactivo2: Optional[float] = None,
                 decay_por_mes: float = DECAY_POR_MES,
-                max_meses_forma: float = FORMA_MAX_MESES_INACTIVO) -> Dict:
+                max_meses_forma: float = FORMA_MAX_MESES_INACTIVO,
+                h2h_ganados_j1: Optional[int] = None,
+                h2h_total: Optional[int] = None,
+                h2h_weight: float = H2H_WEIGHT,
+                h2h_min_partidos: int = H2H_MIN_PARTIDOS) -> Dict:
         """
         Análisis completo con Elo + Forma.
 
@@ -415,6 +462,9 @@ class TennisImprovedEngine:
         Elo por inactividad (ver aplicar_decay_inactividad). Default
         desactivado. Los mismos meses_inactivo{1,2} también descartan la
         forma si superan max_meses_forma (ver forma_vigente).
+
+        h2h_ganados_j1/h2h_total/h2h_weight (opcional): activa la señal de
+        head-to-head (ver prob_from_h2h). Default desactivado.
         """
         # Obtener probabilidades (Elo + Forma)
         mw_result = self.prob_match_winner_ensemble(
@@ -423,6 +473,8 @@ class TennisImprovedEngine:
             min_games_superficie=SURFACE_MIN_GAMES,
             meses_inactivo1=meses_inactivo1, meses_inactivo2=meses_inactivo2,
             decay_por_mes=decay_por_mes, max_meses_forma=max_meses_forma,
+            h2h_ganados_j1=h2h_ganados_j1, h2h_total=h2h_total,
+            h2h_weight=h2h_weight, h2h_min_partidos=h2h_min_partidos,
         )
         p_base = mw_result["debug"]["ensemble"]  # Probabilidad ensemble
 

@@ -377,3 +377,78 @@ Validado en vivo: Federer (inactivo ~61 meses) vs Sinner →
 `"forma":{"j1":null,"j2":{...}}`, `"usa_forma":false`,
 `"metodo":"Elo puro..."` — la forma vieja de Federer (7 ganados / 3
 perdidos de 2021) ya no aparece ni se usa.
+
+## H2H (head-to-head) — ACTIVADO en producción
+
+Última pieza pendiente de la auditoría original. Baseline: modelo con
+burn-in + decay de Elo/forma ya activos, Brier 0.21921 / accuracy 63.97%
+(14,320 partidos de 2024-2026).
+
+### Diseño
+
+`prob_from_h2h()` — mismo suavizado que `prob_from_form` (rango
+[0.3, 0.7], evita que un 3-0 H2H produzca una probabilidad extrema de
+1.0). Se mezcla **encima** del ensemble Elo+Forma ya calculado, no lo
+reemplaza:
+
+```
+p_j1_final = (1 - h2h_weight) * p_j1_ensemble + h2h_weight * p_h2h
+```
+
+Solo se activa con al menos `h2h_min_partidos` enfrentamientos previos
+entre ESE par específico de jugadores (`h2h_vigente`) — con menos
+muestra, se ignora y el resultado es idéntico a no tener H2H (mismo
+patrón de fallback que Elo por superficie/forma).
+
+El historial se construye walk-forward por par de jugadores
+(`frozenset({jugador1, jugador2})` como clave): para predecir un
+partido en la fecha X, solo se cuentan enfrentamientos directos previos
+a X — nunca resultados futuros del mismo par.
+
+### Grid (peso × enfrentamientos previos mínimos)
+
+| `h2h_min_partidos` | `h2h_weight` | Brier | Accuracy |
+|---|---|---|---|
+| 2 | 0.10 | 0.21903 | 64.06% |
+| 2 | 0.15 | 0.21896 | 64.14% |
+| **2** | **0.18** | **0.21895** | **64.21%** |
+| 2 | 0.20 | 0.21895 | 64.19% |
+| 2 | 0.25 | 0.21900 | 64.13% |
+| 3 | 0.20 | 0.21908 | 64.11% |
+| 5 | 0.20 | 0.21922 | 64.03% |
+| 0 (baseline, sin H2H) | — | 0.21921 | 63.97% |
+
+`min_partidos=2` es consistentemente mejor que 3 y 5 en todo el rango de
+pesos — exigir 5+ enfrentamientos previos entre el MISMO par específico
+de jugadores es una barra muy alta (pocos pares llegan, mayoría de los
+partidos evaluados terminan sin H2H aplicable, diluyendo el efecto hacia
+el baseline). Grid fino alrededor del pico (`weight` 0.12 a 0.30,
+`min_partidos=2`) confirmó una curva suave con máximo en 0.16-0.20 — no
+un pico aislado como el que resultó ser el bug del orden de rondas.
+
+### Por qué es una señal más convincente que shrink_elo
+
+| | Brier | Accuracy |
+|---|---|---|
+| shrink_elo (no activado) | +0.12% mejor | **peor** en todo el rango |
+| decay de Elo (activado) | +0.63% mejor | +0.08pp (casi plano) |
+| **H2H (activado)** | +0.12% mejor | **+0.24pp** |
+
+El Brier de H2H es del mismo orden que el de shrink_elo (que se
+descartó), pero a diferencia de shrink_elo, H2H mejora **también** la
+accuracy de forma consistente en todo el grid — shrink_elo la empeoraba
+siempre. Perfil de mejora distinto y más convincente.
+
+### Activado en producción
+
+- `calibrate_tennis_elo.py`: exporta `src/data/tennis_h2h.json` (38,095
+  pares de jugadores con al menos un enfrentamiento, 4.0MB) durante la
+  misma pasada walk-forward que ya calibra Elo/forma.
+- `tennis_validator.py`: `_cargar_h2h(j1, j2)` busca el par (cacheado en
+  memoria) y calcula `h2h_ganados_j1`/`h2h_total`. `None` si el par nunca
+  se enfrentó.
+- `app.py`: `H2H_WEIGHT_ACTIVO = 0.18`, `H2H_MIN_PARTIDOS_ACTIVO = 2`.
+
+Validado en vivo: Sinner vs Djokovic (H2H real 7-5 a favor de Sinner) →
+`"usa_h2h":true`, `"p_h2h":0.5333`. Sinner vs un par sin historial →
+`"usa_h2h":false`, `"p_h2h":null`, sin romper nada.
