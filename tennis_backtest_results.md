@@ -1,6 +1,13 @@
 # Backtest walk-forward — motor de tenis
 Generado: 2026-08-09 · `backtest_tennis.py` · 14,320 partidos reales ATP+WTA 2024–2026
 
+> **Actualización 2026-08-09 — fix del cold-start de Elo:** la sección
+> "el ranking oficial le gana al modelo" de abajo quedó resuelta. Ver
+> sección "Fix: burn-in de Elo (2015-2026)" al final de este documento —
+> el modelo ahora supera al ranking oficial (63.7% vs 63.45% accuracy) y
+> ya está activo en producción (`tennis_elo_ratings.json` regenerado con
+> 62,128 partidos 2015-2026, antes 14,320 de 2024-2026 solamente).
+
 Metodología: para cada partido, en orden cronológico, se predice usando
 **solo** el Elo y la forma calculados con los partidos anteriores (nunca
 información del partido en curso ni futuros), con el mismo motor de
@@ -110,3 +117,71 @@ la pena volver a correr este mismo backtest antes de decidir activarla.
 - `shrink_elo()` en `tennis_improved.py`: función correcta, testeada
   (`tests/test_tennis_shrinkage.py`), lista para usar si se decide
   reintentar con más datos.
+
+## Fix: burn-in de Elo (2015-2026) — el modelo ahora supera al ranking oficial
+
+### Hipótesis confirmada
+
+`INITIAL_ELO = 1500.0` (`src/core/tennis_elo.py:24`) es igual para
+absolutamente todos los jugadores sin importar su nivel real — con solo
+3 años de historial (2024-2026, 14,320 partidos) el Elo no tenía tiempo
+de converger a un valor representativo antes de que empezara la ventana
+evaluada por el backtest. Confirmado como causa directa de que el
+ranking oficial (que sí arrastra años de resultados previos) le ganara
+al modelo.
+
+### Opciones evaluadas
+
+| Opción | Datos nuevos | Complejidad | Elegida |
+|---|---|---|---|
+| A — Seed inicial desde ranking (fórmula rank→Elo) | Ninguno (ya teníamos `winner_rank`/`loser_rank`) | Media, requiere derivar/validar una fórmula | No, innecesaria si C alcanza |
+| B — Ranking oficial como feature del ensemble | Requiere ranking *actual* en cada request en vivo — no existe hoy en el pipeline de producción | Media-alta, agrega una dependencia nueva y otra fuente que mantener actualizada | No |
+| **C — Burn-in: más años de historial para que el Elo converja** | Ninguno — la misma fuente (LuckyLoser91/TennisCourtLog) tiene datos reales hasta 1968 | Baja — solo cambiar el rango de años descargado | **Sí** |
+
+C ataca la causa raíz (Elo sin tiempo de converger) sin inventar ninguna
+fórmula ni agregar una dependencia nueva al request en vivo — se probó
+primero y alcanzó el objetivo, así que A y B no hicieron falta.
+
+### Resultado, mismo conjunto evaluado (14,320 partidos de 2024-2026) en los tres casos
+
+| Ventana de burn-in | n. partidos totales procesados | Brier ↓ | Log-loss ↓ | Accuracy ↑ |
+|---|---|---|---|---|
+| Sin burn-in (solo 2024-2026) | 14,320 | 0.22628 | 0.64208 | 61.03% |
+| **2015-2026 (12 años) — elegida** | 62,128 | **0.22071** | **0.63110** | **63.70%** |
+| 2010-2026 (16 años) | ~más | 0.22085 | 0.63168 | 63.81% |
+| Baseline ranking oficial | — | — | — | 63.45% |
+
+12 y 16 años dan prácticamente el mismo resultado (retornos decrecientes
+más allá de ~10-12 años) — se eligió 12 años por menor tiempo de
+descarga/proceso sin pérdida de precisión medible. **El modelo ahora
+supera el objetivo mínimo pedido (superar 63.45%).**
+
+### Cambios aplicados
+
+- `src/providers/tennis_data_loader.py`: default de `descargar_datos_tennis()`
+  cambia de "últimos 3 años" a "últimos 12 años".
+- `src/data/tennis_elo_ratings.json` regenerado con `calibrate_tennis_elo.py`:
+  62,128 partidos reales 2015-2026 (antes 14,320 de 2024-2026), 2467
+  jugadores (antes 1001), 1656 con forma real (antes 646).
+- `backtest_tennis.py`: nuevo parámetro `evaluar_desde` para separar
+  "partidos usados para calentar el Elo" de "partidos puntuados",
+  reutilizable para cualquier backtest futuro con burn-in.
+
+### Caveat honesto: jugadores retirados con Elo "congelado"
+
+El sistema no tiene decay por inactividad — Roger Federer (retirado
+2022) y Ashleigh Barty (retirada 2022) aparecen en el top 10 de Elo
+porque su rating de pico simplemente no se mueve si no juegan más. No es
+un problema práctico hoy (nadie va a pedir un análisis de un partido de
+Federer), pero es una limitación real del modelo estático que vale la
+pena resolver si se profundiza en P1/P2 (ej. descontar Elo por tiempo
+sin jugar, o filtrar jugadores sin partidos en los últimos N meses del
+autocomplete).
+
+### Nota pendiente
+
+El grid de `shrink_elo()` (sección anterior) se corrió contra la ventana
+de 3 años — con 2467 jugadores y más partidos por jugador en la ventana
+de 12 años, vale la pena re-correrlo antes de descartar definitivamente
+la regresión a la media (no se hizo en este mismo cambio, para no mezclar
+dos variables a la vez en la misma medición).

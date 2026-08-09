@@ -62,14 +62,25 @@ def descargar_datos_tennis(genero: str = "ambos", years: List[int] | None = None
 
     Args:
         genero: "atp", "wta" o "ambos"
-        years: años a descargar (default: los últimos 3, incluyendo el actual)
+        years: años a descargar (default: últimos 12, incluyendo el actual)
 
     Returns:
         True si al menos un archivo se descargó exitosamente.
+
+    Nota sobre el default de 12 años: con solo 3 años (2024-2026) el Elo
+    arranca "en frío" (INITIAL_ELO=1500 para todo el mundo, ver
+    src/core/tennis_elo.py) y no le da tiempo a converger — un backtest
+    walk-forward confirmó que con esa ventana corta el modelo (61.0%
+    accuracy) perdía contra el baseline ingenuo "gana el mejor ranking
+    oficial" (63.45%). Con 12 años de burn-in (partidos anteriores a la
+    ventana evaluada, usados solo para calentar el Elo) el modelo sube a
+    63.7-63.8% y supera ese baseline. Ver tennis_backtest_results.md.
+    Probar con 16 años no mejoró más (retornos decrecientes) — 12 es el
+    punto de equilibrio entre precisión y tiempo de descarga/proceso.
     """
     if years is None:
         current_year = datetime.now().year
-        years = [current_year - 2, current_year - 1, current_year]
+        years = list(range(current_year - 11, current_year + 1))
 
     success = False
 

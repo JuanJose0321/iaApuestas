@@ -191,6 +191,16 @@ No hay datos históricos de picks de tenis registrados de forma separable hoy (t
 > producción** siguiendo la instrucción explícita de solo hacerlo si el
 > backtest confirmaba mejora real. Queda disponible para reintentar con
 > más años de histórico.
+>
+> **Actualización 2026-08-09 (fix del cold-start):** confirmado que
+> `INITIAL_ELO=1500` uniforme + solo 3 años de histórico era la causa de
+> que el ranking oficial le ganara al modelo. Fix elegido: burn-in con
+> 12 años de historial real (2015-2026, 62,128 partidos, la misma fuente
+> ya tenía datos hasta 1968) en vez de una fórmula rank→Elo inventada o
+> agregar el ranking como feature en vivo. Resultado: accuracy 63.70% —
+> supera el 63.45% del ranking oficial. `tennis_elo_ratings.json` ya
+> regenerado y en producción (2467 jugadores, antes 1001). Ver detalle
+> completo en `tennis_backtest_results.md`.
 
 ## 9. AUDITORÍA DE PRECISIÓN — FASE 2 (2026-08-09)
 

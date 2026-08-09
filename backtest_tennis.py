@@ -64,12 +64,21 @@ def _accuracy(preds: List[float]) -> float:
     return float(np.mean([1.0 if p > 0.5 else (0.5 if p == 0.5 else 0.0) for p in preds]))
 
 
-def ejecutar_backtest(shrink_k: Optional[float] = None) -> Dict:
+def ejecutar_backtest(shrink_k: Optional[float] = None,
+                       evaluar_desde: Optional[str] = None) -> Dict:
     """
     Corre el backtest walk-forward completo.
 
     shrink_k=None: sin regresión a la media (comportamiento original).
     shrink_k=X: aplica shrink_elo con esa constante k antes de predecir.
+
+    evaluar_desde="YYYY-MM-DD": si se pasa, TODOS los partidos disponibles
+    se usan para actualizar Elo/forma en orden cronológico (walk-forward),
+    pero solo se puntúan (Brier/accuracy) los partidos con fecha >= este
+    valor. Sirve para medir el efecto de darle al Elo más tiempo de
+    converger ("burn-in") antes de la ventana que realmente importa,
+    manteniendo la comparación sobre el mismo conjunto de partidos
+    evaluados que sin burn-in.
     """
     matches = combinar_archivos()
     hoy = datetime.now(timezone.utc).strftime("%Y-%m-%d")
@@ -85,6 +94,7 @@ def ejecutar_backtest(shrink_k: Optional[float] = None) -> Dict:
 
     for m in matches:
         winner, loser = m["winner"], m["loser"]
+        evaluar_este = evaluar_desde is None or m["date"] >= evaluar_desde
 
         elo_w = elo_calc.get_elo(winner)
         elo_l = elo_calc.get_elo(loser)
@@ -103,35 +113,36 @@ def ejecutar_backtest(shrink_k: Optional[float] = None) -> Dict:
         formato = "best_of_5" if m.get("best_of") == "5" else "best_of_3"
         superficie = m.get("surface", "hard")
 
-        if shrink_k is not None:
-            mw = _predecir_con_k(engine, elo_w, elo_l, winner, loser, superficie, formato,
-                                  games_w, games_l, shrink_k)
-        else:
-            mw = engine.prob_match_winner_ensemble(elo_w, elo_l, winner, loser, superficie, formato)
+        if evaluar_este:
+            if shrink_k is not None:
+                mw = _predecir_con_k(engine, elo_w, elo_l, winner, loser, superficie, formato,
+                                      games_w, games_l, shrink_k)
+            else:
+                mw = engine.prob_match_winner_ensemble(elo_w, elo_l, winner, loser, superficie, formato)
 
-        pred = mw["prob_j1"]  # P(gana "winner", el ganador real)
+            pred = mw["prob_j1"]  # P(gana "winner", el ganador real)
 
-        # Baseline de ranking oficial (accuracy, no probabilidad — el rank
-        # no se puede convertir a probabilidad calibrada sin inventar una
-        # fórmula arbitraria)
-        try:
-            wr = float(m.get("winner_rank") or "")
-            lr = float(m.get("loser_rank") or "")
-            con_rank += 1
-            if wr < lr:  # menor ranking = mejor
-                rank_acierta += 1
-        except (ValueError, TypeError):
-            pass
+            # Baseline de ranking oficial (accuracy, no probabilidad — el
+            # rank no se puede convertir a probabilidad calibrada sin
+            # inventar una fórmula arbitraria)
+            try:
+                wr = float(m.get("winner_rank") or "")
+                lr = float(m.get("loser_rank") or "")
+                con_rank += 1
+                if wr < lr:  # menor ranking = mejor
+                    rank_acierta += 1
+            except (ValueError, TypeError):
+                pass
 
-        elo_gap = abs(elo_w - elo_l)
-        bucket = next(b[0] for b in ELO_GAP_BUCKETS if b[1] <= elo_gap < b[2])
+            elo_gap = abs(elo_w - elo_l)
+            bucket = next(b[0] for b in ELO_GAP_BUCKETS if b[1] <= elo_gap < b[2])
 
-        registros.append({
-            "pred": pred,
-            "surface": superficie,
-            "level": mapear_nivel_torneo(m.get("level", "")),
-            "elo_gap_bucket": bucket,
-        })
+            registros.append({
+                "pred": pred,
+                "surface": superficie,
+                "level": mapear_nivel_torneo(m.get("level", "")),
+                "elo_gap_bucket": bucket,
+            })
 
         # Actualizar Elo/forma DESPUÉS de predecir (walk-forward real)
         winner_sets, loser_sets = extraer_sets(m.get("score", ""))
@@ -186,7 +197,10 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--shrink-k", type=float, default=None,
                          help="Constante k de shrinkage de Elo (default: sin shrinkage)")
+    parser.add_argument("--evaluar-desde", type=str, default=None,
+                         help="YYYY-MM-DD: usa partidos anteriores solo para calentar el Elo "
+                              "(burn-in), puntúa solo desde esta fecha")
     args = parser.parse_args()
 
-    resultado = ejecutar_backtest(shrink_k=args.shrink_k)
+    resultado = ejecutar_backtest(shrink_k=args.shrink_k, evaluar_desde=args.evaluar_desde)
     print(json.dumps(resultado, indent=2, ensure_ascii=False))
