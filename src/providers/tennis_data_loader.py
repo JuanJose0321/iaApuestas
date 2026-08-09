@@ -188,7 +188,7 @@ def combinar_archivos(patron_prefijos: tuple[str, ...] = ("atp_matches_", "wta_m
 
     Returns:
         Lista de partidos como dicts con: date (YYYY-MM-DD), tournament,
-        level, surface, winner, loser, score, best_of.
+        level, surface, winner, loser, score, best_of, winner_rank, loser_rank.
     """
     DATA_DIR.mkdir(parents=True, exist_ok=True)
     matches = []
@@ -214,6 +214,8 @@ def combinar_archivos(patron_prefijos: tuple[str, ...] = ("atp_matches_", "wta_m
                         "loser": loser,
                         "score": row.get("score", ""),
                         "best_of": row.get("best_of", ""),
+                        "winner_rank": row.get("winner_rank", ""),
+                        "loser_rank": row.get("loser_rank", ""),
                     })
                     count += 1
             _log.info(f"Cargados {count} partidos de {csv_file.name}")

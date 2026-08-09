@@ -60,6 +60,34 @@ def _cargar_std_games() -> Dict[str, float]:
 
 STD_GAMES = _cargar_std_games()
 
+ELO_PRIOR = 1500.0   # mismo default usado en todo el resto del proyecto (Elo inicial sin historial)
+SHRINK_K = 20.0       # constante de regresión a la media — ver report_tennis_audit.md sección 9/10 para el valor elegido empíricamente por backtest
+
+
+def shrink_elo(elo: float, games: Optional[int],
+               elo_prior: float = ELO_PRIOR, k: float = SHRINK_K) -> float:
+    """
+    Regresión a la media (empirical-Bayes shrinkage) para Elo calculado con
+    pocos partidos. Un Elo de 1650 con 3 partidos es mucho más ruidoso
+    (pudo ganarle a rivales débiles por azar) que el mismo 1650 con 200
+    partidos — pero antes de este fix el motor los trataba con la misma
+    confianza.
+
+    factor = games / (games + k):
+      - games=0    -> factor=0   -> devuelve elo_prior puro (1500)
+      - games=k    -> factor=0.5 -> a mitad de camino entre el Elo y 1500
+      - games>>k   -> factor->1  -> casi no se toca el Elo observado
+
+    games=None desactiva el shrink (devuelve el Elo sin modificar) — así
+    las llamadas existentes sin dato de "games" siguen funcionando igual
+    que antes de este cambio.
+    """
+    if games is None:
+        return elo
+    games = max(0, games)
+    factor = games / (games + k) if (games + k) > 0 else 0.0
+    return elo_prior + (elo - elo_prior) * factor
+
 
 class TennisImprovedEngine:
     """Motor de tenis mejorado con datos históricos."""
@@ -120,7 +148,9 @@ class TennisImprovedEngine:
     def prob_match_winner_ensemble(self, elo1: float, elo2: float,
                                    player1: str, player2: str,
                                    superficie: str = "hard",
-                                   formato: str = "best_of_3") -> Dict:
+                                   formato: str = "best_of_3",
+                                   games1: Optional[int] = None,
+                                   games2: Optional[int] = None) -> Dict:
         """
         P(ganar partido) combinando Elo + Forma.
 
@@ -128,9 +158,18 @@ class TennisImprovedEngine:
         para ambos jugadores. Si a alguno le falta, usar 100% Elo: mezclar
         con un 50% inventado sesga cada predicción hacia el empate sin
         ninguna base estadística (era el bug de P0-1).
+
+        games1/games2 (opcional): si se pasan, el Elo de cada jugador se
+        encoge hacia la media antes de usarlo (ver shrink_elo) — mitiga
+        que un Elo calculado con pocos partidos se trate con la misma
+        confianza que uno con historial largo. None (default) desactiva
+        el shrink y preserva el comportamiento anterior a este cambio.
         """
+        elo1_calc = shrink_elo(elo1, games1)
+        elo2_calc = shrink_elo(elo2, games2)
+
         # Probabilidad por Elo
-        p_elo = self.prob_from_elo(elo1, elo2, superficie)
+        p_elo = self.prob_from_elo(elo1_calc, elo2_calc, superficie)
 
         # Probabilidad por Forma (solo si hay datos reales de ambos)
         form1 = self.get_form(player1)
@@ -159,6 +198,8 @@ class TennisImprovedEngine:
                 "p_form": round(p_form, 4) if p_form is not None else None,
                 "ensemble": round(p_j1, 4),
                 "usa_forma": usa_forma,
+                "elo1_ajustado": round(elo1_calc, 1),
+                "elo2_ajustado": round(elo2_calc, 1),
             }
         }
 
@@ -237,15 +278,20 @@ class TennisImprovedEngine:
                 superficie: str, formato: str,
                 cuotas: Dict,
                 cuota_min: float = 1.20,
-                cuota_max: float = 6.00) -> Dict:
+                cuota_max: float = 6.00,
+                games1: Optional[int] = None,
+                games2: Optional[int] = None) -> Dict:
         """
         Análisis completo con Elo + Forma.
 
         Returns análisis similar al motor anterior pero con mejores probabilidades.
+
+        games1/games2 (opcional): activa la regresión a la media del Elo
+        para jugadores con pocos partidos (ver shrink_elo). None = sin cambios.
         """
         # Obtener probabilidades (Elo + Forma)
         mw_result = self.prob_match_winner_ensemble(
-            elo1, elo2, player1, player2, superficie, formato
+            elo1, elo2, player1, player2, superficie, formato, games1, games2
         )
         p_base = mw_result["debug"]["ensemble"]  # Probabilidad ensemble
 

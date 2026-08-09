@@ -179,3 +179,200 @@ No hay datos históricos de picks de tenis registrados de forma separable hoy (t
    ```
    y verificar en el log que descarga CSVs reales (no debe decir "matches_procesados: 500" otra vez si la descarga real trae miles de partidos de 3 años de ATP+WTA).
 3. Testear en: `http://localhost:5000/api/analizar_tenis` con el jugador Djokovic vs Sinner (hard, BO3) y confirmar que `"p_form"` deja de aparecer fijo en 0.5 y que el EV de "Total Games Over" baja a un rango creíble (<15%, no 46%).
+
+> **Actualización 2026-08-09:** P0-1 (backtesting walk-forward) y P0-2
+> (regresión a la media) de esta sección implementados — ver
+> `tennis_backtest_results.md`. Resumen: el modelo actual sí predice
+> mejor que el azar (Brier 0.226 vs 0.25 coin-flip), pero el ranking
+> oficial ATP/WTA solo (63.45% accuracy) le gana al modelo (61.03%) —
+> hallazgo honesto, no esperado. La regresión a la media (`shrink_elo()`)
+> se implementó y testeó pero el backtest mostró una mejora marginal
+> (~0.12% relativo en Brier, empeora accuracy) — **no se activó en
+> producción** siguiendo la instrucción explícita de solo hacerlo si el
+> backtest confirmaba mejora real. Queda disponible para reintentar con
+> más años de histórico.
+
+## 9. AUDITORÍA DE PRECISIÓN — FASE 2 (2026-08-09)
+
+Diagnóstico solicitado explícitamente sin implementación. Todo lo citado
+abajo está verificado contra el código actual (`src/engines/tennis_improved.py`,
+`src/data/tennis_elo_ratings.json`, `src/data/tennis_std_dev_calibrated.json`,
+`src/core/backtest.py`, `src/core/model.py`) en el momento de esta auditoría.
+
+### Corrección al contexto de partida
+
+El pedido asumía que el motor ya tiene "Elo específico por superficie
+(hard/clay/grass/carpet)". **No es así** — verificado en
+`tennis_elo_ratings.json`: cada jugador tiene un único campo `elo` global
+(ej. `{"elo": 1616.2, "games": 113, "forma": {...}}`). Lo que existe es
+`SURFACE_ELO_FACTOR` (`tennis_improved.py:28-33`), un multiplicador
+**global e idéntico para cualquier jugador** (clay×1.20, hard×1.00,
+grass×0.85, carpet×0.90) aplicado sobre la diferencia de Elo — no es Elo
+por superficie, es un ajuste genérico de superficie. Sigue siendo
+exactamente el mismo gap ya identificado en la Fase 1 de esta auditoría,
+sin implementar todavía.
+
+### 9.1 Qué SÍ considera el modelo hoy (verificado línea por línea)
+
+| Feature | Dónde | Detalle |
+|---|---|---|
+| Elo dinámico global | `tennis_elo_ratings.json` | 1001 jugadores, calibrado con 14,320 partidos reales 2024-2026 |
+| K-factor por nivel de torneo | `src/core/tennis_elo.py:15-22` | Grand Slam=32, Masters 1000=24, ATP 500=20, ATP 250=16, Challenger=12, ITF=8 — **solo se usa en la calibración offline** (`calibrate_tennis_elo.py`), no afecta la predicción de un partido puntual |
+| Ajuste genérico de superficie | `tennis_improved.py:28-33,96-101` | Multiplicador fijo sobre el delta de Elo, igual para todos los jugadores (no es Elo por superficie) |
+| Forma reciente real | `tennis_elo_ratings.json` campo `forma` | Últimos 10 partidos, calculado en la misma pasada cronológica que el Elo (`calibrate_tennis_elo.py`), mínimo 3 partidos para reportarse — 646/1001 jugadores la tienen |
+| Ensemble Elo+Forma condicional | `tennis_improved.py:120-163` | 70% Elo + 30% Forma solo si AMBOS jugadores tienen forma real; si no, 100% Elo (fix P0-1) |
+| std_dev de Total Games calibrado | `tennis_std_dev_calibrated.json` | Desviación muestral real por formato (BO3=5.91, BO5=9.39), separado por la columna `best_of` real, excluyendo partidos incompletos (fix P1) |
+| Kelly fraccionado (25%) | `tennis_improved.py:198-217,337-345` | Igual que fútbol |
+
+### 9.2 Gaps identificados
+
+#### Crítico — bloquea saber si el modelo sirve
+
+**No existe backtesting ni calibración estadística para tenis, en absoluto.**
+Verificado: `grep -rl "brier\|log_loss\|backtest"` sobre todo el proyecto
+solo encuentra `src/core/backtest.py`, `src/core/model.py` y `src/cli.py` —
+los tres son 100% del motor de **fútbol** (XGBoost + Poisson). `model.py`
+sí calcula `log_loss` (líneas 56, 142-152), pero comparando el modelo de
+fútbol calibrado vs. sin calibrar vs. el mercado — cero relación con tenis.
+`tracking.py::calcular_metricas()` sí calcula `calibracion` (prob promedio
+vs. tasa de acierto real), pero mezcla fútbol y tenis en el mismo pool sin
+separar por deporte (gap ya señalado en la Fase 1, sección 3).
+
+**Consecuencia concreta:** ni vos ni yo sabemos hoy si el Elo+superficie+forma
+actual predice mejor que Elo puro, que un coin-flip, o que las cuotas del
+mercado. Todos los ajustes hechos hasta ahora (P0-1, P0-2, P1) son
+correcciones de bugs obvios (sesgo hacia 0.5, datos sintéticos, std_dev
+demasiado angosto) — mejoras seguras por construcción — pero nadie midió
+si el modelo resultante tiene Brier score / log-loss mejor que la cuota
+implícita del mercado. Sin esto, cualquier feature nueva que se agregue
+de acá en más se está afinando a ciegas.
+
+#### Importantes
+
+- **Sin regresión a la media para muestra pequeña.** El campo `games` ya
+  existe en `tennis_elo_ratings.json` (partidos usados en la calibración
+  de cada jugador) pero **no se usa en ningún lado del motor** — un
+  jugador con `games: 3` se trata con la misma confianza que uno con
+  `games: 500`, pese a que su Elo es mucho más ruidoso. `_calc_confianza()`
+  (`tennis_improved.py:219-225`) no tiene ningún input de tamaño de
+  muestra.
+- **H2H (head-to-head) no se persiste.** `combinar_archivos()` (loader)
+  sí trae el historial completo de partidos con nombres de ganador/perdedor,
+  pero `calibrate_tennis_elo.py` lo descarta después de actualizar el Elo
+  — no queda ningún índice de enfrentamientos directos por par de
+  jugadores. Los datos ya están disponibles (no requiere fuente nueva),
+  solo no se guardan.
+- **Sin actualización automática de Elo.** A diferencia de fútbol, que ya
+  tiene un GitHub Actions diario (`.github/workflows/...`, commit
+  `875f0e6`) para refrescar los CSV, tenis no tiene ningún equivalente —
+  `calibrate_tennis_elo.py` hay que correrlo a mano. El Elo se desactualiza
+  cada semana que pasa sin recalibrar.
+- **Calibración isotónica/Platt de las probabilidades del Elo:** técnicamente
+  correcto pedirlo, pero es un subproducto directo del backtesting (punto
+  crítico de arriba) — no se puede calibrar sin primero tener pares
+  (prob predicha, resultado real) del histórico, que es exactamente lo que
+  falta. Es el mismo trabajo, no un ítem aparte.
+
+#### Necesitan fuente de datos nueva (no la tenemos hoy, ni en CSV ni en ningún otro lado del proyecto)
+
+- **Fatiga / días desde el último partido:** los CSV históricos sí tienen
+  fecha, pero el endpoint `POST /api/analizar_tenis` no recibe fecha del
+  partido a predecir ni torneo/ronda — haría falta cambiar el schema del
+  request y tener un calendario de torneos en vivo.
+- **Rendimiento en el torneo actual (sets ganados en rondas previas):**
+  mismo problema — requiere saber en qué torneo/ronda está el partido a
+  predecir, dato que hoy no se pide ni se tiene.
+- **Lesiones/retiros recientes:** el histórico solo tiene ganador/perdedor
+  y score — ningún reporte de estado físico. Requiere una fuente externa
+  nueva (no existe ningún candidato evaluado todavía).
+- **Altitud/condiciones del torneo:** no hay metadata de ciudad/altitud en
+  ningún archivo del proyecto. Impacto probablemente bajo salvo casos
+  puntuales (Madrid, Bogotá) — no prioritario aun si se consiguiera la
+  fuente.
+- **Estilo de juego / matchup:** no hay ningún dato de estilo en el
+  proyecto. Además de requerir fuente nueva, es un dato difícil de
+  cuantificar sistemáticamente sin un dataset especializado — impacto
+  incierto.
+- **Momentum en vivo / in-play:** el motor es 100% pre-partido, sin
+  ningún input de estado del partido en curso. Implementarlo sería
+  esencialmente un producto distinto (modelo in-play), no una mejora
+  incremental — requiere datos de partido en vivo que no están en el
+  alcance actual del proyecto.
+
+### 9.3 Reporte priorizado
+
+#### P0 — hacer antes que cualquier otra cosa
+
+1. **Backtesting walk-forward + Brier score / log-loss para tenis**
+   - Qué resuelve: hoy no hay forma de saber si el modelo predice mejor
+     que el mercado o que un coin-flip.
+   - Impacto: crítico — es la precondición para que cualquier otra mejora
+     tenga sentido medirla.
+   - Esfuerzo: 3-4h. Requiere reproducir el Elo **paso a paso** guardando
+     el Elo de cada jugador *antes* de cada partido (no solo el Elo final
+     que hoy se guarda) para poder generar la predicción "honesta" que el
+     modelo hubiera dado en ese momento, y compararla contra el resultado
+     real con Brier score / log-loss, contra la cuota implícita del
+     mercado si se consigue histórico de cuotas (no lo tenemos — sin eso,
+     al menos comparar contra un baseline de Elo puro vs. Bookmaker
+     consensus no es posible, pero sí contra un baseline naive 50/50 y
+     contra ranking ATP/WTA oficial si está en los CSV).
+   - Datos: ya los tenemos (los mismos 14,320 partidos).
+
+2. **Regresión a la media por tamaño de muestra**
+   - Qué resuelve: Elo con pocos partidos (`games` bajo) es ruidoso pero
+     se usa con la misma confianza que uno con historial largo.
+   - Impacto: medio-alto, esfuerzo bajo.
+   - Esfuerzo: 1h. Ej.: encoger el Elo hacia 1500 proporcional a
+     `1/sqrt(games)`, o ensanchar el `std_dev` efectivo de la predicción
+     cuando `games` es bajo.
+   - Datos: ya los tenemos (`games` ya está en el JSON).
+
+#### P1 — con impacto real, esfuerzo medio, datos ya disponibles
+
+3. **Elo por superficie por jugador** (el gap que el pedido asumía ya resuelto)
+   - Impacto: medio-alto — la intuición de que el ranking cambia fuerte
+     por superficie es real en tenis, y ya tenemos `surface` en los CSV
+     históricos.
+   - Esfuerzo: 2h — extender `TennisEloCalculator` para trackear 3 Elos
+     por jugador (o un Elo overall + delta por superficie) y regenerar
+     `tennis_elo_ratings.json`.
+   - Bloqueado por: nada, se puede hacer ya. Pero su impacto real solo se
+     puede confirmar después de P0-1 (backtesting).
+
+4. **H2H (head-to-head)**
+   - Impacto: medio — en la literatura de tenis moderna el Elo ya captura
+     la mayoría de la señal de H2H; el aporte incremental es real pero
+     modesto salvo matchups de estilo muy marcados.
+   - Esfuerzo: 2-3h — nueva estructura para persistir enfrentamientos
+     directos por par de jugadores durante la misma pasada de calibración.
+   - Datos: ya los tenemos, solo no se guardan hoy.
+
+5. **Automatizar recalibración de Elo (GitHub Actions)**
+   - Impacto: alto en el tiempo (mitiga que el Elo se desactualice cada
+     semana), esfuerzo bajo-medio.
+   - Esfuerzo: 2h — replicar el patrón que ya existe para fútbol
+     (commit `875f0e6`).
+
+#### P2 — impacto incierto o requiere fuente de datos nueva
+
+6. Calibración isotónica de probabilidades — mismo trabajo que P0-1, no
+   es un ítem separado.
+7. Fatiga/descanso — requiere calendario de torneos en vivo + cambiar el
+   schema del request.
+8. Rendimiento en torneo actual — mismo bloqueo que el anterior.
+9. Lesiones/retiros — necesita fuente de datos nueva, no evaluada.
+10. Altitud/condiciones — necesita fuente de datos nueva, impacto bajo.
+11. Estilo de juego/matchup — necesita fuente de datos nueva, impacto incierto.
+12. Momentum in-play — cambio de alcance de producto, no una mejora incremental.
+
+### 9.4 Recomendación
+
+Implementar **P0-1 (backtesting) antes que cualquier feature nueva**,
+incluido el Elo por superficie que parecía la mejora "obvia" siguiente.
+Sin un número de referencia (Brier/log-loss actual), no hay forma de
+confirmar si agregar superficie por jugador o H2H realmente mejora algo,
+o si solo agrega ruido/overfitting a un histórico de apenas 2 años. Una
+vez que exista ese baseline, P0-2 (regresión a la media) y P1-3 (Elo por
+superficie) son los siguientes candidatos naturales porque no requieren
+datos nuevos y su efecto se puede medir contra el mismo baseline.
