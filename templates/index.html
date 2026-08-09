@@ -1396,8 +1396,13 @@ document.getElementById("tennisFormCard").addEventListener("submit", async (e) =
 
     const mw = (j.modelo && j.modelo.match_winner) || {};
     const tg = (j.modelo && j.modelo.total_games) || {};
+    const pJ1 = mw.prob_j1 || 0, pJ2 = 1 - pJ1;
+    const favorito = pJ1 >= pJ2 ? j1 : j2;
+    const probFavorito = Math.max(pJ1, pJ2);
     bubble("**" + j.partido + "** · " + j.superficie + " · " + j.formato + "\n" +
-      "P(J1 gana el partido) = " + ((mw.prob_j1||0)*100).toFixed(1) + "%\n" +
+      "🏆 Favorito: **" + favorito + "** (" + (probFavorito*100).toFixed(1) + "%)\n" +
+      "   " + j1 + ": " + (pJ1*100).toFixed(1) + "%\n" +
+      "   " + j2 + ": " + (pJ2*100).toFixed(1) + "%\n" +
       "Juegos totales esperados: " + (tg.total_esp ?? "—") + "\n" + (j.resumen||""));
 
     if (j.picks_verdes && j.picks_verdes.length){ bubble("✅ " + j.picks_verdes.length + " pick(s) VERDE:"); j.picks_verdes.forEach(p => tennisPickCard(p, "verde")); }
