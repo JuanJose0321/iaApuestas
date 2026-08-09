@@ -1,0 +1,56 @@
+name: Actualizar datos de tenis (Elo, forma, H2H, jugadores)
+
+"on":
+  schedule:
+    - cron: "0 4 * * *"  # 4 AM UTC diario (1h después del de fútbol, evita solaparse)
+  workflow_dispatch: {}    # permite disparar manualmente desde la pestaña Actions
+
+permissions:
+  contents: write
+
+jobs:
+  update-tennis:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      # calibrate_tennis_elo.py no tiene dependencias de terceros (solo
+      # stdlib: urllib/csv/json) — no hace falta pip install. Descarga los
+      # 12 años de histórico ATP+WTA de nuevo (~17s en total, confirmado
+      # localmente) y recalcula Elo + forma + H2H desde cero; no es
+      # incremental porque no hace falta serlo: recalcular todo es barato
+      # y evita bugs de estado parcial (deques de forma, contadores de
+      # Elo) que sí tendría una actualización incremental real. El PASO 6
+      # del script ya regenera jugadores_por_genero.json automáticamente.
+      - name: Recalibrar Elo + forma + H2H + selector de jugadores
+        run: python calibrate_tennis_elo.py
+
+      - name: Commit y push si hay cambios reales
+        # Los 3 JSON llevan un _meta.fecha/generado con el timestamp de
+        # ESTA corrida, que cambia siempre aunque los datos (Elo/forma/H2H/
+        # jugadores) sean idénticos a la última calibración — confirmado
+        # localmente: re-correr el script sin partidos nuevos en la fuente
+        # solo mueve esa línea. Un "git diff --cached --quiet" simple
+        # commitearía ruido todos los días para siempre; se filtran esas
+        # líneas de metadata antes de decidir si hay algo real que subir.
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add src/data/tennis_elo_ratings.json src/data/tennis_h2h.json src/data/jugadores_por_genero.json
+
+          CAMBIOS_REALES=$(git diff --cached -- src/data/tennis_elo_ratings.json src/data/tennis_h2h.json src/data/jugadores_por_genero.json \
+            | grep -E '^[+-]' | grep -Ev '^(\+\+\+|---)' | grep -Ev '"fecha":|"generado":' | wc -l)
+
+          if [ "$CAMBIOS_REALES" -eq 0 ]; then
+            echo "Sin cambios reales (solo timestamp), nada que commitear"
+            git reset
+          else
+            git commit -m "Auto: actualizar Elo/forma/H2H de tenis $(date -u +%Y-%m-%d)"
+            git push origin main
+          fi
