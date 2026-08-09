@@ -109,6 +109,30 @@ def elegir_elo_superficie(elo_overall: float, elo_superficie: Optional[float],
     return elo_overall, False
 
 
+DECAY_POR_MES = 0.0   # 0.0 = desactivado por default hasta validar por backtest (ver tennis_backtest_results.md)
+
+
+def aplicar_decay_inactividad(elo: float, meses_inactivo: Optional[float],
+                               elo_medio: float = ELO_PRIOR,
+                               decay_por_mes: float = DECAY_POR_MES) -> float:
+    """
+    Acerca el Elo hacia la media general cuanto más tiempo lleva el
+    jugador sin competir — sin esto, un jugador retirado o con una
+    lesión larga queda con su Elo de pico "congelado" indefinidamente.
+
+    factor = min(1, meses_inactivo * decay_por_mes):
+      - meses_inactivo=0 o decay_por_mes=0 -> factor=0 -> Elo sin tocar
+      - factor=1 (tope) -> devuelve elo_medio puro (1500)
+
+    meses_inactivo=None (jugador sin partido previo conocido) desactiva
+    el decay — no hay fecha de referencia desde la cual contar.
+    """
+    if meses_inactivo is None or decay_por_mes <= 0:
+        return elo
+    factor = min(1.0, max(0.0, meses_inactivo) * decay_por_mes)
+    return elo + (elo_medio - elo) * factor
+
+
 class TennisImprovedEngine:
     """Motor de tenis mejorado con datos históricos."""
 
@@ -185,7 +209,10 @@ class TennisImprovedEngine:
                                    elo2_superficie: Optional[float] = None,
                                    games1_superficie: Optional[int] = None,
                                    games2_superficie: Optional[int] = None,
-                                   min_games_superficie: int = SURFACE_MIN_GAMES) -> Dict:
+                                   min_games_superficie: int = SURFACE_MIN_GAMES,
+                                   meses_inactivo1: Optional[float] = None,
+                                   meses_inactivo2: Optional[float] = None,
+                                   decay_por_mes: float = DECAY_POR_MES) -> Dict:
         """
         P(ganar partido) combinando Elo + Forma.
 
@@ -207,10 +234,18 @@ class TennisImprovedEngine:
         genérico SURFACE_ELO_FACTOR (la superficie ya está reflejada en
         qué Elo se eligió — aplicar el factor de nuevo la contaría dos
         veces). None (default) preserva el comportamiento anterior.
+
+        meses_inactivo{1,2}/decay_por_mes (opcional): acerca el Elo hacia
+        la media cuanto más tiempo lleva el jugador sin competir (ver
+        aplicar_decay_inactividad). decay_por_mes=0 (default del módulo)
+        desactiva el decay y preserva el comportamiento anterior.
         """
         elo1_base, uso_surf1 = elegir_elo_superficie(elo1, elo1_superficie, games1_superficie, min_games_superficie)
         elo2_base, uso_surf2 = elegir_elo_superficie(elo2, elo2_superficie, games2_superficie, min_games_superficie)
         aplicar_factor = not (uso_surf1 or uso_surf2)
+
+        elo1_base = aplicar_decay_inactividad(elo1_base, meses_inactivo1, decay_por_mes=decay_por_mes)
+        elo2_base = aplicar_decay_inactividad(elo2_base, meses_inactivo2, decay_por_mes=decay_por_mes)
 
         elo1_calc = shrink_elo(elo1_base, games1)
         elo2_calc = shrink_elo(elo2_base, games2)
@@ -332,7 +367,10 @@ class TennisImprovedEngine:
                 elo1_superficie: Optional[float] = None,
                 elo2_superficie: Optional[float] = None,
                 games1_superficie: Optional[int] = None,
-                games2_superficie: Optional[int] = None) -> Dict:
+                games2_superficie: Optional[int] = None,
+                meses_inactivo1: Optional[float] = None,
+                meses_inactivo2: Optional[float] = None,
+                decay_por_mes: float = DECAY_POR_MES) -> Dict:
         """
         Análisis completo con Elo + Forma.
 
@@ -344,11 +382,18 @@ class TennisImprovedEngine:
         elo{1,2}_superficie/games{1,2}_superficie (opcional): activa el uso
         de Elo específico por superficie (ver elegir_elo_superficie).
         None = sin cambios.
+
+        meses_inactivo{1,2}/decay_por_mes (opcional): activa el decay de
+        Elo por inactividad (ver aplicar_decay_inactividad). Default
+        desactivado.
         """
         # Obtener probabilidades (Elo + Forma)
         mw_result = self.prob_match_winner_ensemble(
             elo1, elo2, player1, player2, superficie, formato, games1, games2,
             elo1_superficie, elo2_superficie, games1_superficie, games2_superficie,
+            min_games_superficie=SURFACE_MIN_GAMES,
+            meses_inactivo1=meses_inactivo1, meses_inactivo2=meses_inactivo2,
+            decay_por_mes=decay_por_mes,
         )
         p_base = mw_result["debug"]["ensemble"]  # Probabilidad ensemble
 

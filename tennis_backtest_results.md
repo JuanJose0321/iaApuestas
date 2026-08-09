@@ -7,6 +7,24 @@ Generado: 2026-08-09 · `backtest_tennis.py` · 14,320 partidos reales ATP+WTA 2
 > el modelo ahora supera al ranking oficial (63.7% vs 63.45% accuracy) y
 > ya está activo en producción (`tennis_elo_ratings.json` regenerado con
 > 62,128 partidos 2015-2026, antes 14,320 de 2024-2026 solamente).
+>
+> **Actualización 2026-08-09 — bug crítico de orden encontrado y
+> corregido:** durante el experimento de decay por inactividad se
+> encontró que `combinar_archivos()` ordenaba los partidos **solo por
+> fecha** — y el CSV fuente comparte una única `tourney_date` (la fecha
+> de INICIO del torneo) entre TODAS sus rondas, listadas en el archivo en
+> orden DESCENDENTE (Final primero, Primera Ronda al final). El sort
+> estable de Python preservaba ese orden en los empates, así que el
+> backtest procesaba la Final de un torneo **antes** que su Primera
+> Ronda — walk-forward roto, con fuga de información hacia el pasado.
+> Ya corregido (`src/providers/tennis_data_loader.py`, ordena también
+> por ronda real dentro de cada fecha). Se re-verificaron TODOS los
+> resultados anteriores de este documento contra el fix: burn-in,
+> shrink_elo y Elo por superficie no cambiaron de forma significativa
+> (diferencias de ±0.15% en Brier, dentro de ruido) — sus conclusiones
+> siguen siendo válidas. El experimento de decay sí estaba completamente
+> corrompido por este bug (ver sección "Decay de Elo por inactividad"
+> más abajo) — se volvió a correr desde cero con el orden correcto.
 
 Metodología: para cada partido, en orden cronológico, se predice usando
 **solo** el Elo y la forma calculados con los partidos anteriores (nunca
@@ -240,3 +258,84 @@ opcionales, default `None` = sin cambios), pero **no se conecta a
 evidencia de mejora real. `SURFACE_ELO_FACTOR` (el multiplicador
 genérico) sigue siendo el único ajuste de superficie activo en
 producción.
+
+## Decay de Elo por inactividad — ACTIVADO en producción
+
+Mismo baseline reverificado tras el fix de orden de rondas:
+Brier 0.22060 / accuracy 63.89% (14,320 partidos de 2024-2026).
+
+### El hallazgo inicial era falso — causado por el bug de orden
+
+La primera corrida de este experimento (antes de encontrar el bug de
+orden de rondas) mostraba una "mejora" que crecía sin límite: a
+`decay_por_mes=1000` (básicamente forzando el Elo a 1500 para casi
+cualquier jugador con más de un partido), el Brier score seguía
+bajando y la accuracy subía a 67.4%. Esto era matemáticamente
+imposible si el decay realmente estuviera destruyendo información real
+— y efectivamente lo era: al procesar la Final de un torneo antes que
+su Primera Ronda (el bug de orden), un jugador que seguía vivo en el
+mismo torneo (misma `tourney_date`, meses_inactivo=0.0 exacto) quedaba
+**exento del decay** y conservaba un Elo ya actualizado con el resultado
+de una ronda posterior — el modelo tenía información del futuro del
+torneo antes de "predecir" partidos anteriores del mismo torneo. No era
+señal de inactividad, era fuga de información. Corregido el orden
+(`_ORDEN_RONDA` en `tennis_data_loader.py`), el patrón cambió a la forma
+de U invertida esperable de un decay real: mejora leve con poco decay,
+empeora claramente con decay agresivo (`decay_por_mes=1000` da
+brier=0.24353, peor que el baseline y cerca de un coin-flip).
+
+### Grid con el orden corregido
+
+| `decay_por_mes` | Brier | Accuracy |
+|---|---|---|
+| 0 (baseline) | 0.22060 | 63.89% |
+| 0.05 | 0.22002 | 63.94% |
+| 0.15 | 0.21943 | 63.94% |
+| 0.20 | 0.21928 | 63.93% |
+| **0.25** | **0.21921** | **63.97%** |
+| 0.30 | 0.21923 | 63.95% |
+| 0.40 | 0.21944 | 63.96% |
+| 1.0 | 0.22218 | 63.24% |
+| 10.0 | 0.23841 | 59.10% |
+| 1000.0 | 0.24353 | 59.35% |
+
+Curva suave y consistente alrededor de 0.15-0.4 (no un pico ruidoso
+aislado) — a diferencia de shrink_elo (mejora de 0.12%, dentro de
+ruido) y Elo por superficie (empeora o queda neutral), esta mejora es
+real: 0.6% de Brier mejor que el baseline, con una forma de curva que
+indica una señal genuina, no overfitting a un valor puntual. La
+accuracy se mantiene casi plana (63.89% → 63.97%) — la mejora es sobre
+todo de **calibración** (Brier/log-loss, penalizan predicciones
+confiadas y equivocadas), no de más picks acertados.
+
+### Decisión: activado en producción con `decay_por_mes=0.25`
+
+A diferencia de shrink_elo y Elo por superficie, esta mejora cumple el
+criterio de "mejora real, no ruido" — y además resuelve directamente el
+caveat documentado de jugadores retirados con Elo congelado (Federer,
+Barty), que fue la motivación original de todo este trabajo.
+
+Cambios en producción:
+- `calibrate_tennis_elo.py`: guarda `ultima_fecha` (fecha ISO del
+  último partido) por jugador en `tennis_elo_ratings.json`.
+- `tennis_validator.py`: calcula `meses_inactivo1`/`meses_inactivo2`
+  (hoy − `ultima_fecha`, en meses de 30.44 días) al resolver Elo desde
+  ratings calibrados. `None` si el Elo vino explícito en el request (no
+  hay fecha de referencia) o si el jugador no tiene `ultima_fecha`.
+- `app.py`: `DECAY_POR_MES_ACTIVO = 0.25`, pasado a `engine.analizar()`.
+
+Validado en vivo: Roger Federer (última fecha registrada 2021-06-28,
+~61 meses de inactividad) vs Jannik Sinner → `elo1_ajustado: 1500.0`
+(Elo de Federer completamente decaído al prior). Novak Djokovic y
+Sinner (gaps normales de semanas entre torneos) reciben un decay leve,
+proporcional.
+
+**Caveat pendiente, real:** el campo `forma` (últimos 10 partidos) no
+tiene su propio decay. En el caso de Federer, `usa_forma` sigue en
+`True` y su `forma: 7 ganados / 3 perdidos` de 2021 (ya no vigente)
+sigue aportando el 30% del ensemble — el Elo decae correctamente a
+1500, pero la forma stale todavía empuja la predicción. No alcanza a
+cambiar el resultado en este caso puntual (Sinner igual queda muy
+favorito), pero es una inconsistencia real: forma y Elo deberían decaer
+juntos. Queda para P2 si se profundiza (ej. invalidar `forma` cuando
+`meses_inactivo` supera cierto umbral).

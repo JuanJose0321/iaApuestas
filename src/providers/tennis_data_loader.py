@@ -192,14 +192,35 @@ def contar_games_totales(score_str: str) -> int | None:
     return total
 
 
+# Orden cronológico real de las rondas dentro de un mismo torneo. El CSV
+# fuente comparte una única "tourney_date" (la fecha de INICIO del
+# torneo) entre TODAS sus rondas — confirmado inspeccionando el Brisbane
+# 2024 real: R32, R16, QF, SF y F aparecen todos con la misma fecha. Y el
+# archivo lista las rondas en orden DESCENDENTE (Final primero, R32 al
+# final). Sin esto, un sort por fecha sola (con Python "stable sort"
+# preservando el orden del archivo en los empates) procesa la Final
+# antes que la Primera Ronda del mismo torneo — walk-forward roto: el
+# modelo "vería" el resultado de la Final antes de predecir partidos que
+# en la realidad pasaron antes. Confirmado que esto invalidaba por
+# completo un experimento de backtest (decay por inactividad) que
+# explotaba exactamente este agujero.
+_ORDEN_RONDA = {
+    "RR": 0, "R128": 1, "R64": 2, "R32": 3, "R16": 4,
+    "QF": 5, "SF": 6, "BR": 7, "F": 8,
+}
+
+
 def combinar_archivos(patron_prefijos: tuple[str, ...] = ("atp_matches_", "wta_matches_")) -> List[Dict]:
     """
     Combina todos los CSV de matches descargados en DATA_DIR, en orden
     cronológico (necesario para que el cálculo de Elo sea correcto).
+    Dentro de partidos con la misma fecha (mismo torneo), ordena además
+    por ronda real (_ORDEN_RONDA) — ver nota arriba.
 
     Returns:
         Lista de partidos como dicts con: date (YYYY-MM-DD), tournament,
-        level, surface, winner, loser, score, best_of, winner_rank, loser_rank.
+        level, surface, winner, loser, score, best_of, winner_rank,
+        loser_rank, round.
     """
     DATA_DIR.mkdir(parents=True, exist_ok=True)
     matches = []
@@ -227,13 +248,14 @@ def combinar_archivos(patron_prefijos: tuple[str, ...] = ("atp_matches_", "wta_m
                         "best_of": row.get("best_of", ""),
                         "winner_rank": row.get("winner_rank", ""),
                         "loser_rank": row.get("loser_rank", ""),
+                        "round": row.get("round", ""),
                     })
                     count += 1
             _log.info(f"Cargados {count} partidos de {csv_file.name}")
         except Exception as e:
             _log.error(f"Error leyendo {csv_file}: {e}")
 
-    matches.sort(key=lambda m: m["date"])
+    matches.sort(key=lambda m: (m["date"], _ORDEN_RONDA.get(m["round"], 3)))
     return matches
 
 

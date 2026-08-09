@@ -81,6 +81,13 @@ _football_engine = None
 # Tennis engine: mejorado con Elo calibrado
 _tennis_engine = None
 
+# Decay de Elo por inactividad: valor elegido por backtest walk-forward
+# (grid fino 0.05-0.4, óptimo estable en 0.2-0.3) — mejora el Brier score
+# ~0.6% sin perjudicar accuracy, y de paso corrige que jugadores retirados
+# o con lesiones largas (ej. Federer, Barty) quedaran con su Elo de pico
+# "congelado" indefinidamente. Ver tennis_backtest_results.md.
+DECAY_POR_MES_ACTIVO = 0.25
+
 def _get_tennis_engine():
     """Carga motor de tenis con Elo calibrado."""
     global _tennis_engine
@@ -442,7 +449,9 @@ def api_analizar_tenis():
     """
     data = request.get_json(silent=True) or {}
 
-    j1, j2, elo1, elo2, superficie, formato, cuotas, err = validar_entrada_tenis(data)
+    j1, j2, elo1, elo2, meses_inactivo1, meses_inactivo2, superficie, formato, cuotas, err = (
+        validar_entrada_tenis(data)
+    )
     if err:
         return jsonify({"error": err}), 400
 
@@ -457,6 +466,8 @@ def api_analizar_tenis():
         resultado = engine.analizar(
             j1, j2, elo1, elo2, superficie, formato, cuotas,
             cuota_min=cuota_min, cuota_max=cuota_max,
+            meses_inactivo1=meses_inactivo1, meses_inactivo2=meses_inactivo2,
+            decay_por_mes=DECAY_POR_MES_ACTIVO,
         )
     except Exception as exc:
         _log.exception("Error en TennisEngine.analizar")

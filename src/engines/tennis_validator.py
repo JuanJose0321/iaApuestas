@@ -16,38 +16,53 @@ def validar_entrada_tenis(data: dict) -> tuple:
     Valida y extrae todos los campos de una solicitud de análisis de tenis.
 
     Returns:
-        (jugador1, jugador2, elo1, elo2, superficie, formato, cuotas, error_msg)
+        (jugador1, jugador2, elo1, elo2, meses_inactivo1, meses_inactivo2,
+         superficie, formato, cuotas, error_msg)
+
+        meses_inactivo{1,2} es None salvo que el Elo se haya cargado desde
+        ratings calibrados y el jugador tenga una "ultima_fecha" registrada
+        (ver aplicar_decay_inactividad en tennis_improved.py) — no hay
+        forma de saberlo si el Elo vino explícito en el request.
     """
     j1 = (data.get("jugador1") or "").strip()
     j2 = (data.get("jugador2") or "").strip()
 
     if not j1:
-        return (None,) * 7 + ("Falta el jugador 1",)
+        return (None,) * 9 + ("Falta el jugador 1",)
     if not j2:
-        return (None,) * 7 + ("Falta el jugador 2",)
+        return (None,) * 9 + ("Falta el jugador 2",)
     if j1.lower() == j2.lower():
-        return (None,) * 7 + ("Los jugadores no pueden ser el mismo",)
+        return (None,) * 9 + ("Los jugadores no pueden ser el mismo",)
 
     # Cargar Elos del formulario O desde ratings calibrados
     try:
         elo1 = float(data.get("elo1")) if data.get("elo1") else None  # type: ignore[arg-type]
         elo2 = float(data.get("elo2")) if data.get("elo2") else None  # type: ignore[arg-type]
     except (TypeError, ValueError):
-        return (None,) * 7 + ("Elo debe ser un número",)
+        return (None,) * 9 + ("Elo debe ser un número",)
+
+    meses_inactivo1 = None
+    meses_inactivo2 = None
 
     # Si los Elos no se proporcionan, cargar desde ratings
     if elo1 is None or elo2 is None:
         try:
             import json
+            from datetime import datetime, timezone
             from pathlib import Path
             elo_path = Path(__file__).parent.parent / "data" / "tennis_elo_ratings.json"
             if elo_path.exists():
                 with open(elo_path, 'r', encoding='utf-8') as f:
                     ratings = json.load(f).get("jugadores", {})
+                    hoy = datetime.now(timezone.utc).date()
                     if elo1 is None:
-                        elo1 = ratings.get(j1, {}).get("elo", ELO_DEFAULT)
+                        stats1 = ratings.get(j1, {})
+                        elo1 = stats1.get("elo", ELO_DEFAULT)
+                        meses_inactivo1 = _meses_desde(stats1.get("ultima_fecha"), hoy)
                     if elo2 is None:
-                        elo2 = ratings.get(j2, {}).get("elo", ELO_DEFAULT)
+                        stats2 = ratings.get(j2, {})
+                        elo2 = stats2.get("elo", ELO_DEFAULT)
+                        meses_inactivo2 = _meses_desde(stats2.get("ultima_fecha"), hoy)
             else:
                 elo1 = elo1 or ELO_DEFAULT
                 elo2 = elo2 or ELO_DEFAULT
@@ -58,26 +73,26 @@ def validar_entrada_tenis(data: dict) -> tuple:
 
     err = _validar_elo(elo1, "elo1")
     if err:
-        return (None,) * 7 + (err,)
+        return (None,) * 9 + (err,)
     err = _validar_elo(elo2, "elo2")
     if err:
-        return (None,) * 7 + (err,)
+        return (None,) * 9 + (err,)
 
     superficie = (data.get("superficie") or "hard").lower().strip()
     if superficie not in SUPERFICIES_VALIDAS:
-        return (None,) * 7 + (
+        return (None,) * 9 + (
             f"Superficie '{superficie}' inválida. Opciones: {sorted(SUPERFICIES_VALIDAS)}",
         )
 
     formato = (data.get("formato") or "best_of_3").lower().strip()
     if formato not in FORMATOS_VALIDOS:
-        return (None,) * 7 + (
+        return (None,) * 9 + (
             f"Formato '{formato}' inválido. Opciones: {sorted(FORMATOS_VALIDOS)}",
         )
 
     cuotas = data.get("cuotas") or {}
     if not cuotas:
-        return (None,) * 7 + ("Falta al menos un mercado en cuotas",)
+        return (None,) * 9 + ("Falta al menos un mercado en cuotas",)
 
     validators = {
         "match_winner":  validar_match_winner,
@@ -87,29 +102,29 @@ def validar_entrada_tenis(data: dict) -> tuple:
         if mercado in cuotas:
             err = fn(cuotas[mercado])
             if err:
-                return (None,) * 7 + (err,)
+                return (None,) * 9 + (err,)
 
     if "set_handicap" in cuotas:
         err = validar_set_handicap(cuotas["set_handicap"], formato)
         if err:
-            return (None,) * 7 + (err,)
+            return (None,) * 9 + (err,)
 
     if "total_games" in cuotas:
         err = validar_total_games(cuotas["total_games"], formato)
         if err:
-            return (None,) * 7 + (err,)
+            return (None,) * 9 + (err,)
 
     if "game_handicap" in cuotas:
         err = validar_game_handicap(cuotas["game_handicap"], formato)
         if err:
-            return (None,) * 7 + (err,)
+            return (None,) * 9 + (err,)
 
     if "sets_winners" in cuotas:
         err = validar_sets_winners(cuotas["sets_winners"], formato)
         if err:
-            return (None,) * 7 + (err,)
+            return (None,) * 9 + (err,)
 
-    return j1, j2, elo1, elo2, superficie, formato, cuotas, None
+    return j1, j2, elo1, elo2, meses_inactivo1, meses_inactivo2, superficie, formato, cuotas, None
 
 
 # ── Validadores por mercado ───────────────────────────────────────────────────
@@ -263,3 +278,15 @@ def _validar_elo(elo: float, campo: str) -> str | None:
     if not (ELO_MIN <= elo <= ELO_MAX):
         return f"{campo} = {elo} fuera del rango ({ELO_MIN}–{ELO_MAX})"
     return None
+
+
+def _meses_desde(fecha_iso: str | None, hoy) -> float | None:
+    """Meses (30.44 días) entre una fecha 'YYYY-MM-DD' y hoy. None si no hay fecha."""
+    if not fecha_iso:
+        return None
+    try:
+        from datetime import date
+        d = date.fromisoformat(fecha_iso)
+        return max(0.0, (hoy - d).days / 30.44)
+    except ValueError:
+        return None

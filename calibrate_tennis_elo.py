@@ -88,6 +88,7 @@ def calibrar_elo():
     _log.info("\n[PASO 3] Calibrando Elo y forma reciente...")
     elo_calc = TennisEloCalculator()
     recientes: Dict[str, deque] = defaultdict(lambda: deque(maxlen=FORMA_VENTANA))
+    ultima_fecha: Dict[str, str] = {}
 
     procesados = 0
     omitidos = 0
@@ -111,6 +112,8 @@ def calibrar_elo():
 
             recientes[winner].append(True)
             recientes[loser].append(False)
+            ultima_fecha[winner] = match["date"]
+            ultima_fecha[loser] = match["date"]
             procesados += 1
 
             if (i + 1) % 5000 == 0:
@@ -155,6 +158,8 @@ def calibrar_elo():
                 "perdidos": total - ganados,
                 "porcentaje": round(100.0 * ganados / total, 1),
             }
+        if name in ultima_fecha:
+            entry["ultima_fecha"] = ultima_fecha[name]
         ratings_export["jugadores"][name] = entry
 
     OUTPUT_FILE.parent.mkdir(parents=True, exist_ok=True)

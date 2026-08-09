@@ -212,6 +212,23 @@ No hay datos históricos de picks de tenis registrados de forma separable hoy (t
 > (`elegir_elo_superficie()`, `tests/test_tennis_surface_elo.py`), pero
 > **no se activa en producción** — sigue en pie solo `SURFACE_ELO_FACTOR`
 > (el multiplicador genérico). Detalle en `tennis_backtest_results.md`.
+>
+> **Actualización 2026-08-09 (decay por inactividad — SÍ ACTIVADO):**
+> resuelve el caveat de jugadores retirados (Federer/Barty) con Elo
+> congelado. Bug importante encontrado en el camino: `combinar_archivos()`
+> ordenaba solo por fecha, pero el CSV comparte una única fecha (inicio
+> del torneo) entre todas sus rondas, listadas en orden descendente
+> (Final primero) — walk-forward roto, con fuga de información hacia el
+> pasado. Corregido (`_ORDEN_RONDA` en `tennis_data_loader.py`); se
+> reverificaron burn-in/shrink/superficie contra el fix y sus
+> conclusiones no cambiaron. Con el orden correcto, el decay muestra una
+> mejora real y consistente (curva suave, no un pico aislado): Brier
+> 0.6% mejor (0.22060 → 0.21921) con `decay_por_mes=0.25`, accuracy
+> prácticamente igual. Activado en producción: `calibrate_tennis_elo.py`
+> guarda `ultima_fecha` por jugador, `tennis_validator.py` calcula
+> meses de inactividad, `app.py` usa `DECAY_POR_MES_ACTIVO=0.25`.
+> Validado en vivo: Federer (inactivo desde 2021) cae a Elo 1500 puro.
+> Detalle completo en `tennis_backtest_results.md`.
 
 ## 9. AUDITORÍA DE PRECISIÓN — FASE 2 (2026-08-09)
 

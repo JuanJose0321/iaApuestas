@@ -21,7 +21,7 @@ import argparse
 import json
 import sys
 from collections import defaultdict, deque
-from datetime import datetime, timezone
+from datetime import date, datetime, timezone
 from pathlib import Path
 from typing import Dict, List, Optional
 
@@ -41,6 +41,13 @@ ELO_GAP_BUCKETS = [
     ("moderado (50-150)", 50.0, 150.0),
     ("desbalanceado (>150)", 150.0, float("inf")),
 ]
+
+
+def _meses_entre(fecha_anterior: str, fecha_actual: str) -> float:
+    """Meses (aproximados, 30.44 días) entre dos fechas ISO YYYY-MM-DD."""
+    d1 = date.fromisoformat(fecha_anterior)
+    d2 = date.fromisoformat(fecha_actual)
+    return max(0.0, (d2 - d1).days / 30.44)
 
 
 def _forma_desde_historial(hist: deque) -> Dict:
@@ -69,7 +76,8 @@ def _accuracy(preds: List[float]) -> float:
 def ejecutar_backtest(shrink_k: Optional[float] = None,
                        evaluar_desde: Optional[str] = None,
                        usar_superficie: bool = False,
-                       min_games_superficie: Optional[int] = None) -> Dict:
+                       min_games_superficie: Optional[int] = None,
+                       decay_por_mes: Optional[float] = None) -> Dict:
     """
     Corre el backtest walk-forward completo.
 
@@ -89,6 +97,11 @@ def ejecutar_backtest(shrink_k: Optional[float] = None,
     actualiza con partidos de su propia superficie) y usa el Elo de
     superficie en la predicción cuando hay suficiente muestra (ver
     elegir_elo_superficie/SURFACE_MIN_GAMES), con fallback al overall.
+
+    decay_por_mes: si se pasa (>0), acerca el Elo de cada jugador hacia
+    la media según los meses transcurridos desde su partido anterior
+    (walk-forward: la fecha de referencia es siempre la del último
+    partido REALMENTE jugado antes de este, ver aplicar_decay_inactividad).
     """
     matches = combinar_archivos()
     hoy = datetime.now(timezone.utc).strftime("%Y-%m-%d")
@@ -97,6 +110,7 @@ def ejecutar_backtest(shrink_k: Optional[float] = None,
     elo_calc = TennisEloCalculator()
     elo_calc_surf: Dict[str, TennisEloCalculator] = {s: TennisEloCalculator() for s in SURFACES}
     recientes: Dict[str, deque] = defaultdict(lambda: deque(maxlen=FORMA_VENTANA))
+    ultima_fecha: Dict[str, str] = {}
     engine = TennisImprovedEngine()
 
     registros = []
@@ -111,6 +125,9 @@ def ejecutar_backtest(shrink_k: Optional[float] = None,
         elo_l = elo_calc.get_elo(loser)
         games_w = elo_calc.players[winner].games_played if winner in elo_calc.players else 0
         games_l = elo_calc.players[loser].games_played if loser in elo_calc.players else 0
+
+        meses_inactivo_w = _meses_entre(ultima_fecha[winner], m["date"]) if winner in ultima_fecha else None
+        meses_inactivo_l = _meses_entre(ultima_fecha[loser], m["date"]) if loser in ultima_fecha else None
 
         # Forma walk-forward: solo lo visto ANTES de este partido
         hist_w = recientes.get(winner)
@@ -143,6 +160,12 @@ def ejecutar_backtest(shrink_k: Optional[float] = None,
             elif shrink_k is not None:
                 mw = _predecir_con_k(engine, elo_w, elo_l, winner, loser, superficie, formato,
                                       games_w, games_l, shrink_k)
+            elif decay_por_mes is not None:
+                mw = engine.prob_match_winner_ensemble(
+                    elo_w, elo_l, winner, loser, superficie, formato,
+                    meses_inactivo1=meses_inactivo_w, meses_inactivo2=meses_inactivo_l,
+                    decay_por_mes=decay_por_mes,
+                )
             else:
                 mw = engine.prob_match_winner_ensemble(elo_w, elo_l, winner, loser, superficie, formato)
 
@@ -181,6 +204,8 @@ def ejecutar_backtest(shrink_k: Optional[float] = None,
                               winner_sets=winner_sets, loser_sets=loser_sets)
         recientes[winner].append(True)
         recientes[loser].append(False)
+        ultima_fecha[winner] = m["date"]
+        ultima_fecha[loser] = m["date"]
 
     preds = [r["pred"] for r in registros]
 
@@ -188,6 +213,7 @@ def ejecutar_backtest(shrink_k: Optional[float] = None,
         "n_partidos": len(registros),
         "shrink_k": shrink_k,
         "usar_superficie": usar_superficie,
+        "decay_por_mes": decay_por_mes,
         "brier": round(_brier(preds), 5),
         "log_loss": round(_log_loss(preds), 5),
         "accuracy": round(_accuracy(preds) * 100, 2),
@@ -231,8 +257,11 @@ if __name__ == "__main__":
                               "(burn-in), puntúa solo desde esta fecha")
     parser.add_argument("--usar-superficie", action="store_true",
                          help="Usa Elo específico por superficie (con fallback al overall)")
+    parser.add_argument("--decay-por-mes", type=float, default=None,
+                         help="Activa el decay de Elo por inactividad con esta tasa mensual")
     args = parser.parse_args()
 
     resultado = ejecutar_backtest(shrink_k=args.shrink_k, evaluar_desde=args.evaluar_desde,
-                                   usar_superficie=args.usar_superficie)
+                                   usar_superficie=args.usar_superficie,
+                                   decay_por_mes=args.decay_por_mes)
     print(json.dumps(resultado, indent=2, ensure_ascii=False))
