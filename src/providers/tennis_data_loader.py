@@ -150,6 +150,37 @@ def extraer_sets(score_str: str) -> tuple[int, int]:
     return (sets_w, sets_l)
 
 
+def contar_games_totales(score_str: str) -> int | None:
+    """
+    Suma el total de games jugados en un partido a partir del score real
+    (ej. '6-4 7-6(3) 6-2' → 10 + 13 + 8 = 31).
+
+    Devuelve None para partidos incompletos (retiro, walkover, default):
+    su total de games no es representativo de "cuántos games se juegan si
+    el partido se completa normalmente", que es la pregunta que responde
+    el mercado de Total de Games — incluirlos sesgaría la calibración
+    hacia abajo con partidos cortados a mitad de un set.
+    """
+    s = (score_str or "").strip()
+    if not s:
+        return None
+    su = s.upper()
+    if any(tag in su for tag in ("RET", "W/O", "DEF", "ABD", "WALKOVER")):
+        return None
+
+    total = 0
+    for token in s.split():
+        token = _TIEBREAK_RE.sub("", token).strip()
+        if "-" not in token:
+            return None
+        try:
+            g1_str, g2_str = token.split("-", 1)
+            total += int(g1_str) + int(g2_str)
+        except ValueError:
+            return None
+    return total
+
+
 def combinar_archivos(patron_prefijos: tuple[str, ...] = ("atp_matches_", "wta_matches_")) -> List[Dict]:
     """
     Combina todos los CSV de matches descargados en DATA_DIR, en orden
@@ -157,7 +188,7 @@ def combinar_archivos(patron_prefijos: tuple[str, ...] = ("atp_matches_", "wta_m
 
     Returns:
         Lista de partidos como dicts con: date (YYYY-MM-DD), tournament,
-        level, surface, winner, loser, score.
+        level, surface, winner, loser, score, best_of.
     """
     DATA_DIR.mkdir(parents=True, exist_ok=True)
     matches = []
@@ -182,6 +213,7 @@ def combinar_archivos(patron_prefijos: tuple[str, ...] = ("atp_matches_", "wta_m
                         "winner": winner,
                         "loser": loser,
                         "score": row.get("score", ""),
+                        "best_of": row.get("best_of", ""),
                     })
                     count += 1
             _log.info(f"Cargados {count} partidos de {csv_file.name}")

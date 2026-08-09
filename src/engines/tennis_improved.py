@@ -7,6 +7,7 @@ Combine:
 3. Distribución de probabilidades (Normal para games)
 4. Ensemble simple (70% Elo + 30% Forma)
 """
+import json
 import logging
 import sys
 from pathlib import Path
@@ -31,7 +32,33 @@ SURFACE_ELO_FACTOR = {
     "carpet": 0.90,
 }
 
-STD_GAMES = {"best_of_3": 4.5, "best_of_5": 6.0}
+_STD_GAMES_DEFAULT = {"best_of_3": 4.5, "best_of_5": 6.0}
+_STD_DEV_PATH = Path(__file__).parent.parent / "data" / "tennis_std_dev_calibrated.json"
+
+
+def _cargar_std_games() -> Dict[str, float]:
+    """
+    Carga std_dev de total de games calibrado contra partidos reales (ver
+    calibrate_tennis_std_dev.py). Si el archivo no existe o falla la
+    lectura, cae a las constantes originales — nunca crashea el motor por
+    esto.
+    """
+    try:
+        with open(_STD_DEV_PATH, "r", encoding="utf-8") as f:
+            data = json.load(f)
+        std_games = {
+            "best_of_3": float(data["STD_DEV_BO3"]),
+            "best_of_5": float(data["STD_DEV_BO5"]),
+        }
+        _log.info(f"std_dev de total de games calibrado cargado: {std_games}")
+        return std_games
+    except Exception as e:
+        _log.warning(f"No se pudo cargar std_dev calibrado, usando defaults "
+                      f"{_STD_GAMES_DEFAULT}: {e}")
+        return dict(_STD_GAMES_DEFAULT)
+
+
+STD_GAMES = _cargar_std_games()
 
 
 class TennisImprovedEngine:
@@ -162,7 +189,7 @@ class TennisImprovedEngine:
 
         return {
             "total_esp": round(total_esp, 1),
-            "std_dev": STD_GAMES.get(formato, 4.5),
+            "std_dev": STD_GAMES.get(formato, _STD_GAMES_DEFAULT["best_of_3"]),
             "games_por_set": round(games_por_set, 1),
             "sets_esperados": round(sets_esp, 2),
             "competitiveness": round(p*q, 3),  # Para debug

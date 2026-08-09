@@ -9,9 +9,18 @@ Fecha: 2026-08-08
 > los últimos 10 partidos). La fuente original (JeffSackmann/tennis_atp y
 > tennis_wta en GitHub) ya no existe — se usó el mirror activo
 > `LuckyLoser91/TennisCourtLog`, con la salvedad de que su licencia no está
-> declarada explícitamente en GitHub. El resto de los hallazgos (P1/P2,
-> incluyendo el `std_dev` fijo de total de games que sigue generando EV
-> inflado) permanece sin resolver — quedan fuera del alcance de este fix.
+> declarada explícitamente en GitHub.
+>
+> **Actualización 2026-08-08 (P1):** `std_dev` de total de games también
+> calibrado contra los 14,320 partidos reales (BO3: 5.91 vs 4.5
+> hardcodeado; BO5: 9.39 vs 6.0) — ver `calibrate_tennis_std_dev.py`. Con
+> el valor real, más ancho, el pick "Total Games Over 22.5" del caso
+> Djokovic vs Sinner pasa de EV 46% → 36% (tras P0-1/P0-2) → 27% (tras
+> P1), y ya no supera el umbral de confianza para mostrarse como pick —
+> confirma que el EV original era un artefacto de una distribución
+> artificialmente angosta, no una ineficiencia real del mercado. El resto
+> de los hallazgos P1/P2 (Elo por superficie, H2H, tracking separado por
+> deporte, etc.) permanece sin resolver.
 
 ## 1. ESTADO ACTUAL
 

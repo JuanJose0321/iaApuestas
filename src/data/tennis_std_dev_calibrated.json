@@ -1,0 +1,20 @@
+{
+  "STD_DEV_BO3": 5.91,
+  "STD_DEV_BO5": 9.39,
+  "_meta": {
+    "fecha": "2026-08-09T01:04:31.460014+00:00",
+    "metodo": "Desviación estándar muestral de games totales reales por partido completo (RET/W/O/DEF excluidos), separado por best_of.",
+    "best_of_3": {
+      "std_dev": 5.91,
+      "mean": 22.72,
+      "n": 12433,
+      "calibrado": true
+    },
+    "best_of_5": {
+      "std_dev": 9.39,
+      "mean": 37.18,
+      "n": 1340,
+      "calibrado": true
+    }
+  }
+}
