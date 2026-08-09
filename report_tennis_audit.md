@@ -201,6 +201,17 @@ No hay datos históricos de picks de tenis registrados de forma separable hoy (t
 > supera el 63.45% del ranking oficial. `tennis_elo_ratings.json` ya
 > regenerado y en producción (2467 jugadores, antes 1001). Ver detalle
 > completo en `tennis_backtest_results.md`.
+>
+> **Actualización 2026-08-09 (P1, Elo por superficie — NO activado):**
+> implementado y probado contra el mismo baseline (0.22071 Brier /
+> 63.70% accuracy). Resultado: en todo el grid de umbrales probados
+> (5-300 partidos mínimos por superficie), nunca superó de forma clara
+> al Elo overall — a umbrales bajos empeora (hasta 1.7% peor Brier), a
+> umbrales altos converge al mismo resultado sin mejorarlo. Mismo
+> criterio que `shrink_elo()`: queda implementado y testeado
+> (`elegir_elo_superficie()`, `tests/test_tennis_surface_elo.py`), pero
+> **no se activa en producción** — sigue en pie solo `SURFACE_ELO_FACTOR`
+> (el multiplicador genérico). Detalle en `tennis_backtest_results.md`.
 
 ## 9. AUDITORÍA DE PRECISIÓN — FASE 2 (2026-08-09)
 

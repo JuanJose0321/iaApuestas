@@ -89,6 +89,26 @@ def shrink_elo(elo: float, games: Optional[int],
     return elo_prior + (elo - elo_prior) * factor
 
 
+SURFACE_MIN_GAMES = 5   # partidos mínimos en una superficie para confiar en su Elo específico
+
+
+def elegir_elo_superficie(elo_overall: float, elo_superficie: Optional[float],
+                           games_superficie: Optional[int],
+                           min_games: int = SURFACE_MIN_GAMES) -> tuple[float, bool]:
+    """
+    Decide qué Elo usar para un partido: el específico de la superficie si
+    hay suficiente muestra (>= min_games partidos jugados en esa
+    superficie), o el overall si no.
+
+    Returns:
+        (elo_a_usar, se_uso_elo_de_superficie)
+    """
+    if (elo_superficie is not None and games_superficie is not None
+            and games_superficie >= min_games):
+        return elo_superficie, True
+    return elo_overall, False
+
+
 class TennisImprovedEngine:
     """Motor de tenis mejorado con datos históricos."""
 
@@ -122,9 +142,19 @@ class TennisImprovedEngine:
         return self.form_stats.get(player_name)
 
     def prob_from_elo(self, elo1: float, elo2: float,
-                      superficie: str = "hard") -> float:
-        """P(J1 gana) basada en Elo ajustado por superficie."""
-        factor = SURFACE_ELO_FACTOR.get(superficie.lower(), 1.0)
+                      superficie: str = "hard",
+                      aplicar_factor_superficie: bool = True) -> float:
+        """
+        P(J1 gana) basada en Elo.
+
+        aplicar_factor_superficie=True (default): multiplica el delta por
+        SURFACE_ELO_FACTOR — el ajuste genérico usado cuando elo1/elo2 son
+        el Elo *overall* del jugador. Si elo1/elo2 ya son el Elo específico
+        de esa superficie (ver elegir_elo_superficie), hay que pasar False
+        — la superficie ya está reflejada en qué número se usó, aplicar el
+        factor de nuevo sería contar el efecto dos veces.
+        """
+        factor = SURFACE_ELO_FACTOR.get(superficie.lower(), 1.0) if aplicar_factor_superficie else 1.0
         delta = (elo1 - elo2) * factor
         return 1.0 / (1.0 + 10.0 ** (-delta / 400.0))
 
@@ -150,7 +180,12 @@ class TennisImprovedEngine:
                                    superficie: str = "hard",
                                    formato: str = "best_of_3",
                                    games1: Optional[int] = None,
-                                   games2: Optional[int] = None) -> Dict:
+                                   games2: Optional[int] = None,
+                                   elo1_superficie: Optional[float] = None,
+                                   elo2_superficie: Optional[float] = None,
+                                   games1_superficie: Optional[int] = None,
+                                   games2_superficie: Optional[int] = None,
+                                   min_games_superficie: int = SURFACE_MIN_GAMES) -> Dict:
         """
         P(ganar partido) combinando Elo + Forma.
 
@@ -164,12 +199,24 @@ class TennisImprovedEngine:
         que un Elo calculado con pocos partidos se trate con la misma
         confianza que uno con historial largo. None (default) desactiva
         el shrink y preserva el comportamiento anterior a este cambio.
+
+        elo{1,2}_superficie/games{1,2}_superficie (opcional): Elo y
+        partidos jugados en la superficie específica de ESTE partido. Si
+        hay suficiente muestra (ver elegir_elo_superficie/SURFACE_MIN_GAMES)
+        se usa ese Elo en vez del overall, y se desactiva el multiplicador
+        genérico SURFACE_ELO_FACTOR (la superficie ya está reflejada en
+        qué Elo se eligió — aplicar el factor de nuevo la contaría dos
+        veces). None (default) preserva el comportamiento anterior.
         """
-        elo1_calc = shrink_elo(elo1, games1)
-        elo2_calc = shrink_elo(elo2, games2)
+        elo1_base, uso_surf1 = elegir_elo_superficie(elo1, elo1_superficie, games1_superficie, min_games_superficie)
+        elo2_base, uso_surf2 = elegir_elo_superficie(elo2, elo2_superficie, games2_superficie, min_games_superficie)
+        aplicar_factor = not (uso_surf1 or uso_surf2)
+
+        elo1_calc = shrink_elo(elo1_base, games1)
+        elo2_calc = shrink_elo(elo2_base, games2)
 
         # Probabilidad por Elo
-        p_elo = self.prob_from_elo(elo1_calc, elo2_calc, superficie)
+        p_elo = self.prob_from_elo(elo1_calc, elo2_calc, superficie, aplicar_factor)
 
         # Probabilidad por Forma (solo si hay datos reales de ambos)
         form1 = self.get_form(player1)
@@ -200,6 +247,7 @@ class TennisImprovedEngine:
                 "usa_forma": usa_forma,
                 "elo1_ajustado": round(elo1_calc, 1),
                 "elo2_ajustado": round(elo2_calc, 1),
+                "uso_elo_superficie": {"j1": uso_surf1, "j2": uso_surf2},
             }
         }
 
@@ -280,7 +328,11 @@ class TennisImprovedEngine:
                 cuota_min: float = 1.20,
                 cuota_max: float = 6.00,
                 games1: Optional[int] = None,
-                games2: Optional[int] = None) -> Dict:
+                games2: Optional[int] = None,
+                elo1_superficie: Optional[float] = None,
+                elo2_superficie: Optional[float] = None,
+                games1_superficie: Optional[int] = None,
+                games2_superficie: Optional[int] = None) -> Dict:
         """
         Análisis completo con Elo + Forma.
 
@@ -288,10 +340,15 @@ class TennisImprovedEngine:
 
         games1/games2 (opcional): activa la regresión a la media del Elo
         para jugadores con pocos partidos (ver shrink_elo). None = sin cambios.
+
+        elo{1,2}_superficie/games{1,2}_superficie (opcional): activa el uso
+        de Elo específico por superficie (ver elegir_elo_superficie).
+        None = sin cambios.
         """
         # Obtener probabilidades (Elo + Forma)
         mw_result = self.prob_match_winner_ensemble(
-            elo1, elo2, player1, player2, superficie, formato, games1, games2
+            elo1, elo2, player1, player2, superficie, formato, games1, games2,
+            elo1_superficie, elo2_superficie, games1_superficie, games2_superficie,
         )
         p_base = mw_result["debug"]["ensemble"]  # Probabilidad ensemble
 

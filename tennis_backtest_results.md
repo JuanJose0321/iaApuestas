@@ -185,3 +185,58 @@ de 3 años — con 2467 jugadores y más partidos por jugador en la ventana
 de 12 años, vale la pena re-correrlo antes de descartar definitivamente
 la regresión a la media (no se hizo en este mismo cambio, para no mezclar
 dos variables a la vez en la misma medición).
+
+## Elo por superficie (P1) — resultado: NO mejora, no se activa
+
+Mismo conjunto evaluado (14,320 partidos de 2024-2026, con el burn-in de
+12 años ya activo como baseline: Brier 0.22071, accuracy 63.70%).
+
+Se implementó `elegir_elo_superficie()`: un `TennisEloCalculator`
+independiente por superficie (hard/clay/grass/carpet), actualizado
+walk-forward solo con partidos de esa superficie, con fallback al Elo
+overall cuando el jugador no tiene suficiente muestra en esa superficie
+específica (`min_games_superficie`, umbral probado en grid).
+
+| `min_games_superficie` | Brier | Accuracy |
+|---|---|---|
+| 5 (agresivo) | 0.22331 | 62.71% |
+| 10 | 0.22442 | 62.54% |
+| 20 | 0.22393 | 62.66% |
+| 30 | 0.22334 | 62.90% |
+| 50 | 0.22209 | 63.31% |
+| 75 | 0.22133 | 63.61% |
+| **100** | 0.22079 | 63.82% |
+| **150** | **0.22073** | 63.73% |
+| 200 | 0.22088 | 63.65% |
+| 300 | 0.22085 | 63.59% |
+| **Baseline (Elo overall, sin superficie)** | **0.22071** | **63.70%** |
+
+**Conclusión honesta:** a umbrales bajos/moderados (5-50), separar el
+Elo por superficie **empeora claramente** el Brier score (hasta 0.22442,
+1.7% peor que el baseline) — la muestra por superficie es demasiado
+ruidosa para mejorar la señal, especialmente en grass (solo 6,863
+partidos reales en 12 años, contra 37,288 en hard). A umbrales altos
+(100-300), el resultado converge asintóticamente al mismo baseline
+(diferencias de ±0.00017 en Brier, dentro de ruido) — porque a esa
+exigencia casi ningún jugador califica, así que el modelo termina
+usando el Elo overall para casi todos de todas formas. **En ningún punto
+del grid el Elo por superficie superó de forma clara y consistente al
+Elo overall solo.**
+
+Hipótesis de por qué: `SURFACE_ELO_FACTOR` (el ajuste genérico que ya
+existía) probablemente ya captura la mayor parte de la señal útil de
+"esta superficie favorece/perjudica a jugadores en general" sin
+necesitar dividir el historial de cada jugador en 3-4 sub-muestras más
+pequeñas y ruidosas. Dividir el Elo por superficie tiene sentido en
+papers/modelos con décadas de datos por jugador top — con ~2467
+jugadores y un historial real de 12 años, muchos todavía no acumulan
+suficientes partidos por superficie para que la señal supere al ruido.
+
+**Decisión, mismo criterio que shrink_elo:** `elegir_elo_superficie()`
+queda implementada y testeada (`tests/test_tennis_surface_elo.py`, 7
+casos) y disponible en el motor (parámetros `elo{1,2}_superficie`
+opcionales, default `None` = sin cambios), pero **no se conecta a
+`calibrate_tennis_elo.py` ni a `app.py`/`tennis_validator.py`** — no hay
+evidencia de mejora real. `SURFACE_ELO_FACTOR` (el multiplicador
+genérico) sigue siendo el único ajuste de superficie activo en
+producción.
