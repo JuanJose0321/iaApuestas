@@ -389,7 +389,7 @@ a{ color:var(--primary); }
 
 /* result / pick cards inside chat */
 .result-card{
-  align-self:flex-start; width:100%; max-width:90%;
+  align-self:flex-start; width:100%; max-width:100%;
   background:var(--bg-elev-2); border:1px solid var(--border); border-radius:16px;
   border-bottom-left-radius:4px; padding:0; overflow:hidden; animation:fadeSlideUp .4s var(--ease);
   transition:transform var(--dur) var(--ease), box-shadow var(--dur) var(--ease);
@@ -456,7 +456,7 @@ a{ color:var(--primary); }
 .result-card.expanded .expand-body{ max-height:600px; }
 
 /* rejected picks */
-.rejected-wrap{ align-self:flex-start; max-width:90%; }
+.rejected-wrap{ align-self:flex-start; max-width:100%; }
 @media (max-width:768px){ .rejected-wrap{ max-width:100%; } }
 .rejected-item{ padding:10px 12px; border-radius:10px; border-left:3px solid var(--border); background:var(--bg-elev-2); font-size:12.5px; margin-top:8px; }
 .rejected-item.red{ border-left-color:var(--danger); }
@@ -465,7 +465,7 @@ a{ color:var(--primary); }
 
 /* context + narrative cards */
 .ctx-card,.narrativa-card{
-  align-self:flex-start; width:100%; max-width:90%; background:var(--bg-elev-2);
+  align-self:flex-start; width:100%; max-width:100%; background:var(--bg-elev-2);
   border:1px solid var(--border); border-radius:14px; padding:12px 16px; font-size:13px;
   animation:fadeSlideUp .35s var(--ease);
 }
