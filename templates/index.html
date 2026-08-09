@@ -356,8 +356,8 @@ a{ color:var(--primary); }
    ══════════════════════════════════════════════════════════════════════ */
 .chat-panel{ display:flex; flex-direction:column; min-height:60vh; }
 .chat-scroll{
-  flex:1; overflow-y:auto; padding:var(--sp-5); display:flex; flex-direction:column; gap:var(--sp-3);
-  scroll-behavior:smooth; max-height:min(78vh,900px);
+  flex:1; padding:var(--sp-5); display:flex; flex-direction:column; gap:var(--sp-3);
+  scroll-behavior:smooth;
 }
 .msg-row{ display:flex; gap:10px; align-items:flex-end; max-width:100%; }
 .msg-row.user{ flex-direction:row-reverse; }
@@ -1077,7 +1077,10 @@ function renderMarkdown(text){
   }).join("<br>");
 }
 
-function scrollChatBottom(){ chat.scrollTop = chat.scrollHeight; }
+function scrollChatBottom(){
+  const last = chat.lastElementChild;
+  if (last) last.scrollIntoView({ behavior: "smooth", block: "end" });
+}
 
 function bubble(text, who){
   who = who || "bot";
