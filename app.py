@@ -510,6 +510,14 @@ def api_analizar_tenis():
             bankroll, pick["prob"], pick["cuota"]
         )
 
+    # Picks manuales (sin valor detectado): Kelly daría 0 (EV insuficiente
+    # por definición), así que se sugiere el stake_fijo configurado en vez
+    # de un tamaño calculado — es una apuesta por criterio propio, no una
+    # recomendación dimensionada por el modelo.
+    stake_fijo = float(cfg.get("stake_fijo", 20.0))
+    for pick in resultado.get("picks_manual", []):
+        pick["stake_sugerido"] = stake_fijo
+
     resultado["bankroll"] = bankroll
 
     # Log de predicciones: registra CADA análisis (con o sin pick) para medir

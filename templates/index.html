@@ -398,6 +398,7 @@ a{ color:var(--primary); }
 .result-card.risk-low{ border-left:4px solid var(--secondary); }
 .result-card.risk-med{ border-left:4px solid var(--accent); }
 .result-card.risk-high{ border-left:4px solid var(--danger); }
+.result-card.risk-manual{ border-left:4px dashed var(--text-muted); }
 @media (max-width:768px){ .result-card{ max-width:100%; } }
 
 .rc-head{
@@ -417,6 +418,7 @@ a{ color:var(--primary); }
 .badge-conf.amarillo,.badge-conf.media{ background:color-mix(in srgb, var(--accent) 16%, transparent); color:var(--accent); border-color:var(--accent); }
 .badge-conf.rojo,.badge-conf.baja{ background:color-mix(in srgb, var(--danger) 16%, transparent); color:var(--danger); border-color:var(--danger); }
 .badge-conf.muy-baja{ background:var(--bg-elev-3); color:var(--text-muted); border-color:var(--border); }
+.badge-conf.manual{ background:var(--bg-elev-3); color:var(--text-muted); border-color:var(--border); border-style:dashed; }
 
 .risk-pill{ font-size:10.5px; padding:3px 8px; border-radius:6px; font-weight:700; }
 .risk-pill.risk-low{ background:color-mix(in srgb, var(--secondary) 15%, transparent); color:var(--secondary); }
@@ -1317,17 +1319,21 @@ function tstr(id){ const el = document.getElementById(id); return ((el && el.val
 
 function tennisPickCard(pick, nivelFallback){
   const nivel = pick.confianza_nivel || nivelFallback || "rojo";
+  const isManual = nivel === "manual";
   const isML = pick.tipo === "DUPLA";
   const card = document.createElement("div");
-  card.className = "result-card " + (nivel === "verde" ? "risk-low" : nivel === "amarillo" ? "risk-med" : "risk-high");
+  card.className = "result-card " + (nivel === "verde" ? "risk-low" : nivel === "amarillo" ? "risk-med" : isManual ? "risk-manual" : "risk-high");
 
   const legsHtml = isML
     ? (pick.legs||[]).map(l => '<div class="leg"><span>' + safeText(l.pick) + '</span><span class="cuota">' + l.cuota + '</span></div>').join("")
     : '<div class="leg"><span>' + safeText(pick.pick || pick.mercado || "") + '</span><span class="cuota">' + (pick.cuota ?? "") + '</span></div>';
 
-  const badgeTxt = nivel === "verde" ? "✅ Verde" : nivel === "amarillo" ? "⚠️ Amarillo" : "🔴 Rojo";
+  const badgeTxt = nivel === "verde" ? "✅ Verde" : nivel === "amarillo" ? "⚠️ Amarillo" : isManual ? "⚪ Sin valor detectado" : "🔴 Rojo";
   const cuotaShown = (pick.cuota ?? pick.cuota_total ?? 0);
   const stakeHtml = pick.stake_sugerido != null ? '<div class="rc-stat"><div class="l">Stake</div><div class="v">💰' + pick.stake_sugerido.toFixed(2) + '</div></div>' : "";
+  const manualWarn = isManual
+    ? '<div class="warn-box">⚪ El sistema no detectó valor en este mercado — esta es tu cuota y la probabilidad real del modelo. Registrar queda a tu propio criterio.</div>'
+    : "";
 
   card.innerHTML =
     '<div class="rc-head"><div class="rc-head-left">' +
@@ -1342,6 +1348,7 @@ function tennisPickCard(pick, nivelFallback){
         stakeHtml +
       '</div>' +
       (isML ? '<div class="warn-box">⚠️ Parlay — la casa puede ajustar la cuota real.</div>' : '') +
+      manualWarn +
       '<div class="rc-actions"><button type="button" class="btn btn-ghost" data-act="reg">📝 Registrar</button><button type="button" class="btn btn-ghost" data-act="copy">📋 Copiar</button></div>' +
     '</div>';
 
@@ -1405,10 +1412,18 @@ document.getElementById("tennisFormCard").addEventListener("submit", async (e) =
       "   " + j2 + ": " + (pJ2*100).toFixed(1) + "%\n" +
       "Juegos totales esperados: " + (tg.total_esp ?? "—") + "\n" + (j.resumen||""));
 
+    const hayPicksConValor = (j.picks_verdes && j.picks_verdes.length) || (j.picks_amarillos && j.picks_amarillos.length);
     if (j.picks_verdes && j.picks_verdes.length){ bubble("✅ " + j.picks_verdes.length + " pick(s) VERDE:"); j.picks_verdes.forEach(p => tennisPickCard(p, "verde")); }
     if (j.picks_amarillos && j.picks_amarillos.length){ bubble("⚠️ " + j.picks_amarillos.length + " pick(s) AMARILLO:"); j.picks_amarillos.forEach(p => tennisPickCard(p, "amarillo")); }
     if (j.picks_multileg && j.picks_multileg.length){ bubble("🔗 " + j.picks_multileg.length + " pick(s) multi-leg:"); j.picks_multileg.forEach(p => tennisPickCard(p, "verde")); }
-    if (!(j.picks_verdes && j.picks_verdes.length) && !(j.picks_amarillos && j.picks_amarillos.length)) bubble("Sin picks con valor en estas cuotas. El mercado parece eficiente.");
+    if (!hayPicksConValor){
+      if (j.picks_manual && j.picks_manual.length){
+        bubble("⚪ Sin picks con valor detectado por el sistema. El mercado parece eficiente, pero podés registrar igual bajo tu propio criterio:");
+        j.picks_manual.forEach(p => tennisPickCard(p, "manual"));
+      } else {
+        bubble("Sin picks con valor en estas cuotas. El mercado parece eficiente.");
+      }
+    }
     showToast("Análisis de tenis completado", "success");
   } catch(e){
     typing.remove(); showToast("Error: " + e.message, "error"); bubbleErr("Error: " + e.message);

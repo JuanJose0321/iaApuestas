@@ -345,6 +345,19 @@ def calcular_metricas(csv_path: Path | None = None) -> dict:
             return None
         return round(sum(1 for r in subset if r["resultado"] == "ganada") / len(subset) * 100, 1)
 
+    # ── Tasa acierto: recomendado por el sistema vs. registrado manualmente
+    # (sin valor detectado, apostado por criterio propio) — no se mezclan
+    # para no atribuirle al modelo aciertos que fueron decisión del usuario.
+    def _tasa_por_origen(es_manual: bool):
+        subset = [r for r in rows
+                  if (r.get("confianza_badge") == "manual") == es_manual
+                  and r["resultado"] in ("ganada", "perdida")]
+        if not subset:
+            return None
+        return round(sum(1 for r in subset if r["resultado"] == "ganada") / len(subset) * 100, 1)
+
+    n_manual = sum(1 for r in rows if r.get("confianza_badge") == "manual")
+
     # ── Calibración ──
     rows_cal = [r for r in rows if r.get("prob_predicha") and r["resultado"] in ("ganada", "perdida")]
     prob_prom = None
@@ -396,6 +409,9 @@ def calcular_metricas(csv_path: Path | None = None) -> dict:
         "variacion_pct":      variacion_pct,
         "tasa_alta_confianza":  _tasa("alta"),
         "tasa_media_confianza": _tasa("media"),
+        "tasa_acierto_sistema": _tasa_por_origen(es_manual=False),
+        "tasa_acierto_manual":  _tasa_por_origen(es_manual=True),
+        "n_manual":             n_manual,
         "prob_promedio_pct":    prob_prom,
         "calibracion":          calibracion,
         "racha_actual":         racha,

@@ -633,6 +633,61 @@ class TennisImprovedEngine:
                             elif confianza >= UMBRAL_AMARILLO:
                                 picks_amarillos.append(pick)
 
+        # Picks manuales: sin valor detectado por el modelo (EV/confianza
+        # insuficiente en ambos mercados), pero la decisión de apostar queda
+        # en manos del usuario — solo se arman cuando no hay ningún pick
+        # verde/amarillo, con la cuota que el usuario realmente cargó y la
+        # probabilidad real del modelo (nunca inventada). Ver
+        # report_tennis_audit.md / FEATURE: registrar manualmente.
+        picks_manual: List[Dict] = []
+        if not picks_verdes and not picks_amarillos:
+            if "match_winner" in cuotas:
+                mw = cuotas["match_winner"]
+                favorito, clave, prob = (
+                    (player1, "1", mw_result["prob_j1"])
+                    if mw_result["prob_j1"] >= mw_result["prob_j2"]
+                    else (player2, "2", mw_result["prob_j2"])
+                )
+                if clave in mw:
+                    cuota = float(mw[clave])
+                    val = self.evaluar_value(prob, cuota)
+                    picks_manual.append({
+                        "mercado":         "Match Winner",
+                        "pick":            f"{favorito} gana",
+                        "prob":            prob,
+                        "cuota":           cuota,
+                        "ev":              val["ev"],
+                        "confianza":       self._calc_confianza(prob, val["ev"]),
+                        "confianza_nivel": "manual",
+                        "tiene_valor":     False,
+                    })
+
+            if "total_games" in cuotas and "linea" in cuotas["total_games"]:
+                tg    = cuotas["total_games"]
+                linea = float(tg["linea"])
+                dist  = modelo["total_games"]
+                p_over = float(1.0 - norm_cdf(
+                    linea, loc=dist["total_esp"], scale=dist["std_dev"]
+                ))
+                lado = "over" if p_over >= 0.5 else "under"
+                if lado not in tg:
+                    lado = "under" if lado == "over" else "over"
+                if lado in tg:
+                    prob  = p_over if lado == "over" else 1.0 - p_over
+                    cuota = float(tg[lado])
+                    val   = self.evaluar_value(prob, cuota)
+                    picks_manual.append({
+                        "mercado":         f"Total Games {lado.capitalize()} {linea}",
+                        "pick":            f"{lado.capitalize()} {linea} games",
+                        "prob":            prob,
+                        "cuota":           cuota,
+                        "ev":              val["ev"],
+                        "confianza":       self._calc_confianza(prob, val["ev"]),
+                        "confianza_nivel": "manual",
+                        "total_esp":       dist["total_esp"],
+                        "tiene_valor":     False,
+                    })
+
         return {
             "partido": f"{player1} vs {player2}",
             "superficie": superficie,
@@ -640,6 +695,7 @@ class TennisImprovedEngine:
             "modelo": modelo,
             "picks_verdes": picks_verdes,
             "picks_amarillos": picks_amarillos,
+            "picks_manual": picks_manual,
             "resumen": f"{len(picks_verdes)} verde, {len(picks_amarillos)} amarillo",
         }
 
