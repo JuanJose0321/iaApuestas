@@ -458,14 +458,15 @@ function renderTabla(rows) {
       ? (parseFloat(r.ev_predicho) * 100).toFixed(1) + "%"
       : "—";
 
-    let acciones = "";
+    let acciones = '<div class="action-btns">';
     if (r.resultado === "pendiente") {
-      acciones = '<div class="action-btns">' +
+      acciones +=
         '<button onclick="actualizarRes(' + r.id + ',\'ganada\')">Ganada</button>' +
         '<button onclick="actualizarRes(' + r.id + ',\'perdida\')">Perdida</button>' +
-        '<button onclick="actualizarRes(' + r.id + ',\'void\')">Void</button>' +
-        '</div>';
+        '<button onclick="actualizarRes(' + r.id + ',\'void\')">Void</button>';
     }
+    acciones += '<button onclick="eliminarApuesta(' + r.id + ')" title="Eliminar del historial">🗑️ Eliminar</button>';
+    acciones += '</div>';
 
     return '<tr>' +
       '<td style="color:var(--muted)">' + safeText(r.id) + '</td>' +
@@ -493,6 +494,20 @@ async function actualizarRes(id, resultado) {
       headers: {"Content-Type": "application/json"},
       body: JSON.stringify({id, resultado}),
     });
+    const j = await r.json();
+    if (j.error) { alert("Error: " + j.error); return; }
+    await cargarMetricas();
+    await cargarHistorial();
+  } catch (e) {
+    alert("Error de red: " + e.message);
+  }
+}
+
+/* ── Eliminar apuesta ── */
+async function eliminarApuesta(id) {
+  if (!confirm("¿Eliminar esta apuesta del historial?")) return;
+  try {
+    const r = await fetch("/api/eliminar_apuesta/" + id, { method: "DELETE" });
     const j = await r.json();
     if (j.error) { alert("Error: " + j.error); return; }
     await cargarMetricas();

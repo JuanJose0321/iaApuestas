@@ -11,6 +11,7 @@ POST /api/registrar_apuesta     registrar apuesta
 GET  /api/metricas              métricas
 GET  /api/historial             historial filtrado
 POST /api/actualizar_resultado  actualizar resultado
+DELETE /api/eliminar_apuesta/<id>  eliminar apuesta del historial
 GET  /api/verificar_resultados  verificar pendientes
 POST /api/analizar_tenis        analizar partido de tenis
 POST /api/tenis/resultado       cargar resultado real de un análisis logueado
@@ -56,6 +57,7 @@ from src.core.confidence import (
 from src.services.tracking import (
     registrar_apuesta as _registrar,
     actualizar_resultado as _actualizar,
+    eliminar_apuesta as _eliminar,
     calcular_metricas,
     leer_historial,
     leer_config,
@@ -430,6 +432,16 @@ def api_actualizar_resultado():
         return jsonify({"error": "Falta resultado"}), 400
     try:
         return jsonify(_actualizar(int(id_ap), resultado))
+    except ValueError as exc:
+        return jsonify({"error": str(exc)}), 400
+    except Exception as exc:
+        return jsonify({"error": str(exc)}), 500
+
+
+@app.route("/api/eliminar_apuesta/<int:id_ap>", methods=["DELETE"])
+def api_eliminar_apuesta(id_ap):
+    try:
+        return jsonify(_eliminar(id_ap))
     except ValueError as exc:
         return jsonify({"error": str(exc)}), 400
     except Exception as exc:

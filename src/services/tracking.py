@@ -282,6 +282,29 @@ def actualizar_resultado(id_apuesta: int, resultado: str,
     }
 
 
+def eliminar_apuesta(id_apuesta: int, csv_path: Path | None = None) -> dict:
+    """
+    Elimina una apuesta del historial por id (ej. duplicados registrados
+    por error). Devuelve {id, mensaje, total_apuestas}.
+    """
+    if csv_path is None and _sb.disponible():
+        borrada = _sb.eliminar_apuesta(int(id_apuesta))
+        if not borrada:
+            raise ValueError(f"Apuesta #{id_apuesta} no encontrada")
+        total = len(_sb.leer_apuestas())
+        return {"id": int(id_apuesta), "mensaje": f"Apuesta #{id_apuesta} eliminada",
+                "total_apuestas": total}
+
+    rows = leer_historial(csv_path)
+    restantes = [r for r in rows if str(r.get("id")) != str(id_apuesta)]
+    if len(restantes) == len(rows):
+        raise ValueError(f"Apuesta #{id_apuesta} no encontrada")
+
+    _escribir_todas(restantes, csv_path)
+    return {"id": int(id_apuesta), "mensaje": f"Apuesta #{id_apuesta} eliminada",
+            "total_apuestas": len(restantes)}
+
+
 def calcular_metricas(csv_path: Path | None = None) -> dict:
     """
     Calcula métricas completas del historial.

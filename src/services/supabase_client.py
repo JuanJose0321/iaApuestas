@@ -55,6 +55,15 @@ def actualizar_apuesta(id_apuesta: int, cambios: dict) -> Optional[dict]:
     return result.data[0] if result.data else None
 
 
+def eliminar_apuesta(id_apuesta: int) -> bool:
+    """Elimina una apuesta por id. True si existía y se borró."""
+    result = (
+        _get_client().table("apuestas")
+        .delete().eq("id", id_apuesta).execute()
+    )
+    return bool(result.data)
+
+
 def insertar_prediccion(fila: dict) -> dict:
     """Inserta una fila en `predicciones_tenis` (mismas claves que
     tennis_predictions.COLUMNS, sin 'id')."""
