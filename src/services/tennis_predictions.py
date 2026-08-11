@@ -123,11 +123,18 @@ def registrar_prediccion(data: dict, csv_path: Path | None = None) -> dict:
         "cuota_total_games_under": _num_opcional(data.get("cuota_total_games_under"), 3),
         "tuvo_pick":         bool(data.get("tuvo_pick", False)),
         "tipo_pick":         data.get("tipo_pick", ""),
-        "ganador_real":      "",
-        "total_games_real":  "",
-        "acerto_ganador":    "",
-        "acerto_total":      "",
-        "resultado_cargado": "",
+        # None (no "") -- ganador_real es TEXT y lo toleraría, pero
+        # total_games_real/resultado_cargado son INTEGER/TIMESTAMPTZ y
+        # acerto_ganador/acerto_total son BOOLEAN: Postgres rechaza un
+        # string vacío ahí ("invalid input syntax for type boolean/
+        # integer/timestamp"). None viaja como NULL a Supabase y el csv
+        # module lo escribe como campo en blanco igual que antes, así
+        # que el CSV no cambia.
+        "ganador_real":      None,
+        "total_games_real":  None,
+        "acerto_ganador":    None,
+        "acerto_total":      None,
+        "resultado_cargado": None,
     }
 
     if csv_path is None and _sb.disponible():
@@ -171,7 +178,10 @@ def cargar_resultado(id_prediccion: int, ganador_real: Optional[str] = None,
         total_esp = float(target["total_esp"])
         formato   = target.get("formato", "best_of_3")
         std_dev   = STD_GAMES.get(formato, _STD_GAMES_DEFAULT["best_of_3"])
-        cambios["total_games_real"] = float(total_games_real)
+        # int, no float: la columna en Supabase es INTEGER (un total de
+        # games siempre es un entero) -- mandar 23.0 rompe el insert con
+        # "invalid input syntax for type integer".
+        cambios["total_games_real"] = int(round(float(total_games_real)))
         cambios["acerto_total"]     = abs(float(total_games_real) - total_esp) <= std_dev
     if not cambios:
         raise ValueError("Debe pasarse ganador_real y/o total_games_real")
