@@ -305,6 +305,29 @@ function fmtNum(v, decimals) {
   return parseFloat(v).toFixed(decimals !== undefined ? decimals : 2);
 }
 
+// Señal de convicción para picks manuales de tenis: mismos umbrales que
+// TennisImprovedEngine._senal_manual (src/engines/tennis_improved.py) —
+// se recalcula acá a partir de prob_predicha/ev_predicho (ya guardados en
+// el historial) en vez de agregar una columna nueva al CSV. Solo aplica a
+// tenis: los umbrales están calibrados contra el backtest de tenis
+// (report_tennis_audit.md 13.6), no validados para fútbol.
+const UMBRAL_PROB_SOLIDO = 0.65;
+const UMBRAL_PROB_RAZONABLE = 0.55;
+
+function senalManual(prob, ev) {
+  if (ev === "" || ev === null || ev === undefined || parseFloat(ev) <= 0) return "sin_base";
+  const p = parseFloat(prob);
+  if (p >= UMBRAL_PROB_SOLIDO) return "solido";
+  if (p >= UMBRAL_PROB_RAZONABLE) return "razonable";
+  return "cuota_larga";
+}
+
+const SENAL_INFO = {
+  solido:      { color: "var(--cyan)",   txt: "🎯 Sólida" },
+  razonable:   { color: "var(--yellow)", txt: "🟡 Razonable" },
+  cuota_larga: { color: "var(--muted)",  txt: "💰 Cuota larga" },
+};
+
 /* ── Métricas ── */
 async function cargarMetricas() {
   try {
@@ -451,6 +474,13 @@ function renderTabla(rows) {
     let confianza = "—";
     if (r.confianza_badge === "manual") {
       confianza = '<span style="font-size:11px;color:var(--muted)" title="Sin valor detectado por el sistema — apuesta por criterio propio">⚪ Manual</span>';
+      if (!esFutbol(r) && r.prob_predicha !== "" && r.prob_predicha !== null && r.prob_predicha !== undefined) {
+        const senal = SENAL_INFO[senalManual(r.prob_predicha, r.ev_predicho)];
+        if (senal) {
+          confianza += ' <span style="font-size:11px;color:' + senal.color + '" title="Probabilidad real del modelo: ' +
+            (parseFloat(r.prob_predicha) * 100).toFixed(1) + '%">' + senal.txt + '</span>';
+        }
+      }
     } else if (r.confianza_badge) {
       const color = (r.confianza_badge === "verde" || r.confianza_badge === "alta") ? "var(--green)"
                   : (r.confianza_badge === "rojo" || r.confianza_badge === "muy_baja") ? "var(--red)"
