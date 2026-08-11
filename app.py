@@ -526,13 +526,25 @@ def api_analizar_tenis():
     favorito = j1 if mw["prob_j1"] >= mw["prob_j2"] else j2
     prob_favorito = max(mw["prob_j1"], mw["prob_j2"])
     todos_los_picks = resultado["picks_verdes"] + resultado["picks_amarillos"]
+
+    # Cuotas reales que cargó el usuario (no las del modelo) — se guardan
+    # tal cual para poder reconstruir el EV real de esta predicción más
+    # adelante, aunque hoy no haya generado un pick con valor.
+    mw_cuotas = cuotas.get("match_winner") or {}
+    cuota_favorito = mw_cuotas.get("1" if favorito == j1 else "2")
+    tg_cuotas = cuotas.get("total_games") or {}
+
     try:
         log = _registrar_prediccion_tenis({
             "fecha_partido": data.get("fecha_partido", ""),
             "jugador1": j1, "jugador2": j2,
             "favorito": favorito, "prob_favorito": prob_favorito,
+            "cuota_favorito": cuota_favorito,
             "superficie": superficie, "formato": formato,
             "total_esp": resultado["modelo"]["total_games"]["total_esp"],
+            "total_games_linea": tg_cuotas.get("linea"),
+            "cuota_total_games_over": tg_cuotas.get("over"),
+            "cuota_total_games_under": tg_cuotas.get("under"),
             "tuvo_pick": bool(todos_los_picks),
             "tipo_pick": ", ".join(p["mercado"] for p in todos_los_picks),
         })

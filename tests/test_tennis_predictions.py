@@ -93,6 +93,39 @@ def test_calcular_precision_sin_resultados_cargados_devuelve_none(csv_path):
     assert precision["precision_ganador_pct"] is None
 
 
+def test_registrar_prediccion_guarda_cuotas_reales_cargadas(csv_path):
+    """Antes solo se guardaba la probabilidad del modelo -- sin la cuota
+    real, es imposible reconstruir el EV de una predicción pasada para
+    validar con datos históricos si un EV alto predice mejor performance."""
+    r = _registrar(
+        csv_path,
+        cuota_favorito=1.92,
+        total_games_linea=20.5,
+        cuota_total_games_over=1.92,
+        cuota_total_games_under=1.85,
+    )
+    rows = tp.leer_predicciones(csv_path=csv_path)
+    fila = rows[0]
+    assert fila["id"] == str(r["id"])
+    assert float(fila["cuota_favorito"]) == 1.92
+    assert float(fila["total_games_linea"]) == 20.5
+    assert float(fila["cuota_total_games_over"]) == 1.92
+    assert float(fila["cuota_total_games_under"]) == 1.85
+
+
+def test_registrar_prediccion_sin_cuotas_deja_campos_en_blanco(csv_path):
+    """Si el usuario no cargó total_games (o no llegó la cuota del
+    favorito), los campos quedan en blanco -- nunca un 0.0 inventado que
+    se confundiría con una cuota real de mercado."""
+    _registrar(csv_path)
+    rows = tp.leer_predicciones(csv_path=csv_path)
+    fila = rows[0]
+    assert fila["cuota_favorito"] == ""
+    assert fila["total_games_linea"] == ""
+    assert fila["cuota_total_games_over"] == ""
+    assert fila["cuota_total_games_under"] == ""
+
+
 def test_calcular_precision_separa_ganador_y_total(csv_path):
     r1 = _registrar(csv_path, favorito="Carlos Alcaraz", formato="best_of_3", total_esp=22.0)
     tp.cargar_resultado(r1["id"], ganador_real="Carlos Alcaraz", total_games_real=23, csv_path=csv_path)

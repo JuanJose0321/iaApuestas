@@ -51,24 +51,40 @@ CREATE TABLE IF NOT EXISTS bankroll_config (
 -- std_dev no se guarda: es constante por formato (best_of_3/best_of_5), se
 -- deriva de STD_GAMES al cargar el resultado, no depende del partido.
 CREATE TABLE IF NOT EXISTS predicciones_tenis (
-  id                 BIGSERIAL PRIMARY KEY,
-  fecha_registro     TIMESTAMPTZ DEFAULT NOW(),
-  fecha_partido      TEXT,
-  jugador1           TEXT,
-  jugador2           TEXT,
-  favorito           TEXT,
-  prob_favorito      NUMERIC(5, 4),
-  superficie         TEXT,
-  formato            TEXT,
-  total_esp          NUMERIC(5, 2),
-  tuvo_pick          BOOLEAN DEFAULT FALSE,
-  tipo_pick          TEXT,
-  ganador_real       TEXT,
-  total_games_real   INTEGER,
-  acerto_ganador     BOOLEAN,
-  acerto_total       BOOLEAN,
-  resultado_cargado  TIMESTAMPTZ
+  id                        BIGSERIAL PRIMARY KEY,
+  fecha_registro            TIMESTAMPTZ DEFAULT NOW(),
+  fecha_partido             TEXT,
+  jugador1                  TEXT,
+  jugador2                  TEXT,
+  favorito                  TEXT,
+  prob_favorito             NUMERIC(5, 4),
+  cuota_favorito            NUMERIC(6, 3),
+  superficie                TEXT,
+  formato                   TEXT,
+  total_esp                 NUMERIC(5, 2),
+  total_games_linea         NUMERIC(5, 1),
+  cuota_total_games_over    NUMERIC(6, 3),
+  cuota_total_games_under   NUMERIC(6, 3),
+  tuvo_pick                 BOOLEAN DEFAULT FALSE,
+  tipo_pick                 TEXT,
+  ganador_real              TEXT,
+  total_games_real          INTEGER,
+  acerto_ganador            BOOLEAN,
+  acerto_total              BOOLEAN,
+  resultado_cargado         TIMESTAMPTZ
 );
+
+-- Cuotas reales cargadas por el usuario en cada análisis (antes solo se
+-- guardaba la probabilidad del modelo) — permiten reconstruir el EV real
+-- de una predicción pasada y validar con datos históricos si un EV alto
+-- predice mejor performance en tenis (hasta ahora imposible, ver
+-- report_tennis_audit.md). Columnas agregadas después de la creación
+-- inicial de la tabla — este ALTER es idempotente si ya se corrió
+-- CREATE TABLE con la definición vieja.
+ALTER TABLE predicciones_tenis ADD COLUMN IF NOT EXISTS cuota_favorito NUMERIC(6, 3);
+ALTER TABLE predicciones_tenis ADD COLUMN IF NOT EXISTS total_games_linea NUMERIC(5, 1);
+ALTER TABLE predicciones_tenis ADD COLUMN IF NOT EXISTS cuota_total_games_over NUMERIC(6, 3);
+ALTER TABLE predicciones_tenis ADD COLUMN IF NOT EXISTS cuota_total_games_under NUMERIC(6, 3);
 
 CREATE INDEX IF NOT EXISTS idx_predicciones_fecha ON predicciones_tenis(fecha_partido);
 

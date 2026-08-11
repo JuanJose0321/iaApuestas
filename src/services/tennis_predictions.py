@@ -27,7 +27,8 @@ CSV_PATH = DATA_DIR / "predicciones_tenis.csv"
 
 COLUMNS = [
     "id", "fecha_registro", "fecha_partido", "jugador1", "jugador2",
-    "favorito", "prob_favorito", "superficie", "formato", "total_esp",
+    "favorito", "prob_favorito", "cuota_favorito", "superficie", "formato",
+    "total_esp", "total_games_linea", "cuota_total_games_over", "cuota_total_games_under",
     "tuvo_pick", "tipo_pick",
     "ganador_real", "total_games_real", "acerto_ganador", "acerto_total",
     "resultado_cargado",
@@ -79,10 +80,32 @@ def leer_predicciones(csv_path: Path | None = None) -> list[dict]:
         return []
 
 
+def _num_opcional(valor, decimales: int):
+    """Redondea si viene un valor real; None si el mercado no se cargó —
+    nunca inventa un 0.0 que se confundiría con una cuota real, y None
+    (a diferencia de "") viaja bien tanto a CSV (queda en blanco) como a
+    Supabase (NULL en vez de un string vacío que rompería una columna
+    NUMERIC)."""
+    if valor in (None, ""):
+        return None
+    try:
+        return round(float(valor), decimales)
+    except (TypeError, ValueError):
+        return None
+
+
 def registrar_prediccion(data: dict, csv_path: Path | None = None) -> dict:
     """
     Registra un análisis de tenis recién corrido (con o sin pick de value).
     Devuelve {"id": ...}.
+
+    Guarda también las cuotas reales que cargó el usuario (cuota_favorito,
+    total_games_linea/cuota_total_games_over/under) — hasta ahora el log
+    solo tenía la probabilidad del modelo, sin la cuota de mercado, así
+    que era imposible reconstruir el EV real de una predicción pasada
+    para validar con datos históricos si un EV alto predice mejor
+    performance (ver report_tennis_audit.md). No cambia ningún umbral ni
+    comportamiento existente — es solo captura de datos hacia adelante.
     """
     fila: dict = {
         "fecha_registro":    datetime.now().isoformat(),
@@ -91,9 +114,13 @@ def registrar_prediccion(data: dict, csv_path: Path | None = None) -> dict:
         "jugador2":          data.get("jugador2", ""),
         "favorito":          data.get("favorito", ""),
         "prob_favorito":     round(float(data.get("prob_favorito", 0)), 4),
+        "cuota_favorito":    _num_opcional(data.get("cuota_favorito"), 3),
         "superficie":        data.get("superficie", ""),
         "formato":           data.get("formato", ""),
         "total_esp":         round(float(data.get("total_esp", 0)), 2),
+        "total_games_linea":       _num_opcional(data.get("total_games_linea"), 1),
+        "cuota_total_games_over":  _num_opcional(data.get("cuota_total_games_over"), 3),
+        "cuota_total_games_under": _num_opcional(data.get("cuota_total_games_under"), 3),
         "tuvo_pick":         bool(data.get("tuvo_pick", False)),
         "tipo_pick":         data.get("tipo_pick", ""),
         "ganador_real":      "",
