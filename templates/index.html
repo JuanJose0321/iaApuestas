@@ -1317,7 +1317,7 @@ document.getElementById("footballFormCard").addEventListener("submit", async (e)
 function tval(id){ const el = document.getElementById(id); const n = parseFloat((el && el.value || "").trim()); return isNaN(n) ? null : n; }
 function tstr(id){ const el = document.getElementById(id); return ((el && el.value) || "").trim(); }
 
-function tennisPickCard(pick, nivelFallback){
+function tennisPickCard(pick, nivelFallback, j1, j2){
   const nivel = pick.confianza_nivel || nivelFallback || "rojo";
   const isManual = nivel === "manual";
   const isML = pick.tipo === "DUPLA";
@@ -1357,13 +1357,12 @@ function tennisPickCard(pick, nivelFallback){
     const txt = "🎾 " + desc + " @ " + cuotaShown + " | EV " + ((pick.ev||0)*100).toFixed(1) + "%";
     navigator.clipboard.writeText(txt).then(() => showToast("Copiado", "success"));
   });
-  card.querySelector('[data-act="reg"]').addEventListener("click", () => tRegistrar(pick));
+  card.querySelector('[data-act="reg"]').addEventListener("click", () => tRegistrar(pick, j1, j2));
 
   chat.appendChild(card); scrollChatBottom();
 }
 
-function tRegistrar(pick){
-  const j1 = tstr("tj1"), j2 = tstr("tj2");
+function tRegistrar(pick, j1, j2){
   const desc = pick.pick || (pick.legs||[]).map(l => l.pick).join(" + ");
   const body = { liga:"Tenis", local:j1, visitante:j2, pick_tipo:"TENIS", pick_descripcion:desc,
     cuota: pick.cuota || pick.cuota_total || 0, stake: pick.stake_sugerido || 0, prob_predicha: pick.prob || 0,
@@ -1413,13 +1412,13 @@ document.getElementById("tennisFormCard").addEventListener("submit", async (e) =
       "Juegos totales esperados: " + (tg.total_esp ?? "—") + "\n" + (j.resumen||""));
 
     const hayPicksConValor = (j.picks_verdes && j.picks_verdes.length) || (j.picks_amarillos && j.picks_amarillos.length);
-    if (j.picks_verdes && j.picks_verdes.length){ bubble("✅ " + j.picks_verdes.length + " pick(s) VERDE:"); j.picks_verdes.forEach(p => tennisPickCard(p, "verde")); }
-    if (j.picks_amarillos && j.picks_amarillos.length){ bubble("⚠️ " + j.picks_amarillos.length + " pick(s) AMARILLO:"); j.picks_amarillos.forEach(p => tennisPickCard(p, "amarillo")); }
-    if (j.picks_multileg && j.picks_multileg.length){ bubble("🔗 " + j.picks_multileg.length + " pick(s) multi-leg:"); j.picks_multileg.forEach(p => tennisPickCard(p, "verde")); }
+    if (j.picks_verdes && j.picks_verdes.length){ bubble("✅ " + j.picks_verdes.length + " pick(s) VERDE:"); j.picks_verdes.forEach(p => tennisPickCard(p, "verde", j1, j2)); }
+    if (j.picks_amarillos && j.picks_amarillos.length){ bubble("⚠️ " + j.picks_amarillos.length + " pick(s) AMARILLO:"); j.picks_amarillos.forEach(p => tennisPickCard(p, "amarillo", j1, j2)); }
+    if (j.picks_multileg && j.picks_multileg.length){ bubble("🔗 " + j.picks_multileg.length + " pick(s) multi-leg:"); j.picks_multileg.forEach(p => tennisPickCard(p, "verde", j1, j2)); }
     if (!hayPicksConValor){
       if (j.picks_manual && j.picks_manual.length){
         bubble("⚪ Sin picks con valor detectado por el sistema. El mercado parece eficiente, pero podés registrar igual bajo tu propio criterio:");
-        j.picks_manual.forEach(p => tennisPickCard(p, "manual"));
+        j.picks_manual.forEach(p => tennisPickCard(p, "manual", j1, j2));
       } else {
         bubble("Sin picks con valor en estas cuotas. El mercado parece eficiente.");
       }
