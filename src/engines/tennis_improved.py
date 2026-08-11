@@ -25,6 +25,14 @@ MIN_EV = 0.05
 UMBRAL_VERDE = 0.65
 UMBRAL_AMARILLO = 0.50
 
+# Señal para picks manuales (sin value suficiente para verde/amarillo, EV < MIN_EV):
+# separa "el modelo está convencido de quién gana" de "el EV es alto solo porque
+# la cuota es larga" — mismo corte de probabilidad que ya usa UMBRAL_VERDE (zona
+# de >62% accuracy real en el backtest, ver report_tennis_audit.md sección 13.6),
+# para no inventar un umbral nuevo sin validar.
+UMBRAL_PROB_SOLIDO = UMBRAL_VERDE      # 0.65 — misma zona de accuracy que "verde"
+UMBRAL_PROB_RAZONABLE = 0.55           # por encima de 50/50 con margen real
+
 SURFACE_ELO_FACTOR = {
     "clay": 1.20,
     "hard": 1.00,
@@ -464,6 +472,22 @@ class TennisImprovedEngine:
             return "amarillo"
         return "rojo"
 
+    def _senal_manual(self, prob: float, ev: float) -> str:
+        """
+        Clasifica un pick manual (sin value suficiente para verde/amarillo)
+        por qué tan convencido está el modelo, no por el tamaño del EV —
+        una cuota larga (2.50+) infla el EV aunque la probabilidad real
+        ronde el 50/50, y eso no es lo mismo que un EV chico con el modelo
+        realmente seguro de quién gana.
+        """
+        if ev <= 0:
+            return "sin_base"
+        if prob >= UMBRAL_PROB_SOLIDO:
+            return "solido"
+        if prob >= UMBRAL_PROB_RAZONABLE:
+            return "razonable"
+        return "cuota_larga"
+
     def analizar(self, player1: str, player2: str,
                 elo1: float, elo2: float,
                 superficie: str, formato: str,
@@ -659,6 +683,7 @@ class TennisImprovedEngine:
                         "ev":              val["ev"],
                         "confianza":       self._calc_confianza(prob, val["ev"]),
                         "confianza_nivel": "manual",
+                        "senal":           self._senal_manual(prob, val["ev"]),
                         "tiene_valor":     False,
                     })
 
@@ -684,6 +709,7 @@ class TennisImprovedEngine:
                         "ev":              val["ev"],
                         "confianza":       self._calc_confianza(prob, val["ev"]),
                         "confianza_nivel": "manual",
+                        "senal":           self._senal_manual(prob, val["ev"]),
                         "total_esp":       dist["total_esp"],
                         "tiene_valor":     False,
                     })
