@@ -479,9 +479,18 @@ class TennisImprovedEngine:
         una cuota larga (2.50+) infla el EV aunque la probabilidad real
         ronde el 50/50, y eso no es lo mismo que un EV chico con el modelo
         realmente seguro de quién gana.
+
+        Con EV <= 0 no hay ninguna base matemática para apostar, pero eso
+        puede pasar por dos motivos bien distintos: el modelo no tiene una
+        opinión fuerte (prob cerca de 50/50), o el modelo SÍ tiene un
+        favorito claro (prob >= UMBRAL_PROB_SOLIDO) y la cuota simplemente
+        no compensa esa probabilidad (cuota corta, ej. 1.36 con favorito al
+        68% — el mercado ya lo tiene como más favorito todavía). Separar
+        ese segundo caso evita esconder que el modelo sigue prefiriendo ese
+        lado, aunque no haya valor a ese precio.
         """
         if ev <= 0:
-            return "sin_base"
+            return "favorito_sin_valor" if prob >= UMBRAL_PROB_SOLIDO else "sin_base"
         if prob >= UMBRAL_PROB_SOLIDO:
             return "solido"
         if prob >= UMBRAL_PROB_RAZONABLE:

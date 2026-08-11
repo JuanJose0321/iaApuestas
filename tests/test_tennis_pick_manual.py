@@ -67,8 +67,14 @@ def test_sin_valor_devuelve_picks_manual_con_datos_reales(engine):
         assert p["confianza_nivel"] == "manual"
         assert p["cuota"] > 1.0
         assert 0.0 < p["prob"] < 1.0
-        # cuotas recortadas -> EV negativo en ambos mercados -> sin_base
-        assert p["senal"] == "sin_base"
+        # cuotas recortadas -> EV negativo en ambos mercados -> sin_base,
+        # salvo que la prob real ya sea tan alta (>= UMBRAL_PROB_SOLIDO)
+        # que el motor siga prefiriendo ese lado aunque no haya valor.
+        assert p["senal"] in ("sin_base", "favorito_sin_valor")
+        if p["prob"] >= 0.65:
+            assert p["senal"] == "favorito_sin_valor"
+        else:
+            assert p["senal"] == "sin_base"
 
     mercados = {p["mercado"] for p in resultado["picks_manual"]}
     assert "Match Winner" in mercados
@@ -83,8 +89,11 @@ def test_sin_valor_devuelve_picks_manual_con_datos_reales(engine):
     (0.55, 0.001, "razonable"),   # límite inclusive
     (0.52, 0.02, "cuota_larga"),  # EV positivo (cuota larga) pero prob ~50/50
     (0.50, 0.001, "cuota_larga"),
-    (0.90, 0.0, "sin_base"),      # EV <= 0 manda, sin importar la prob
-    (0.90, -0.05, "sin_base"),
+    (0.50, 0.0, "sin_base"),      # EV <= 0 y sin opinión fuerte -> sin base
+    (0.60, -0.05, "sin_base"),
+    (0.90, 0.0, "favorito_sin_valor"),   # EV <= 0 pero prob >= UMBRAL_PROB_SOLIDO:
+    (0.65, -0.05, "favorito_sin_valor"), # el modelo sigue prefiriendo ese lado,
+                                          # solo que la cuota no compensa
 ])
 def test_senal_manual_clasifica_por_umbral_de_probabilidad(engine, prob, ev, esperado):
     assert engine._senal_manual(prob, ev) == esperado

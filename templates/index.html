@@ -422,6 +422,7 @@ a{ color:var(--primary); }
 .badge-conf.solido{ background:color-mix(in srgb, var(--primary) 16%, transparent); color:var(--primary); border-color:var(--primary); }
 .badge-conf.razonable{ background:color-mix(in srgb, var(--primary) 10%, transparent); color:var(--primary); border-color:color-mix(in srgb, var(--primary) 50%, transparent); }
 .badge-conf.cuota-larga{ background:var(--bg-elev-3); color:var(--text-muted); border-color:var(--border); border-style:dashed; }
+.badge-conf.favorito-sin-valor{ background:var(--bg-elev-3); color:var(--text-muted); border-color:var(--border); border-style:dashed; }
 
 .risk-pill{ font-size:10.5px; padding:3px 8px; border-radius:6px; font-weight:700; }
 .risk-pill.risk-low{ background:color-mix(in srgb, var(--secondary) 15%, transparent); color:var(--secondary); }
@@ -1341,12 +1342,13 @@ function tennisPickCard(pick, nivelFallback, j1, j2){
   // Señal para picks manuales: separa "el modelo está convencido de quién
   // gana" de "el EV es alto solo porque la cuota es larga" (pick.senal la
   // calcula el motor — ver TennisImprovedEngine._senal_manual). No se
-  // muestra nada para 'sin_base' (la mayoría de los manuales) para no
+  // muestra nada para 'sin_base' (sin opinión fuerte y sin valor) para no
   // meter ruido donde no hay ninguna señal.
   const SENAL_INFO = {
-    solido:      { cls: "solido",      txt: "🎯 Prob. sólida" },
-    razonable:   { cls: "razonable",   txt: "🟡 Razonable" },
-    cuota_larga: { cls: "cuota-larga", txt: "💰 Cuota larga, poca certeza" },
+    solido:              { cls: "solido",             txt: "🎯 Prob. sólida" },
+    razonable:           { cls: "razonable",           txt: "🟡 Razonable" },
+    cuota_larga:         { cls: "cuota-larga",         txt: "💰 Cuota larga, poca certeza" },
+    favorito_sin_valor:  { cls: "favorito-sin-valor",  txt: "👀 Favorito, sin valor a este precio" },
   };
   const senal = isManual && SENAL_INFO[pick.senal];
   const senalBadge = senal ? '<span class="badge-conf ' + senal.cls + '">' + senal.txt + '</span>' : "";

@@ -315,17 +315,20 @@ const UMBRAL_PROB_SOLIDO = 0.65;
 const UMBRAL_PROB_RAZONABLE = 0.55;
 
 function senalManual(prob, ev) {
-  if (ev === "" || ev === null || ev === undefined || parseFloat(ev) <= 0) return "sin_base";
   const p = parseFloat(prob);
+  if (ev === "" || ev === null || ev === undefined || parseFloat(ev) <= 0) {
+    return p >= UMBRAL_PROB_SOLIDO ? "favorito_sin_valor" : "sin_base";
+  }
   if (p >= UMBRAL_PROB_SOLIDO) return "solido";
   if (p >= UMBRAL_PROB_RAZONABLE) return "razonable";
   return "cuota_larga";
 }
 
 const SENAL_INFO = {
-  solido:      { color: "var(--cyan)",   txt: "🎯 Sólida" },
-  razonable:   { color: "var(--yellow)", txt: "🟡 Razonable" },
-  cuota_larga: { color: "var(--muted)",  txt: "💰 Cuota larga" },
+  solido:             { color: "var(--cyan)",   txt: "🎯 Sólida" },
+  razonable:          { color: "var(--yellow)", txt: "🟡 Razonable" },
+  cuota_larga:        { color: "var(--muted)",  txt: "💰 Cuota larga" },
+  favorito_sin_valor: { color: "var(--muted)",  txt: "👀 Favorito, sin valor" },
 };
 
 /* ── Métricas ── */
