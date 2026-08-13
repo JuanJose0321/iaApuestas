@@ -110,6 +110,23 @@
 
   .empty { text-align: center; color: var(--muted); padding: 40px; }
 
+  .paginacion {
+    display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+    margin-top: 14px;
+  }
+  .pag-info { font-size: 12px; color: var(--muted); }
+  .pag-btns { display: flex; gap: 4px; flex-wrap: wrap; }
+  .pag-btns button {
+    background: var(--bg3); border: 1px solid var(--border); color: var(--fg);
+    padding: 6px 11px; border-radius: 6px; cursor: pointer; font-size: 12px;
+    min-width: 34px;
+  }
+  .pag-btns button:hover:not(:disabled) { border-color: var(--cyan); color: var(--cyan); }
+  .pag-btns button:disabled { opacity: .4; cursor: default; }
+  .pag-btns button.active {
+    background: var(--cyan); color: #002028; border-color: var(--cyan); font-weight: 700;
+  }
+
   .ganancia.pos { color: var(--green); font-weight: 600; }
   .ganancia.neg { color: var(--red);   font-weight: 600; }
 
@@ -219,7 +236,7 @@
       <option value="Liga MX">Liga MX</option>
       <option value="MLS">MLS</option>
     </select>
-    <input type="date" id="filtroDesde" title="Desde fecha">
+    <input type="date" id="filtroFecha" title="Filtrar por fecha de registro">
     <button class="btn" id="filtrarBtn">Filtrar</button>
     <div class="spacer"></div>
     <button class="btn primary" id="verificarBtn">Actualizar automáticos</button>
@@ -246,6 +263,12 @@
         <tr><td colspan="11" class="empty">Cargando...</td></tr>
       </tbody>
     </table>
+  </div>
+
+  <div class="paginacion" id="paginacionWrap">
+    <span class="pag-info" id="pagInfo"></span>
+    <div class="spacer"></div>
+    <div class="pag-btns" id="pagBtns"></div>
   </div>
   </div>
 
@@ -291,7 +314,10 @@
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script>
-let allRows = [];
+let allRows = [];        // filas ya traídas del backend (filtradas por resultado/liga)
+let filteredRows = [];   // allRows + filtro de fecha, ya en orden a mostrar (más nuevas primero)
+let paginaActual = 1;
+const FILAS_POR_PAGINA = 20;  // ajustar acá si se quiere otro tamaño de página
 let bankrollChart = null;
 
 function safeText(t) {
@@ -420,15 +446,27 @@ function renderChart(puntos, br_inicial) {
 // deporte se resuelve contra ese mismo campo, sin tocar el backend.
 function esFutbol(row) { return (row.liga || "") !== "Tenis"; }
 
-async function cargarHistorial() {
+// fecha_registro se guarda como "DD/MM/YYYY HH:MM" (ver tracking.py) — el input
+// type=date entrega "YYYY-MM-DD", así que hay que convertir antes de comparar.
+function fechaRegistroToISO(fechaStr) {
+  if (!fechaStr) return "";
+  const datePart = fechaStr.split(" ")[0];
+  const partes = datePart.split("/");
+  if (partes.length !== 3) return "";
+  const [d, m, y] = partes;
+  return y + "-" + m.padStart(2, "0") + "-" + d.padStart(2, "0");
+}
+
+async function cargarHistorial(resetPagina) {
   const resultado = document.getElementById("filtroResultado").value;
   const deporte   = document.getElementById("filtroDeporte").value;
   const ligaSel   = document.getElementById("filtroLiga").value;
-  const desde     = document.getElementById("filtroDesde").value;
 
   // liga="Tenis" ya funciona como filtro exacto en /api/historial. Para "todas las
   // ligas de fútbol" no hay un valor único que pedirle al backend (no filtra por
-  // deporte) — se trae sin filtrar y se excluye Tenis en el cliente.
+  // deporte) — se trae sin filtrar y se excluye Tenis en el cliente. La fecha se
+  // filtra siempre en el cliente (ver aplicarFiltrosLocales), junto con la
+  // paginación, sobre los datos que ya trajo el backend.
   let liga = "";
   if (deporte === "tennis") liga = "Tenis";
   else if (deporte === "football" && ligaSel) liga = ligaSel;
@@ -436,7 +474,6 @@ async function cargarHistorial() {
   let url = "/api/historial?";
   if (resultado) url += "resultado=" + encodeURIComponent(resultado) + "&";
   if (liga)      url += "liga="      + encodeURIComponent(liga)      + "&";
-  if (desde)     url += "fecha_desde=" + encodeURIComponent(desde)   + "&";
 
   try {
     const r = await fetch(url);
@@ -444,10 +481,12 @@ async function cargarHistorial() {
     let rows = j.apuestas || [];
     if (deporte === "football" && !ligaSel) rows = rows.filter(esFutbol);
     allRows = rows;
-    renderTabla(allRows);
+    aplicarFiltrosLocales(resetPagina);
   } catch (e) {
     document.getElementById("tablaBody").innerHTML =
       '<tr><td colspan="11" class="empty">Error cargando historial</td></tr>';
+    document.getElementById("pagInfo").textContent = "";
+    document.getElementById("pagBtns").innerHTML = "";
   }
 }
 
@@ -458,6 +497,77 @@ document.getElementById("filtroDeporte").addEventListener("change", function() {
   if (esTenis) ligaSelect.value = "";
 });
 
+/* ── Filtro de fecha (cliente) + paginación ── */
+function aplicarFiltrosLocales(resetPagina) {
+  const fechaSel = document.getElementById("filtroFecha").value;
+  let rows = allRows.slice().reverse();  // más nuevas primero, igual que antes
+  if (fechaSel) {
+    rows = rows.filter(function(r) { return fechaRegistroToISO(r.fecha_registro) === fechaSel; });
+  }
+  filteredRows = rows;
+
+  if (resetPagina) paginaActual = 1;
+  const totalPaginas = Math.max(1, Math.ceil(filteredRows.length / FILAS_POR_PAGINA));
+  if (paginaActual > totalPaginas) paginaActual = totalPaginas;
+
+  renderPagina();
+}
+
+function renderPagina() {
+  const total = filteredRows.length;
+  const inicio = (paginaActual - 1) * FILAS_POR_PAGINA;
+  renderTabla(filteredRows.slice(inicio, inicio + FILAS_POR_PAGINA));
+  renderPaginacion(total);
+}
+
+function renderPaginacion(total) {
+  const info = document.getElementById("pagInfo");
+  const btns = document.getElementById("pagBtns");
+  if (!total) {
+    info.textContent = "";
+    btns.innerHTML = "";
+    return;
+  }
+
+  const totalPaginas = Math.max(1, Math.ceil(total / FILAS_POR_PAGINA));
+  const inicio = (paginaActual - 1) * FILAS_POR_PAGINA + 1;
+  const fin = Math.min(paginaActual * FILAS_POR_PAGINA, total);
+  info.textContent = "Mostrando " + inicio + "-" + fin + " de " + total;
+
+  function btn(p, label, opts) {
+    opts = opts || {};
+    return '<button class="' + (opts.active ? "active" : "") + '" ' +
+      (opts.disabled ? "disabled" : "") + ' onclick="irAPagina(' + p + ')">' + label + '</button>';
+  }
+
+  let html = btn(paginaActual - 1, "‹ Anterior", { disabled: paginaActual <= 1 });
+
+  // Ventana de páginas alrededor de la actual + primera/última, con "…" en los saltos
+  const VENTANA = 2;
+  const paginas = [];
+  for (let p = 1; p <= totalPaginas; p++) {
+    if (p === 1 || p === totalPaginas || (p >= paginaActual - VENTANA && p <= paginaActual + VENTANA)) {
+      paginas.push(p);
+    }
+  }
+  let anterior = 0;
+  paginas.forEach(function(p) {
+    if (anterior && p - anterior > 1) html += '<span style="color:var(--muted);padding:0 4px">…</span>';
+    html += btn(p, String(p), { active: p === paginaActual });
+    anterior = p;
+  });
+
+  html += btn(paginaActual + 1, "Siguiente ›", { disabled: paginaActual >= totalPaginas });
+  btns.innerHTML = html;
+}
+
+function irAPagina(p) {
+  const totalPaginas = Math.max(1, Math.ceil(filteredRows.length / FILAS_POR_PAGINA));
+  if (p < 1 || p > totalPaginas || p === paginaActual) return;
+  paginaActual = p;
+  renderPagina();
+}
+
 function renderTabla(rows) {
   const tbody = document.getElementById("tablaBody");
   if (!rows.length) {
@@ -465,7 +575,7 @@ function renderTabla(rows) {
     return;
   }
 
-  tbody.innerHTML = rows.slice().reverse().map(function(r) {
+  tbody.innerHTML = rows.map(function(r) {
     const resBadge = '<span class="badge ' + safeText(r.resultado) + '">' +
                      safeText(r.resultado) + '</span>';
 
@@ -535,7 +645,7 @@ async function actualizarRes(id, resultado) {
     const j = await r.json();
     if (j.error) { alert("Error: " + j.error); return; }
     await cargarMetricas();
-    await cargarHistorial();
+    await cargarHistorial(false);  // mantiene filtros y página actual, solo re-clampea si hace falta
   } catch (e) {
     alert("Error de red: " + e.message);
   }
@@ -549,7 +659,7 @@ async function eliminarApuesta(id) {
     const j = await r.json();
     if (j.error) { alert("Error: " + j.error); return; }
     await cargarMetricas();
-    await cargarHistorial();
+    await cargarHistorial(false);  // no reseteamos página: si la actual queda vacía, se clampea sola
   } catch (e) {
     alert("Error de red: " + e.message);
   }
@@ -566,7 +676,7 @@ document.getElementById("verificarBtn").addEventListener("click", async function
     alert("Revisadas: " + j.pendientes_revisadas + " pendientes.\nActualizadas: " + j.actualizadas);
     if (j.actualizadas > 0) {
       await cargarMetricas();
-      await cargarHistorial();
+      await cargarHistorial(false);
     }
   } catch (e) {
     alert("Error: " + e.message);
@@ -579,12 +689,12 @@ document.getElementById("verificarBtn").addEventListener("click", async function
 /* ── Filtros ── */
 document.getElementById("filtrarBtn").addEventListener("click", async function() {
   await cargarMetricas();
-  await cargarHistorial();
+  await cargarHistorial(true);  // cambiaron los filtros: siempre vuelve a página 1
 });
 
 /* ── Init ── */
 cargarMetricas();
-cargarHistorial();
+cargarHistorial(true);
 
 /* ── Tabs ── */
 function mostrarTab(tab) {
