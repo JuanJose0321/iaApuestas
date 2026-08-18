@@ -326,6 +326,7 @@
     "Duilio Beretta",
     "Duilio Vallebuona",
     "Duje Ajdukovic",
+    "Duncan Chan",
     "Dusan Lajovic",
     "Dustin Brown",
     "Dylan Dietrich",
@@ -2472,9 +2473,9 @@
   ],
   "_meta": {
     "total_generos": 2,
-    "masculino_count": 1247,
+    "masculino_count": 1248,
     "femenino_count": 1220,
-    "generado": "derivado automáticamente de tennis_elo_ratings.json (2026-08-09T17:20:28.089741+00:00)",
+    "generado": "derivado automáticamente de tennis_elo_ratings.json (2026-08-18T04:41:14.037902+00:00)",
     "nota": "Ya no se mantiene a mano — se regenera en cada recalibración de Elo (ver calibrate_tennis_elo.py, PASO 6)."
   }
 }
