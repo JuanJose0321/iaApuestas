@@ -337,7 +337,14 @@ function fmtNum(v, decimals) {
 // el historial) en vez de agregar una columna nueva al CSV. Solo aplica a
 // tenis: los umbrales están calibrados contra el backtest de tenis
 // (report_tennis_audit.md 13.6), no validados para fútbol.
-const UMBRAL_PROB_SOLIDO = 0.65;
+//
+// 2026-08-25: recalibrados junto con el criterio de entrada de picks
+// (MIN_PROB_PICK=0.60, ver tennis_validacion_filtro_ev.md) — un pick
+// manual por definición nunca llega a MIN_PROB_PICK, así que su
+// probabilidad de favorito siempre cae en la banda angosta [0.50, 0.60),
+// y estos dos umbrales viven adentro de esa banda (antes vivían en la
+// escala de "favorito claro", 0.65/0.55, que ya no es alcanzable acá).
+const UMBRAL_PROB_SOLIDO = 0.58;
 const UMBRAL_PROB_RAZONABLE = 0.55;
 
 function senalManual(prob, ev) {

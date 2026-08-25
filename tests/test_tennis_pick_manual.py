@@ -2,8 +2,9 @@
 Tests del FEATURE: registrar manualmente cualquier análisis de tenis,
 tenga o no valor detectado por el sistema.
 
-Cuando ni match_winner ni total_games generan un pick verde/amarillo
-(EV/confianza insuficientes), el motor debe seguir devolviendo la
+Cuando ni match_winner ni total_games generan un pick verde/amarillo (desde
+el 2026-08-25, ningún lado de ningún mercado llegó a MIN_PROB_PICK — ver
+tennis_validacion_filtro_ev.md), el motor debe seguir devolviendo la
 probabilidad real del modelo y la cuota que el usuario cargó, marcadas
 como "picks_manual" / tiene_valor=False — para que el frontend arme una
 tarjeta registrable en vez de solo un texto plano de "sin picks".
@@ -15,12 +16,12 @@ import pytest
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from src.engines.tennis_improved import TennisImprovedEngine
+from src.engines.tennis_improved import TennisImprovedEngine, UMBRAL_PROB_SOLIDO
 from src.services import tracking
 
 
 def _cuota_sin_valor(prob: float, recorte: float = 0.10) -> float:
-    """Cuota recortada respecto de la justa: EV negativo, nunca cruza MIN_EV."""
+    """Cuota recortada respecto de la justa: EV negativo."""
     return round((1.0 / prob) * (1.0 - recorte), 2)
 
 
@@ -30,8 +31,11 @@ def engine():
 
 
 def _cuotas_sin_valor(engine, elo1, elo2, formato, linea):
-    """Arma cuotas 'justas' (recortadas) para match_winner y total_games,
-    de modo que ningún lado de ningún mercado cruce MIN_EV."""
+    """Arma cuotas 'justas' (recortadas, EV negativo) para match_winner y
+    total_games. Los elos de los tests que usan esto (1530 vs 1500) se
+    eligieron para que ningún lado de ningún mercado cruce MIN_PROB_PICK
+    (0.60) — el criterio de entrada ya no es EV, así que lo que hace falta
+    garantizar acá es probabilidad baja, no cuota recortada."""
     mw = engine.prob_match_winner_ensemble(elo1, elo2, "A", "B", "hard", formato)
     dist = engine.prob_total_games(mw["debug"]["ensemble"], formato)
     from src.core.probability import norm_cdf
@@ -52,10 +56,10 @@ def _cuotas_sin_valor(engine, elo1, elo2, formato, linea):
 # ── Motor: análisis sin valor devuelve datos para la tarjeta manual ───────
 
 def test_sin_valor_devuelve_picks_manual_con_datos_reales(engine):
-    cuotas, mw = _cuotas_sin_valor(engine, 1600.0, 1500.0, "best_of_3", 22.5)
+    cuotas, mw = _cuotas_sin_valor(engine, 1530.0, 1500.0, "best_of_3", 22.5)
 
     resultado = engine.analizar(
-        "A", "B", 1600.0, 1500.0, "hard", "best_of_3", cuotas,
+        "A", "B", 1530.0, 1500.0, "hard", "best_of_3", cuotas,
     )
 
     assert resultado["picks_verdes"] == []
@@ -67,11 +71,12 @@ def test_sin_valor_devuelve_picks_manual_con_datos_reales(engine):
         assert p["confianza_nivel"] == "manual"
         assert p["cuota"] > 1.0
         assert 0.0 < p["prob"] < 1.0
+        assert p["prob"] < 0.60, "un pick manual nunca debería llegar a MIN_PROB_PICK"
         # cuotas recortadas -> EV negativo en ambos mercados -> sin_base,
         # salvo que la prob real ya sea tan alta (>= UMBRAL_PROB_SOLIDO)
         # que el motor siga prefiriendo ese lado aunque no haya valor.
         assert p["senal"] in ("sin_base", "favorito_sin_valor")
-        if p["prob"] >= 0.65:
+        if p["prob"] >= UMBRAL_PROB_SOLIDO:
             assert p["senal"] == "favorito_sin_valor"
         else:
             assert p["senal"] == "sin_base"
@@ -83,16 +88,20 @@ def test_sin_valor_devuelve_picks_manual_con_datos_reales(engine):
 # ── _senal_manual: clasifica por qué tan convencido está el modelo ────────
 
 @pytest.mark.parametrize("prob,ev,esperado", [
-    (0.70, 0.02, "solido"),       # prob >= UMBRAL_PROB_SOLIDO (0.65)
-    (0.65, 0.001, "solido"),      # límite inclusive
-    (0.60, 0.02, "razonable"),    # entre 0.55 y 0.65
-    (0.55, 0.001, "razonable"),   # límite inclusive
-    (0.52, 0.02, "cuota_larga"),  # EV positivo (cuota larga) pero prob ~50/50
+    # Un pick manual real nunca tiene prob >= MIN_PROB_PICK (0.60) — estos
+    # casos cubren la banda [0.50, 0.60) que sí es alcanzable, más un par
+    # de valores por fuera para confirmar que la función pura se sigue
+    # comportando de forma consistente aunque no ocurran en la práctica.
+    (0.59, 0.02, "solido"),        # prob >= UMBRAL_PROB_SOLIDO (0.58)
+    (0.58, 0.001, "solido"),       # límite inclusive
+    (0.56, 0.02, "razonable"),     # entre 0.55 y 0.58
+    (0.55, 0.001, "razonable"),    # límite inclusive
+    (0.52, 0.02, "cuota_larga"),   # EV positivo (cuota larga) pero prob ~50/50
     (0.50, 0.001, "cuota_larga"),
-    (0.50, 0.0, "sin_base"),      # EV <= 0 y sin opinión fuerte -> sin base
-    (0.60, -0.05, "sin_base"),
+    (0.50, 0.0, "sin_base"),       # EV <= 0 y sin opinión fuerte -> sin base
+    (0.56, -0.05, "sin_base"),
     (0.90, 0.0, "favorito_sin_valor"),   # EV <= 0 pero prob >= UMBRAL_PROB_SOLIDO:
-    (0.65, -0.05, "favorito_sin_valor"), # el modelo sigue prefiriendo ese lado,
+    (0.58, -0.05, "favorito_sin_valor"), # el modelo sigue prefiriendo ese lado,
                                           # solo que la cuota no compensa
 ])
 def test_senal_manual_clasifica_por_umbral_de_probabilidad(engine, prob, ev, esperado):
@@ -100,9 +109,9 @@ def test_senal_manual_clasifica_por_umbral_de_probabilidad(engine, prob, ev, esp
 
 
 def test_pick_manual_match_winner_usa_favorito_real_y_cuota_cargada(engine):
-    cuotas, mw = _cuotas_sin_valor(engine, 1600.0, 1500.0, "best_of_3", 22.5)
+    cuotas, mw = _cuotas_sin_valor(engine, 1530.0, 1500.0, "best_of_3", 22.5)
 
-    resultado = engine.analizar("A", "B", 1600.0, 1500.0, "hard", "best_of_3", cuotas)
+    resultado = engine.analizar("A", "B", 1530.0, 1500.0, "hard", "best_of_3", cuotas)
 
     mw_manual = next(p for p in resultado["picks_manual"] if p["mercado"] == "Match Winner")
     favorito_esperado = "A" if mw["prob_j1"] >= mw["prob_j2"] else "B"
@@ -176,14 +185,14 @@ def test_endpoint_analizar_tenis_incluye_picks_manual_con_stake_fijo(engine, mon
     monkeypatch.setattr(tracking, "CONFIG_PATH", tmp_path / "bankroll_config.json")
     monkeypatch.setattr(tracking, "BACKUP_DIR", tmp_path / "backup")
 
-    mw = engine.prob_match_winner_ensemble(1600.0, 1500.0, "A", "B", "hard", "best_of_3")
+    mw = engine.prob_match_winner_ensemble(1530.0, 1500.0, "A", "B", "hard", "best_of_3")
 
     import app as flask_app
     flask_app.app.config["TESTING"] = True
     with flask_app.app.test_client() as c:
         cfg = tracking.leer_config()
         body = {
-            "jugador1": "A", "jugador2": "B", "elo1": 1600, "elo2": 1500,
+            "jugador1": "A", "jugador2": "B", "elo1": 1530, "elo2": 1500,
             "superficie": "hard", "formato": "best_of_3",
             "cuotas": {
                 "match_winner": {

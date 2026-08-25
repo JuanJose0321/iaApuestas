@@ -20,18 +20,51 @@ from src.core.probability import norm_cdf
 _log = logging.getLogger("betbrain.tennis_improved")
 
 KELLY_FRACTION = 0.25
+
+# MIN_EV ya NO decide si se muestra un pick (ver MIN_PROB_PICK más abajo) —
+# se sigue usando dentro de evaluar_value() para calcular tiene_value/ev,
+# que se sigue guardando y trackeando (ev_predicho, predicciones_tenis),
+# solo dejó de ser lo que filtra qué partidos se muestran como pick.
 MIN_EV = 0.05
 
-UMBRAL_VERDE = 0.65
-UMBRAL_AMARILLO = 0.50
+# Umbral de PROBABILIDAD que decide si un partido genera un pick real
+# (verde/amarillo) — reemplaza al filtro de EV que usaba el motor hasta el
+# 2026-08-25. Validado contra cuotas reales de Tennis-Data.co.uk (12,934
+# partidos 2024-2026, ambos lados de cada partido) y contra los 117 picks
+# reales de producción: filtrar por EV≥MIN_EV daba ~40% de accuracy (peor
+# que cara o cruz, y empeoraba cuanto más exigente se ponía el EV: 10%→
+# 37.7%, 20%→31.8%, 30%→29.5%), mientras que filtrar solo por probabilidad
+# mejoró de forma monótona y limpia en todo el rango probado (prob≥60%→
+# 64.1%, prob≥65%→66.3%, prob≥70%→69.1%, prob≥75%→71.3%). Ver
+# tennis_validacion_filtro_ev.md para el detalle completo de la validación.
+MIN_PROB_PICK = 0.60
 
-# Señal para picks manuales (sin value suficiente para verde/amarillo, EV < MIN_EV):
-# separa "el modelo está convencido de quién gana" de "el EV es alto solo porque
-# la cuota es larga" — mismo corte de probabilidad que ya usa UMBRAL_VERDE (zona
-# de >62% accuracy real en el backtest, ver report_tennis_audit.md sección 13.6),
-# para no inventar un umbral nuevo sin validar.
-UMBRAL_PROB_SOLIDO = UMBRAL_VERDE      # 0.65 — misma zona de accuracy que "verde"
-UMBRAL_PROB_RAZONABLE = 0.55           # por encima de 50/50 con margen real
+# UMBRAL_VERDE/UMBRAL_AMARILLO se comparan contra `confianza`, que desde
+# el 2026-08-25 es directamente certeza = abs(prob - 0.5) * 2.0, sin bonus
+# de EV (ver _calc_confianza y tennis_validacion_filtro_ev.md — "Variante
+# A" del backtest de fórmulas de confianza, la que rindió igual o mejor
+# que las que combinaban EV, a volumen comparable). Con la fórmula vieja
+# estos umbrales estaban en escala de probabilidad (0.65/0.50); ahora
+# están en escala de certeza, así que se recalibraron para seguir
+# representando las mismas zonas de accuracy validadas:
+#   UMBRAL_AMARILLO = certeza en MIN_PROB_PICK (abs(0.60-0.5)*2 = 0.20) —
+#     así ningún pick que cruce el umbral de entrada queda sin clasificar.
+#   UMBRAL_VERDE = certeza en prob=0.75 (abs(0.75-0.5)*2 = 0.50) — la zona
+#     "conservadora" de mayor accuracy validada (71.3% con cuota real).
+UMBRAL_VERDE = 0.50
+UMBRAL_AMARILLO = 0.20
+
+# Señales informativas para picks manuales (prob < MIN_PROB_PICK en los dos
+# lados, no llegaron al piso de pick real) — el EV ya no decide si hay
+# pick, pero se sigue mostrando como contexto de si la cuota compensaba o
+# no una probabilidad que de por sí no alcanzó el umbral. El "favorito" de
+# un pick manual siempre tiene prob en [0.50, MIN_PROB_PICK) — una banda
+# angosta — por eso estos dos umbrales viven adentro de esa banda (a
+# diferencia de antes, donde UMBRAL_PROB_SOLIDO calzaba con el viejo
+# UMBRAL_VERDE=0.65, un valor que ya no es alcanzable para un pick manual
+# bajo el nuevo criterio de entrada).
+UMBRAL_PROB_SOLIDO = 0.58      # "casi" llega al umbral de pick (0.60)
+UMBRAL_PROB_RAZONABLE = 0.55   # por encima de 50/50 con margen real
 
 SURFACE_ELO_FACTOR = {
     "clay": 1.20,
@@ -457,12 +490,19 @@ class TennisImprovedEngine:
         }
 
     def _calc_confianza(self, prob: float, ev: float) -> float:
-        """Calcula score de confianza."""
-        if ev <= 0:
-            return 0.0
+        """
+        Score de confianza = certeza del modelo en el lado evaluado
+        (distancia de la probabilidad respecto de 50/50).
+
+        `ev` se sigue recibiendo (compatibilidad de firma, todos los
+        call-sites ya lo calculan de todas formas) pero no influye en el
+        score — ver tennis_validacion_filtro_ev.md (2026-08-25): tanto el
+        EV como filtro de entrada como el EV sumado/restado a la confianza
+        rindieron igual o peor que la probabilidad sola contra cuotas
+        reales, en todo el rango probado.
+        """
         certeza = abs(prob - 0.5) * 2.0
-        ev_bonus = min(ev * 0.5, 0.15)
-        return round(min(certeza + ev_bonus, 0.99), 3)
+        return round(min(certeza, 0.99), 3)
 
     def _nivel_confianza(self, score: float) -> str:
         """'verde' / 'amarillo' / 'rojo' según los umbrales del módulo."""
@@ -474,20 +514,27 @@ class TennisImprovedEngine:
 
     def _senal_manual(self, prob: float, ev: float) -> str:
         """
-        Clasifica un pick manual (sin value suficiente para verde/amarillo)
-        por qué tan convencido está el modelo, no por el tamaño del EV —
-        una cuota larga (2.50+) infla el EV aunque la probabilidad real
-        ronde el 50/50, y eso no es lo mismo que un EV chico con el modelo
-        realmente seguro de quién gana.
+        Clasifica un pick manual (prob < MIN_PROB_PICK en los dos lados, no
+        llegó al umbral de pick real) por qué tan convencido está el
+        modelo, no por el tamaño del EV — una cuota larga (2.50+) infla el
+        EV aunque la probabilidad real ronde el 50/50, y eso no es lo mismo
+        que el modelo casi seguro de quién gana pero sin llegar al piso.
+
+        Como un pick manual por definición nunca cruzó MIN_PROB_PICK, la
+        probabilidad del favorito siempre está en la banda angosta
+        [0.50, MIN_PROB_PICK) — UMBRAL_PROB_SOLIDO/RAZONABLE viven dentro
+        de esa banda (ver comentario de esos umbrales al inicio del
+        archivo), no en la escala de "favorito claro" que tenían antes.
 
         Con EV <= 0 no hay ninguna base matemática para apostar, pero eso
         puede pasar por dos motivos bien distintos: el modelo no tiene una
-        opinión fuerte (prob cerca de 50/50), o el modelo SÍ tiene un
-        favorito claro (prob >= UMBRAL_PROB_SOLIDO) y la cuota simplemente
-        no compensa esa probabilidad (cuota corta, ej. 1.36 con favorito al
-        68% — el mercado ya lo tiene como más favorito todavía). Separar
-        ese segundo caso evita esconder que el modelo sigue prefiriendo ese
-        lado, aunque no haya valor a ese precio.
+        opinión fuerte (prob cerca de 50/50), o el modelo SÍ se inclina
+        por un lado (prob >= UMBRAL_PROB_SOLIDO, aunque sin llegar al piso
+        de pick) y la cuota simplemente no compensa ni esa probabilidad
+        parcial (cuota corta — el mercado ya lo tiene como más favorito
+        todavía). Separar ese segundo caso evita esconder que el modelo
+        sigue prefiriendo ese lado, aunque no haya valor a ese precio ni
+        probabilidad suficiente para un pick real.
         """
         if ev <= 0:
             return "favorito_sin_valor" if prob >= UMBRAL_PROB_SOLIDO else "sin_base"
@@ -573,7 +620,10 @@ class TennisImprovedEngine:
         # Pick: Match Winner — se evalúan los dos lados por separado (antes
         # solo se chequeaba jugador1; una apuesta con valor real a favor de
         # jugador2 nunca se detectaba, aunque el modelo lo tuviera como
-        # favorito — ver report_tennis_audit.md).
+        # favorito — ver report_tennis_audit.md). El criterio de entrada es
+        # prob >= MIN_PROB_PICK (no EV — ver tennis_validacion_filtro_ev.md,
+        # 2026-08-25): se sigue calculando el EV (val["ev"]) para mostrarlo
+        # y trackearlo, pero ya no decide si el partido genera un pick.
         if "match_winner" in cuotas:
             mw = cuotas["match_winner"]
             for jugador, clave_cuota, prob in (
@@ -585,9 +635,9 @@ class TennisImprovedEngine:
                 cuota = float(mw[clave_cuota])
                 if not (cuota_min <= cuota <= cuota_max):
                     continue
-                val = self.evaluar_value(prob, cuota)
-                if not val["tiene_value"]:
+                if prob < MIN_PROB_PICK:
                     continue
+                val = self.evaluar_value(prob, cuota)
                 confianza = self._calc_confianza(prob, val["ev"])
                 pick = {
                     "mercado": "Match Winner",
@@ -615,63 +665,64 @@ class TennisImprovedEngine:
                 # Match Winner con jugador1/jugador2, sección 12 del audit) —
                 # antes solo se chequeaba "over"; una cuota de "under" con
                 # valor real, aunque el frontend la mandara, se descartaba
-                # en silencio sin generar pick.
+                # en silencio sin generar pick. Criterio de entrada: prob >=
+                # MIN_PROB_PICK, no EV (ver tennis_validacion_filtro_ev.md).
                 if "over" in tg:
                     p_over = float(1.0 - norm_cdf(
                         linea, loc=dist["total_esp"], scale=dist["std_dev"]
                     ))
                     cuota = float(tg["over"])
-                    if cuota_min <= cuota <= cuota_max:
+                    if cuota_min <= cuota <= cuota_max and p_over >= MIN_PROB_PICK:
                         val = self.evaluar_value(p_over, cuota)
-                        if val["tiene_value"]:
-                            confianza = self._calc_confianza(p_over, val["ev"])
-                            pick = {
-                                "mercado": f"Total Games Over {linea}",
-                                "pick": f"Over {linea} games",
-                                "prob": p_over,
-                                "cuota": cuota,
-                                "ev": val["ev"],
-                                "kelly_pct": val["kelly_pct"],
-                                "confianza": confianza,
-                                "confianza_nivel": self._nivel_confianza(confianza),
-                                "total_esp": dist["total_esp"],
-                            }
-                            if confianza >= UMBRAL_VERDE:
-                                picks_verdes.append(pick)
-                            elif confianza >= UMBRAL_AMARILLO:
-                                picks_amarillos.append(pick)
+                        confianza = self._calc_confianza(p_over, val["ev"])
+                        pick = {
+                            "mercado": f"Total Games Over {linea}",
+                            "pick": f"Over {linea} games",
+                            "prob": p_over,
+                            "cuota": cuota,
+                            "ev": val["ev"],
+                            "kelly_pct": val["kelly_pct"],
+                            "confianza": confianza,
+                            "confianza_nivel": self._nivel_confianza(confianza),
+                            "total_esp": dist["total_esp"],
+                        }
+                        if confianza >= UMBRAL_VERDE:
+                            picks_verdes.append(pick)
+                        elif confianza >= UMBRAL_AMARILLO:
+                            picks_amarillos.append(pick)
 
                 if "under" in tg:
                     p_under = float(norm_cdf(
                         linea, loc=dist["total_esp"], scale=dist["std_dev"]
                     ))
                     cuota = float(tg["under"])
-                    if cuota_min <= cuota <= cuota_max:
+                    if cuota_min <= cuota <= cuota_max and p_under >= MIN_PROB_PICK:
                         val = self.evaluar_value(p_under, cuota)
-                        if val["tiene_value"]:
-                            confianza = self._calc_confianza(p_under, val["ev"])
-                            pick = {
-                                "mercado": f"Total Games Under {linea}",
-                                "pick": f"Under {linea} games",
-                                "prob": p_under,
-                                "cuota": cuota,
-                                "ev": val["ev"],
-                                "kelly_pct": val["kelly_pct"],
-                                "confianza": confianza,
-                                "confianza_nivel": self._nivel_confianza(confianza),
-                                "total_esp": dist["total_esp"],
-                            }
-                            if confianza >= UMBRAL_VERDE:
-                                picks_verdes.append(pick)
-                            elif confianza >= UMBRAL_AMARILLO:
-                                picks_amarillos.append(pick)
+                        confianza = self._calc_confianza(p_under, val["ev"])
+                        pick = {
+                            "mercado": f"Total Games Under {linea}",
+                            "pick": f"Under {linea} games",
+                            "prob": p_under,
+                            "cuota": cuota,
+                            "ev": val["ev"],
+                            "kelly_pct": val["kelly_pct"],
+                            "confianza": confianza,
+                            "confianza_nivel": self._nivel_confianza(confianza),
+                            "total_esp": dist["total_esp"],
+                        }
+                        if confianza >= UMBRAL_VERDE:
+                            picks_verdes.append(pick)
+                        elif confianza >= UMBRAL_AMARILLO:
+                            picks_amarillos.append(pick)
 
-        # Picks manuales: sin valor detectado por el modelo (EV/confianza
-        # insuficiente en ambos mercados), pero la decisión de apostar queda
-        # en manos del usuario — solo se arman cuando no hay ningún pick
-        # verde/amarillo, con la cuota que el usuario realmente cargó y la
-        # probabilidad real del modelo (nunca inventada). Ver
-        # report_tennis_audit.md / FEATURE: registrar manualmente.
+        # Picks manuales: ningún lado de ningún mercado llegó a
+        # MIN_PROB_PICK (antes del 2026-08-25 era "EV insuficiente"), pero
+        # la decisión de apostar queda en manos del usuario — solo se arman
+        # cuando no hay ningún pick verde/amarillo, con la cuota que el
+        # usuario realmente cargó y la probabilidad real del modelo (nunca
+        # inventada). Ver report_tennis_audit.md / FEATURE: registrar
+        # manualmente, y tennis_validacion_filtro_ev.md para el criterio
+        # de entrada actual.
         picks_manual: List[Dict] = []
         if not picks_verdes and not picks_amarillos:
             if "match_winner" in cuotas:

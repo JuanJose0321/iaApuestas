@@ -4,8 +4,12 @@ picks — "under" se descartaba en silencio aunque el frontend sí lo
 manda si el usuario la completa (ver report_tennis_audit.md sección 13,
 punto 5). Mismo patrón que el fix de Match Winner J1/J2
 (tests/test_tennis_pick_ambos_jugadores.py): cada lado se evalúa
-independiente, con cuotas derivadas de la probabilidad REAL del motor
-para no depender de un número inventado que cruce MIN_EV por casualidad.
+independiente, con cuotas/líneas derivadas de la probabilidad REAL del
+motor para no depender de un número inventado que cruce el umbral por
+casualidad.
+
+Desde el 2026-08-25 el criterio que decide si un lado genera pick es
+MIN_PROB_PICK (probabilidad), no EV — ver tennis_validacion_filtro_ev.md.
 """
 import sys
 from pathlib import Path
@@ -14,7 +18,7 @@ import pytest
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from src.engines.tennis_improved import TennisImprovedEngine
+from src.engines.tennis_improved import TennisImprovedEngine, MIN_PROB_PICK
 
 
 def _cuota_con_valor(prob: float, margen_extra: float = 0.20) -> float:
@@ -67,9 +71,12 @@ def test_pick_over_cuando_tiene_valor_comportamiento_previo(engine):
 
 def test_pick_under_cuando_tiene_valor_caso_antes_roto(engine):
     """Caso que antes del fix NUNCA se detectaba, sin importar cuánto
-    valor real tuviera "under" — solo se miraba cuotas['over']."""
-    linea = 18.5
+    valor real tuviera "under" — solo se miraba cuotas['over']. Línea
+    26.5 (bien por encima de total_esp~22.7) para que sea "under" el lado
+    que supera MIN_PROB_PICK, en vez de "over" como en el test anterior."""
+    linea = 26.5
     p_over, p_under, _ = _probs_over_under(engine, 1600.0, 1500.0, "best_of_3", linea)
+    assert p_under >= MIN_PROB_PICK  # confirma el setup del caso
 
     resultado = engine.analizar(
         "A", "B", 1600.0, 1500.0, "hard", "best_of_3",
@@ -82,7 +89,8 @@ def test_pick_under_cuando_tiene_valor_caso_antes_roto(engine):
 
     picks = _picks(resultado)
     assert any(p["pick"] == f"Under {linea} games" for p in picks), (
-        "Under tenía valor real y debería generar pick — este es el bug que se arregló"
+        "Under tenía probabilidad real por encima del umbral y debería "
+        "generar pick — este es el bug que se arregló"
     )
     assert not any(p["pick"] == f"Over {linea} games" for p in picks)
 
@@ -102,24 +110,32 @@ def test_sin_pick_cuando_ninguno_tiene_valor(engine):
     assert _picks(resultado) == []
 
 
-def test_over_y_under_pueden_generar_pick_si_ambos_superan_el_umbral(engine):
-    """No es 'el mejor de los dos' — cada lado se evalúa independiente."""
+def test_como_mucho_un_lado_genera_pick_de_total_games(engine):
+    """A diferencia del criterio de EV (donde con cuotas generosas en los
+    dos lados podían generar pick simultáneamente), con el criterio de
+    probabilidad esto es estructuralmente imposible: p_over + p_under = 1,
+    así que como mucho uno de los dos puede cruzar MIN_PROB_PICK. Cada
+    lado se sigue evaluando de forma independiente (mismo patrón que
+    Match Winner) — es la aritmética de probabilidades complementarias la
+    que limita el resultado a un pick por partido, no que se compare 'el
+    mejor de los dos'."""
     linea = 18.5
     p_over, p_under, _ = _probs_over_under(engine, 1600.0, 1500.0, "best_of_3", linea)
+    assert p_over >= MIN_PROB_PICK
+    assert p_under < MIN_PROB_PICK
 
     resultado = engine.analizar(
         "A", "B", 1600.0, 1500.0, "hard", "best_of_3",
         cuotas={"total_games": {
             "linea": linea,
             "over": _cuota_con_valor(p_over, 0.30),
-            "under": _cuota_con_valor(p_under, 0.30),
+            "under": _cuota_con_valor(p_under, 0.30),  # EV altísimo, a propósito
         }},
     )
 
     picks = _picks(resultado)
     nombres = {p["pick"] for p in picks}
-    assert f"Over {linea} games" in nombres
-    assert f"Under {linea} games" in nombres
+    assert nombres == {f"Over {linea} games"}
 
 
 def test_under_ausente_en_cuotas_no_genera_pick_ni_rompe(engine):
