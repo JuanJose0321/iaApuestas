@@ -69861,7 +69861,7 @@
       "Shelby Rogers": 0
     },
     "Diane Parry|||Elise Mertens": {
-      "Diane Parry": 1,
+      "Diane Parry": 2,
       "Elise Mertens": 1
     },
     "Anastasija Sevastova|||Mandy Minella": {
@@ -84649,7 +84649,7 @@
       "Qiang Wang": 0
     },
     "Clara Tauson|||Ekaterina Alexandrova": {
-      "Clara Tauson": 2,
+      "Clara Tauson": 3,
       "Ekaterina Alexandrova": 0
     },
     "Timea Babos|||Varvara Gracheva": {
@@ -94277,7 +94277,7 @@
       "Jannik Sinner": 4
     },
     "Ann Li|||Camila Osorio": {
-      "Ann Li": 3,
+      "Ann Li": 4,
       "Camila Osorio": 2
     },
     "Alex De Minaur|||Kevin Anderson": {
@@ -102465,7 +102465,7 @@
       "Maja Chwalinska": 0
     },
     "Elise Mertens|||Panna Udvardy": {
-      "Elise Mertens": 2,
+      "Elise Mertens": 3,
       "Panna Udvardy": 0
     },
     "Diane Parry|||Mai Hontama": {
@@ -105181,7 +105181,7 @@
       "Elizabeth Mandlik": 0
     },
     "Diane Parry|||Donna Vekic": {
-      "Diane Parry": 1,
+      "Diane Parry": 2,
       "Donna Vekic": 1
     },
     "Katerina Siniakova|||Martina Trevisan": {
@@ -132906,7 +132906,7 @@
     },
     "Clara Tauson|||Diane Parry": {
       "Clara Tauson": 0,
-      "Diane Parry": 2
+      "Diane Parry": 3
     },
     "Francisco Cerundolo|||Gabriel Diallo": {
       "Francisco Cerundolo": 0,
@@ -135029,7 +135029,7 @@
       "Simona Waltert": 0
     },
     "Ann Li|||Maria Timofeeva": {
-      "Ann Li": 3,
+      "Ann Li": 4,
       "Maria Timofeeva": 0
     },
     "Flavio Cobolli|||Jesper De Jong": {
@@ -142638,7 +142638,7 @@
     },
     "Darja Vidmanova|||Nikola Bartunkova": {
       "Darja Vidmanova": 0,
-      "Nikola Bartunkova": 1
+      "Nikola Bartunkova": 2
     },
     "Tiantsoa Sarah Rakotomanga Rajaonah|||Victoria Rodriguez": {
       "Tiantsoa Sarah Rakotomanga Rajaonah": 1,
@@ -144550,7 +144550,7 @@
     },
     "Anna Bondar|||Cristina Bucsa": {
       "Anna Bondar": 0,
-      "Cristina Bucsa": 1
+      "Cristina Bucsa": 2
     },
     "Hailey Baptiste|||Yulia Putintseva": {
       "Hailey Baptiste": 0,
@@ -145537,7 +145537,7 @@
       "Valentin Vacherot": 0
     },
     "Elise Mertens|||Nikola Bartunkova": {
-      "Elise Mertens": 1,
+      "Elise Mertens": 2,
       "Nikola Bartunkova": 1
     },
     "Maddison Inglis|||Naomi Osaka": {
@@ -145586,7 +145586,7 @@
     },
     "Mayar Sherif|||Oleksandra Oliynykova": {
       "Mayar Sherif": 1,
-      "Oleksandra Oliynykova": 1
+      "Oleksandra Oliynykova": 2
     },
     "Elina Avanesyan|||Moyuka Uchijima": {
       "Elina Avanesyan": 2,
@@ -146170,7 +146170,7 @@
     },
     "Dayana Yastremska|||Janice Tjen": {
       "Dayana Yastremska": 0,
-      "Janice Tjen": 1
+      "Janice Tjen": 2
     },
     "Ann Li|||Linda Noskova": {
       "Ann Li": 0,
@@ -146926,7 +146926,7 @@
     },
     "Cristina Bucsa|||Darja Vidmanova": {
       "Cristina Bucsa": 1,
-      "Darja Vidmanova": 0
+      "Darja Vidmanova": 1
     },
     "Lilli Tagger|||Varvara Gracheva": {
       "Lilli Tagger": 1,
@@ -148594,7 +148594,7 @@
     },
     "Alycia Parks|||Ann Li": {
       "Alycia Parks": 0,
-      "Ann Li": 1
+      "Ann Li": 2
     },
     "Mirra Andreeva|||Panna Udvardy": {
       "Mirra Andreeva": 1,
@@ -149946,7 +149946,7 @@
     },
     "Ann Li|||Diane Parry": {
       "Ann Li": 0,
-      "Diane Parry": 1
+      "Diane Parry": 2
     },
     "Amanda Anisimova|||Julia Grabher": {
       "Amanda Anisimova": 1,
@@ -153127,11 +153127,59 @@
     "Coco Gauff|||Sara Bejlek": {
       "Coco Gauff": 1,
       "Sara Bejlek": 0
+    },
+    "Lilli Tagger|||Yuliia Starodubtseva": {
+      "Lilli Tagger": 0,
+      "Yuliia Starodubtseva": 1
+    },
+    "Antonia Ruzic|||Nikola Bartunkova": {
+      "Antonia Ruzic": 0,
+      "Nikola Bartunkova": 1
+    },
+    "Alycia Parks|||Petra Marcinko": {
+      "Alycia Parks": 1,
+      "Petra Marcinko": 0
+    },
+    "Clara Tauson|||Renata Zarazua": {
+      "Clara Tauson": 1,
+      "Renata Zarazua": 0
+    },
+    "Maria Timofeeva|||Shuai Zhang": {
+      "Maria Timofeeva": 1,
+      "Shuai Zhang": 0
+    },
+    "Darja Vidmanova|||Kimberly Birrell": {
+      "Darja Vidmanova": 1,
+      "Kimberly Birrell": 0
+    },
+    "Maya Joint|||Panna Udvardy": {
+      "Maya Joint": 0,
+      "Panna Udvardy": 1
+    },
+    "Janice Tjen|||Yuliia Starodubtseva": {
+      "Janice Tjen": 0,
+      "Yuliia Starodubtseva": 1
+    },
+    "Diane Parry|||Oleksandra Oliynykova": {
+      "Diane Parry": 1,
+      "Oleksandra Oliynykova": 0
+    },
+    "En Shuo Liang|||Nikola Bartunkova": {
+      "En Shuo Liang": 0,
+      "Nikola Bartunkova": 1
+    },
+    "Alycia Parks|||Maja Chwalinska": {
+      "Alycia Parks": 1,
+      "Maja Chwalinska": 0
+    },
+    "Elise Mertens|||Yuliia Starodubtseva": {
+      "Elise Mertens": 1,
+      "Yuliia Starodubtseva": 0
     }
   },
   "_meta": {
-    "fecha": "2026-08-25T04:44:14.604852+00:00",
-    "total_pares": 38282,
+    "fecha": "2026-09-01T09:18:13.688886+00:00",
+    "total_pares": 38294,
     "metodo": "Enfrentamientos directos acumulados de todo el histórico real procesado (mismo rango que tennis_elo_ratings.json)."
   }
 }
