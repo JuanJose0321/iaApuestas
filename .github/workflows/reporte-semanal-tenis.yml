@@ -1,0 +1,48 @@
+name: Reporte semanal de tenis (accuracy y patrones)
+
+"on":
+  schedule:
+    # Lunes 9:00 AM hora de Colombia (UTC-5, sin horario de verano) = 14:00 UTC
+    - cron: "0 14 * * 1"
+  workflow_dispatch: {}    # permite disparar manualmente desde la pestaña Actions
+
+permissions:
+  contents: write
+
+jobs:
+  reporte-semanal-tenis:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Instalar dependencias
+        run: pip install supabase python-dotenv
+
+      # Solo lee de Supabase (tabla apuestas) y escribe reportes/reporte_tenis_*.md
+      # + reportes/estado.json -- no toca tennis_improved.py ni ninguna otra ruta
+      # de producción. No decide ni activa ningún cambio de configuración; eso
+      # sigue siendo manual, a partir de lo que el reporte muestra.
+      - name: Generar reporte semanal
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: python src/scripts/reporte_semanal_tenis.py
+
+      - name: Commit y push si hay reporte nuevo
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add reportes/
+
+          if git diff --cached --quiet; then
+            echo "Sin cambios, nada que commitear"
+          else
+            git commit -m "Auto: reporte semanal de tenis $(date -u +%Y-%m-%d)"
+            git push origin main
+          fi
