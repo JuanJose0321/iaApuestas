@@ -1,42 +1,94 @@
 <!doctype html>
-<html lang="es">
+<html lang="es" data-theme="dark">
 <head>
 <meta charset="utf-8">
 <title>BetBrain — Historial</title>
 <meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="dark light">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet">
 <style>
+  /* Mismos nombres/valores de tokens que templates/index.html — no hay CSS
+     compartido entre templates (cada uno sigue siendo un archivo autocontenido),
+     pero los valores están duplicados a propósito para que ambas pantallas se
+     vean como una sola app. */
   :root {
-    --bg: #0e1014; --bg2: #181b22; --bg3: #21252f;
-    --fg: #e7e9ee; --muted: #8b93a3;
-    --cyan: #6ee7ff; --green: #3ddc97;
-    --yellow: #ffd23f; --red: #ff6b6b;
-    --border: #2a2f3a;
+    --font-head:'Inter',system-ui,sans-serif;
+    --font-body:'Inter',system-ui,sans-serif;
+    --font-mono:'JetBrains Mono',ui-monospace,'SF Mono',Consolas,monospace;
+    --dur:0.2s; --ease:cubic-bezier(.4,0,.2,1);
+    --radius-sm:7px; --radius-md:10px; --radius-lg:14px; --radius-full:999px;
+
+    --cyan: #2f6fed; --green: #34d399;
+    --yellow: #e9a23b; --red: #e5484d;
   }
+  :root, [data-theme="dark"] {
+    --bg: #0d1117; --bg2: #131820; --bg3: #1a212c;
+    --fg: #e6e9ef; --muted: #838fa3;
+    --border: #2a3241;
+    --shadow-sm:0 1px 3px rgba(0,0,0,.15);
+    --shadow-md:0 6px 20px rgba(0,0,0,.18);
+  }
+  [data-theme="light"] {
+    --bg: #f4f5f8; --bg2: #ffffff; --bg3: #eef0f4;
+    --fg: #161a20; --muted: #5c6472;
+    --border: #dbdfe8;
+    --shadow-sm:0 1px 3px rgba(20,30,50,.07);
+    --shadow-md:0 6px 20px rgba(20,30,50,.09);
+  }
+  @media (prefers-reduced-motion: reduce){
+    *,*::before,*::after{ animation-duration:.001ms !important; animation-iteration-count:1 !important; transition-duration:.001ms !important; }
+  }
+
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { background: var(--bg); color: var(--fg);
-         font-family: -apple-system,"Segoe UI",Roboto,sans-serif; min-height: 100vh; }
+  body { background: var(--bg); color: var(--fg); font-family: var(--font-body);
+         min-height: 100vh; transition:background var(--dur) var(--ease), color var(--dur) var(--ease); }
+  ::selection{ background: var(--cyan); color:#fff; }
+  :focus-visible{ outline:2px solid var(--cyan); outline-offset:2px; border-radius:4px; }
+
   header {
-    padding: 12px 20px; background: var(--bg2);
+    position: sticky; top:0; z-index:500;
+    padding: 12px 20px; background: color-mix(in srgb, var(--bg2) 88%, transparent);
+    backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
     border-bottom: 1px solid var(--border);
-    display: flex; justify-content: space-between; align-items: center;
+    display: flex; justify-content: space-between; align-items: center; gap:12px;
   }
-  .brand { font-weight: 700; }
+  .brand { display:flex; align-items:center; gap:8px; font-weight: 800; font-size:16px; letter-spacing:-.2px; }
+  .brand .logo-mark{
+    width:28px; height:28px; border-radius:8px; background:var(--cyan);
+    display:flex; align-items:center; justify-content:center; font-size:14px; flex-shrink:0;
+  }
   .brand span { color: var(--cyan); }
+  nav { display:flex; align-items:center; gap:6px; }
   nav a {
-    color: var(--muted); text-decoration: none; font-size: 14px;
-    padding: 6px 12px; border-radius: 6px; margin-left: 6px;
+    color: var(--muted); text-decoration: none; font-size: 13.5px; font-weight:600;
+    padding: 8px 12px; border-radius: var(--radius-sm); margin-left: 2px;
+    border:1px solid transparent; transition:all var(--dur) var(--ease);
   }
-  nav a:hover { color: var(--fg); }
-  nav a.active { color: var(--cyan); background: rgba(110,231,255,.08); }
+  nav a:hover { color: var(--fg); border-color:var(--border); background:var(--bg3); }
+  nav a.active { color: var(--cyan); background: color-mix(in srgb, var(--cyan) 10%, transparent); border-color: color-mix(in srgb, var(--cyan) 30%, transparent); }
+  .theme-toggle{
+    width:36px; height:36px; border-radius:var(--radius-full); flex-shrink:0;
+    border:1px solid var(--border); background:var(--bg3); color:var(--fg);
+    cursor:pointer; font-size:15px; display:flex; align-items:center; justify-content:center;
+    transition:transform var(--dur) var(--ease), background var(--dur) var(--ease);
+  }
+  .theme-toggle:hover{ transform:rotate(20deg) scale(1.06); }
 
   .alert {
     padding: 12px 20px; font-size: 14px; font-weight: 600;
     display: none; align-items: center; gap: 10px;
+    animation: fadeSlideUp .3s var(--ease);
   }
-  .alert.red    { background: #3a1010; border-bottom: 1px solid var(--red);   color: var(--red); }
-  .alert.yellow { background: #2b2200; border-bottom: 1px solid var(--yellow); color: var(--yellow); }
+  .alert.red    { background: color-mix(in srgb, var(--red) 12%, var(--bg)); border-bottom: 1px solid var(--red);   color: var(--red); }
+  .alert.yellow { background: color-mix(in srgb, var(--yellow) 12%, var(--bg)); border-bottom: 1px solid var(--yellow); color: var(--yellow); }
 
   main { max-width: 1100px; margin: 0 auto; padding: 24px 20px; }
+
+  .page-head{ padding:4px 0 20px; animation:fadeSlideUp .35s var(--ease); }
+  .page-head h1{ font-size:19px; font-weight:700; letter-spacing:-.2px; font-family:var(--font-head); }
+  .page-head p{ color:var(--muted); font-size:13px; margin-top:2px; }
 
   .metrics-grid {
     display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; margin-bottom: 24px;
@@ -44,11 +96,14 @@
   @media(max-width:800px) { .metrics-grid { grid-template-columns: repeat(3,1fr); } }
   .metric-card {
     background: var(--bg2); border: 1px solid var(--border);
-    border-radius: 12px; padding: 14px 16px;
+    border-radius: var(--radius-md); padding: 14px 16px;
+    animation: fadeSlideUp .35s var(--ease) both;
+    transition: border-color var(--dur) var(--ease), box-shadow var(--dur) var(--ease);
   }
+  .metric-card:hover{ border-color:color-mix(in srgb, var(--cyan) 40%, var(--border)); box-shadow:var(--shadow-sm); }
   .metric-card .label { font-size: 11px; color: var(--muted); text-transform: uppercase;
                          letter-spacing: .5px; margin-bottom: 6px; }
-  .metric-card .value { font-size: 24px; font-weight: 700; }
+  .metric-card .value { font-size: 23px; font-weight: 700; font-family:var(--font-mono); font-variant-numeric:tabular-nums; }
   .metric-card .sub   { font-size: 12px; color: var(--muted); margin-top: 4px; }
   .cyan   { color: var(--cyan); }
   .green  { color: var(--green); }
@@ -57,10 +112,11 @@
 
   .chart-card {
     background: var(--bg2); border: 1px solid var(--border);
-    border-radius: 12px; padding: 16px; margin-bottom: 24px;
+    border-radius: var(--radius-md); padding: 16px; margin-bottom: 24px;
+    animation: fadeSlideUp .4s var(--ease) both;
   }
   .chart-card h3 { font-size: 13px; color: var(--muted); margin-bottom: 12px;
-                   text-transform: uppercase; letter-spacing: .5px; }
+                   text-transform: uppercase; letter-spacing: .5px; font-weight:700; }
   .chart-wrap { height: 200px; position: relative; }
 
   .toolbar {
@@ -68,22 +124,27 @@
     align-items: center; margin-bottom: 16px;
   }
   .toolbar select, .toolbar input[type=date] {
-    background: var(--bg2); border: 1px solid var(--border);
-    color: var(--fg); padding: 8px 10px; border-radius: 8px; font-size: 13px;
+    background: var(--bg2); border: 1px solid var(--border); font-family:inherit;
+    color: var(--fg); padding: 8px 10px; border-radius: var(--radius-sm); font-size: 13px;
+    transition:border-color var(--dur) var(--ease);
   }
   .toolbar select:focus, .toolbar input:focus { outline: none; border-color: var(--cyan); }
   .btn {
-    background: var(--bg3); border: 1px solid var(--border);
-    color: var(--fg); padding: 8px 14px; border-radius: 8px;
-    cursor: pointer; font-size: 13px;
+    background: var(--bg3); border: 1px solid var(--border); font-family:inherit;
+    color: var(--fg); padding: 8px 14px; border-radius: var(--radius-sm);
+    cursor: pointer; font-size: 13px; font-weight:600;
+    transition: border-color var(--dur) var(--ease), color var(--dur) var(--ease), transform var(--dur) var(--ease);
   }
-  .btn:hover { border-color: var(--cyan); color: var(--cyan); }
-  .btn.primary { background: var(--cyan); color: #002028; border-color: var(--cyan); font-weight: 700; }
-  .btn.primary:hover { opacity: .9; }
-  .btn:disabled { opacity: .5; cursor: wait; }
+  .btn:hover:not(:disabled) { border-color: var(--cyan); color: var(--cyan); transform:translateY(-1px); }
+  .btn.primary { background: var(--cyan); color: #fff; border-color: var(--cyan); font-weight: 700; }
+  .btn.primary:hover:not(:disabled) { opacity: .92; color:#fff; }
+  .btn.danger { background:transparent; border-color:color-mix(in srgb, var(--red) 50%, var(--border)); color:var(--red); }
+  .btn.danger:hover:not(:disabled){ background:var(--red); color:#fff; border-color:var(--red); }
+  .btn:disabled { opacity: .5; cursor: wait; transform:none; }
   .spacer { flex: 1; }
+  .spinner-sm{ width:12px; height:12px; border-radius:50%; border:2px solid rgba(255,255,255,.35); border-top-color:#fff; display:inline-block; vertical-align:-2px; animation:spin .7s linear infinite; margin-right:4px; }
 
-  .table-wrap { overflow-x: auto; }
+  .table-wrap { overflow-x: auto; border-radius:var(--radius-md); }
   table { width: 100%; border-collapse: collapse; font-size: 13px; }
   th { text-align: left; padding: 8px 10px; color: var(--muted);
        font-size: 11px; text-transform: uppercase; letter-spacing: .5px;
@@ -91,24 +152,36 @@
   td { padding: 10px 10px; border-bottom: 1px solid var(--border); vertical-align: middle; }
   tr:last-child td { border-bottom: none; }
   tr:hover td { background: var(--bg2); }
+  td.mono, .mono { font-family:var(--font-mono); font-variant-numeric:tabular-nums; }
 
   .badge {
     display: inline-block; font-size: 11px; font-weight: 700;
-    padding: 2px 8px; border-radius: 999px; white-space: nowrap;
+    padding: 2px 8px; border-radius: var(--radius-full); white-space: nowrap;
   }
-  .badge.ganada   { background: #1a4d32; color: var(--green); border: 1px solid var(--green); }
-  .badge.perdida  { background: #3a1010; color: var(--red);   border: 1px solid var(--red); }
-  .badge.pendiente{ background: #162030; color: var(--cyan);  border: 1px solid var(--cyan); }
-  .badge.void, .badge.cashout { background: #2a2f3a; color: var(--muted); border: 1px solid var(--border); }
+  .badge.ganada   { background: color-mix(in srgb, var(--green) 16%, transparent); color: var(--green); border: 1px solid var(--green); }
+  .badge.perdida  { background: color-mix(in srgb, var(--red) 16%, transparent); color: var(--red);   border: 1px solid var(--red); }
+  .badge.pendiente{ background: color-mix(in srgb, var(--cyan) 16%, transparent); color: var(--cyan);  border: 1px solid var(--cyan); }
+  .badge.void, .badge.cashout { background: var(--bg3); color: var(--muted); border: 1px solid var(--border); }
 
   .action-btns { display: flex; gap: 4px; }
   .action-btns button {
-    font-size: 11px; padding: 3px 8px; border-radius: 6px; cursor: pointer;
+    font-size: 11px; padding: 3px 8px; border-radius: 6px; cursor: pointer; font-family:inherit;
     border: 1px solid var(--border); background: var(--bg3); color: var(--fg);
+    transition:border-color var(--dur) var(--ease), color var(--dur) var(--ease);
   }
   .action-btns button:hover { border-color: var(--cyan); color: var(--cyan); }
+  .action-btns button.del:hover { border-color: var(--red); color: var(--red); }
 
-  .empty { text-align: center; color: var(--muted); padding: 40px; }
+  .empty { text-align: center; color: var(--muted); padding: 40px; font-size:13px; }
+  .empty.err { color: var(--red); }
+
+  /* skeleton loading rows */
+  .skel-bar{
+    height:11px; border-radius:5px;
+    background:linear-gradient(90deg, var(--bg3) 25%, var(--border) 50%, var(--bg3) 75%);
+    background-size:200% 100%; animation:shimmer 1.4s ease-in-out infinite;
+  }
+  @keyframes shimmer{ 0%{ background-position:-200% 0; } 100%{ background-position:200% 0; } }
 
   .paginacion {
     display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
@@ -117,14 +190,14 @@
   .pag-info { font-size: 12px; color: var(--muted); }
   .pag-btns { display: flex; gap: 4px; flex-wrap: wrap; }
   .pag-btns button {
-    background: var(--bg3); border: 1px solid var(--border); color: var(--fg);
+    background: var(--bg3); border: 1px solid var(--border); color: var(--fg); font-family:inherit;
     padding: 6px 11px; border-radius: 6px; cursor: pointer; font-size: 12px;
-    min-width: 34px;
+    min-width: 34px; transition:border-color var(--dur) var(--ease), color var(--dur) var(--ease);
   }
   .pag-btns button:hover:not(:disabled) { border-color: var(--cyan); color: var(--cyan); }
   .pag-btns button:disabled { opacity: .4; cursor: default; }
   .pag-btns button.active {
-    background: var(--cyan); color: #002028; border-color: var(--cyan); font-weight: 700;
+    background: var(--cyan); color: #fff; border-color: var(--cyan); font-weight: 700;
   }
 
   .ganancia.pos { color: var(--green); font-weight: 600; }
@@ -132,33 +205,58 @@
 
   .tabs { display: flex; gap: 4px; margin-bottom: 20px; border-bottom: 1px solid var(--border); }
   .tab-btn {
-    background: transparent; border: none; color: var(--muted);
-    padding: 10px 16px; font-size: 14px; cursor: pointer;
-    border-bottom: 2px solid transparent; margin-bottom: -1px;
+    background: transparent; border: none; color: var(--muted); font-family:inherit;
+    padding: 10px 16px; font-size: 14px; cursor: pointer; font-weight:600;
+    border-bottom: 2px solid transparent; margin-bottom: -1px; transition:color var(--dur) var(--ease);
   }
   .tab-btn:hover { color: var(--fg); }
-  .tab-btn.active { color: var(--cyan); border-bottom-color: var(--cyan); font-weight: 600; }
+  .tab-btn.active { color: var(--cyan); border-bottom-color: var(--cyan); font-weight: 700; }
 
-  .acerto-badge { display: inline-block; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 999px; }
-  .acerto-badge.si  { background: #1a4d32; color: var(--green); border: 1px solid var(--green); }
-  .acerto-badge.no  { background: #3a1010; color: var(--red);   border: 1px solid var(--red); }
-  .acerto-badge.pendiente { background: #2a2f3a; color: var(--muted); border: 1px solid var(--border); }
+  .acerto-badge { display: inline-block; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: var(--radius-full); }
+  .acerto-badge.si  { background: color-mix(in srgb, var(--green) 16%, transparent); color: var(--green); border: 1px solid var(--green); }
+  .acerto-badge.no  { background: color-mix(in srgb, var(--red) 16%, transparent); color: var(--red);   border: 1px solid var(--red); }
+  .acerto-badge.pendiente { background: var(--bg3); color: var(--muted); border: 1px solid var(--border); }
 
   .cargar-resultado { display: flex; flex-direction: column; gap: 4px; }
   .cargar-resultado .fila { display: flex; gap: 4px; align-items: center; }
   .cargar-resultado input[type=number] {
-    width: 60px; background: var(--bg3); border: 1px solid var(--border);
+    width: 60px; background: var(--bg3); border: 1px solid var(--border); font-family:inherit;
     color: var(--fg); padding: 3px 6px; border-radius: 6px; font-size: 12px;
   }
+
+  /* ── toasts (mismo patrón que index.html) ── */
+  .toast-container{ position:fixed; top:16px; right:16px; z-index:2000; display:flex; flex-direction:column; gap:10px; max-width:340px; }
+  @media (max-width:480px){ .toast-container{ left:12px; right:12px; max-width:none; } }
+  .toast{
+    padding:12px 16px; border-radius:var(--radius-md); font-size:13.5px; font-weight:600; display:flex; align-items:center; gap:8px;
+    box-shadow:var(--shadow-md); animation:slideInRight .3s var(--ease); background:var(--bg2); border:1px solid var(--border); color:var(--fg);
+  }
+  .toast.success{ border-color:var(--green); } .toast.error{ border-color:var(--red); } .toast.warning{ border-color:var(--yellow); }
+  .toast.hide{ animation:slideOutRight .3s var(--ease) forwards; }
+
+  /* ── modal de confirmación (reemplaza confirm() nativo) ── */
+  .modal-backdrop{ position:fixed; inset:0; background:rgba(4,6,10,.6); z-index:1500; display:none; align-items:center; justify-content:center; padding:16px; }
+  .modal-backdrop.show{ display:flex; }
+  .modal-box{ background:var(--bg2); border:1px solid var(--red); border-radius:var(--radius-lg); padding:24px; max-width:380px; width:100%; animation:fadeSlideUp .3s var(--ease); box-shadow:var(--shadow-md); }
+  .modal-title{ font-weight:800; color:var(--red); margin-bottom:10px; display:flex; gap:8px; align-items:center; }
+  .modal-body{ color:var(--muted); font-size:14px; line-height:1.6; margin-bottom:20px; }
+  .modal-actions{ display:flex; gap:10px; }
+  .modal-actions .btn{ flex:1; text-align:center; }
+
+  @keyframes fadeSlideUp{ from{ opacity:0; transform:translateY(9px);} to{ opacity:1; transform:translateY(0);} }
+  @keyframes slideInRight{ from{ opacity:0; transform:translateX(60px);} to{ opacity:1; transform:translateX(0);} }
+  @keyframes slideOutRight{ to{ opacity:0; transform:translateX(60px);} }
+  @keyframes spin{ to{ transform:rotate(360deg); } }
 </style>
 </head>
 <body>
 
 <header>
-  <div class="brand">Bet<span>Brain</span></div>
+  <div class="brand"><span class="logo-mark" aria-hidden="true">🧠</span>Bet<span>Brain</span></div>
   <nav>
-    <a href="/">Chat</a>
+    <a href="/">Analizar</a>
     <a href="/historial" class="active">Historial</a>
+    <button class="theme-toggle" id="themeToggle" aria-label="Cambiar tema" title="Cambiar tema">🌙</button>
   </nav>
 </header>
 
@@ -170,6 +268,11 @@
 </div>
 
 <main>
+  <div class="page-head">
+    <h1>Historial</h1>
+    <p>Métricas acumuladas y seguimiento de cada apuesta registrada.</p>
+  </div>
+
   <div class="tabs">
     <button class="tab-btn active" id="tabApuestasBtn" onclick="mostrarTab('apuestas')">Apuestas</button>
     <button class="tab-btn" id="tabTenisBtn" onclick="mostrarTab('tenis')">Precisión Tenis</button>
@@ -260,7 +363,7 @@
         </tr>
       </thead>
       <tbody id="tablaBody">
-        <tr><td colspan="11" class="empty">Cargando...</td></tr>
+        <tr><td colspan="11"><div class="skel-bar" style="width:100%;height:16px"></div></td></tr>
       </tbody>
     </table>
   </div>
@@ -305,15 +408,88 @@
           </tr>
         </thead>
         <tbody id="tenisTablaBody">
-          <tr><td colspan="12" class="empty">Cargando...</td></tr>
+          <tr><td colspan="12"><div class="skel-bar" style="width:100%;height:16px"></div></td></tr>
         </tbody>
       </table>
     </div>
   </div>
 </main>
 
+<div class="toast-container" id="toastContainer" aria-live="polite"></div>
+
+<div class="modal-backdrop" id="confirmModal">
+  <div class="modal-box" role="alertdialog" aria-labelledby="confirmModalTitle">
+    <div class="modal-title" id="confirmModalTitle">🗑️ Eliminar apuesta</div>
+    <div class="modal-body" id="confirmModalBody">¿Eliminar esta apuesta del historial? Esta acción no se puede deshacer.</div>
+    <div class="modal-actions">
+      <button class="btn" id="confirmModalCancelar">Cancelar</button>
+      <button class="btn danger" id="confirmModalConfirmar">Eliminar</button>
+    </div>
+  </div>
+</div>
+
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script>
+/* ══════════════════════════════════════════════════════════════════════
+   THEME (misma clave de localStorage que index.html -> el tema elegido
+   se comparte entre las dos pantallas de la app)
+   ══════════════════════════════════════════════════════════════════════ */
+(function(){
+  const root = document.documentElement;
+  const toggle = document.getElementById("themeToggle");
+  function applyTheme(t){
+    root.setAttribute("data-theme", t);
+    toggle.textContent = t === "dark" ? "🌙" : "☀️";
+    localStorage.setItem("betbrain-theme", t);
+  }
+  applyTheme(localStorage.getItem("betbrain-theme") || "dark");
+  toggle.addEventListener("click", () => applyTheme(root.getAttribute("data-theme") === "dark" ? "light" : "dark"));
+})();
+
+/* ══════════════════════════════════════════════════════════════════════
+   TOASTS (reemplaza alert() nativo)
+   ══════════════════════════════════════════════════════════════════════ */
+const toastContainer = document.getElementById("toastContainer");
+function showToast(message, type, duration){
+  type = type || "info"; duration = duration || 4500;
+  const icons = { success:"✅", error:"❌", warning:"⚠️", info:"ℹ️" };
+  const toast = document.createElement("div");
+  toast.className = "toast " + type;
+  toast.setAttribute("role", "status");
+  toast.innerHTML = "<span>" + (icons[type] || icons.info) + "</span><span></span>";
+  toast.querySelector("span:last-child").textContent = message;
+  toastContainer.appendChild(toast);
+  setTimeout(() => { toast.classList.add("hide"); setTimeout(() => toast.remove(), 300); }, duration);
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+   CONFIRM MODAL (reemplaza confirm() nativo)
+   ══════════════════════════════════════════════════════════════════════ */
+const confirmModal = document.getElementById("confirmModal");
+let confirmResolver = null;
+function askConfirm(mensaje){
+  document.getElementById("confirmModalBody").textContent = mensaje;
+  confirmModal.classList.add("show");
+  return new Promise(resolve => { confirmResolver = resolve; });
+}
+document.getElementById("confirmModalCancelar").addEventListener("click", () => {
+  confirmModal.classList.remove("show");
+  if (confirmResolver) { confirmResolver(false); confirmResolver = null; }
+});
+document.getElementById("confirmModalConfirmar").addEventListener("click", () => {
+  confirmModal.classList.remove("show");
+  if (confirmResolver) { confirmResolver(true); confirmResolver = null; }
+});
+
+function skeletonRows(colspan, n){
+  n = n || 6;
+  let html = "";
+  for (let i = 0; i < n; i++){
+    html += '<tr><td colspan="' + colspan + '"><div class="skel-bar" style="width:' + (55 + (i % 3) * 15) + '%;height:14px"></div></td></tr>';
+  }
+  return html;
+}
+
 let allRows = [];        // filas ya traídas del backend (filtradas por resultado/liga)
 let filteredRows = [];   // allRows + filtro de fecha, ya en orden a mostrar (más nuevas primero)
 let paginaActual = 1;
@@ -408,6 +584,7 @@ async function cargarMetricas() {
     }
   } catch (e) {
     console.error("Error cargando métricas:", e);
+    showToast("No se pudieron cargar las métricas", "error");
   }
 }
 
@@ -426,13 +603,13 @@ function renderChart(puntos, br_inicial) {
       datasets: [{
         label: "Bankroll",
         data: values,
-        borderColor: "#6ee7ff",
-        backgroundColor: "rgba(110,231,255,.08)",
+        borderColor: "#2f6fed",
+        backgroundColor: "rgba(47,111,237,.10)",
         tension: 0.3,
         fill: true,
         pointRadius: 3,
         pointBackgroundColor: values.map(function(v) {
-          return v >= br_inicial ? "#3ddc97" : "#ff6b6b";
+          return v >= br_inicial ? "#34d399" : "#e5484d";
         }),
       }]
     },
@@ -440,8 +617,8 @@ function renderChart(puntos, br_inicial) {
       responsive: true, maintainAspectRatio: false,
       plugins: { legend: { display: false } },
       scales: {
-        x: { ticks: { color: "#8b93a3", font: { size: 11 } }, grid: { color: "#2a2f3a" } },
-        y: { ticks: { color: "#8b93a3" }, grid: { color: "#2a2f3a" } },
+        x: { ticks: { color: "#838fa3", font: { size: 11 } }, grid: { color: "#2a3241" } },
+        y: { ticks: { color: "#838fa3" }, grid: { color: "#2a3241" } },
       },
     }
   });
@@ -482,6 +659,8 @@ async function cargarHistorial(resetPagina) {
   if (resultado) url += "resultado=" + encodeURIComponent(resultado) + "&";
   if (liga)      url += "liga="      + encodeURIComponent(liga)      + "&";
 
+  document.getElementById("tablaBody").innerHTML = skeletonRows(11);
+
   try {
     const r = await fetch(url);
     const j = await r.json();
@@ -491,9 +670,10 @@ async function cargarHistorial(resetPagina) {
     aplicarFiltrosLocales(resetPagina);
   } catch (e) {
     document.getElementById("tablaBody").innerHTML =
-      '<tr><td colspan="11" class="empty">Error cargando historial</td></tr>';
+      '<tr><td colspan="11" class="empty err">⚠️ Error cargando el historial — revisá tu conexión e intentá de nuevo</td></tr>';
     document.getElementById("pagInfo").textContent = "";
     document.getElementById("pagBtns").innerHTML = "";
+    showToast("Error cargando el historial", "error");
   }
 }
 
@@ -620,22 +800,22 @@ function renderTabla(rows) {
         '<button onclick="actualizarRes(' + r.id + ',\'perdida\')">Perdida</button>' +
         '<button onclick="actualizarRes(' + r.id + ',\'void\')">Void</button>';
     }
-    acciones += '<button onclick="eliminarApuesta(' + r.id + ')" title="Eliminar del historial">🗑️ Eliminar</button>';
+    acciones += '<button class="del" onclick="eliminarApuesta(' + r.id + ')" title="Eliminar del historial">🗑️ Eliminar</button>';
     acciones += '</div>';
 
     return '<tr>' +
-      '<td style="color:var(--muted)">' + safeText(r.id) + '</td>' +
+      '<td class="mono" style="color:var(--muted)">' + safeText(r.id) + '</td>' +
       '<td style="color:var(--muted);white-space:nowrap">' + safeText(r.fecha_registro || "") + '</td>' +
       '<td><b>' + safeText(r.local || "") + '</b> vs <b>' + safeText(r.visitante || "") + '</b>' +
         '<div style="font-size:11px;color:var(--muted)">' + safeText(r.liga || "") + '</div></td>' +
       '<td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="' +
         safeText(r.pick_descripcion || "") + '">' + safeText(r.pick_descripcion || "") + '</td>' +
-      '<td style="color:var(--cyan)">' + fmtNum(r.cuota) + '</td>' +
-      '<td>' + fmtNum(r.stake) + '</td>' +
-      '<td>' + ev + '</td>' +
+      '<td class="mono" style="color:var(--cyan)">' + fmtNum(r.cuota) + '</td>' +
+      '<td class="mono">' + fmtNum(r.stake) + '</td>' +
+      '<td class="mono">' + ev + '</td>' +
       '<td>' + confianza + '</td>' +
       '<td>' + resBadge + '</td>' +
-      '<td>' + ganancia + '</td>' +
+      '<td class="mono">' + ganancia + '</td>' +
       '<td>' + acciones + '</td>' +
     '</tr>';
   }).join("");
@@ -650,25 +830,28 @@ async function actualizarRes(id, resultado) {
       body: JSON.stringify({id, resultado}),
     });
     const j = await r.json();
-    if (j.error) { alert("Error: " + j.error); return; }
+    if (j.error) { showToast("Error: " + j.error, "error"); return; }
+    showToast("Resultado actualizado", "success");
     await cargarMetricas();
     await cargarHistorial(false);  // mantiene filtros y página actual, solo re-clampea si hace falta
   } catch (e) {
-    alert("Error de red: " + e.message);
+    showToast("Error de red: " + e.message, "error");
   }
 }
 
 /* ── Eliminar apuesta ── */
 async function eliminarApuesta(id) {
-  if (!confirm("¿Eliminar esta apuesta del historial?")) return;
+  const ok = await askConfirm("¿Eliminar esta apuesta del historial? Esta acción no se puede deshacer.");
+  if (!ok) return;
   try {
     const r = await fetch("/api/eliminar_apuesta/" + id, { method: "DELETE" });
     const j = await r.json();
-    if (j.error) { alert("Error: " + j.error); return; }
+    if (j.error) { showToast("Error: " + j.error, "error"); return; }
+    showToast("Apuesta eliminada", "success");
     await cargarMetricas();
     await cargarHistorial(false);  // no reseteamos página: si la actual queda vacía, se clampea sola
   } catch (e) {
-    alert("Error de red: " + e.message);
+    showToast("Error de red: " + e.message, "error");
   }
 }
 
@@ -676,17 +859,17 @@ async function eliminarApuesta(id) {
 document.getElementById("verificarBtn").addEventListener("click", async function() {
   const btn = this;
   btn.disabled = true;
-  btn.textContent = "Verificando...";
+  btn.innerHTML = '<span class="spinner-sm"></span>Verificando…';
   try {
     const r = await fetch("/api/verificar_resultados");
     const j = await r.json();
-    alert("Revisadas: " + j.pendientes_revisadas + " pendientes.\nActualizadas: " + j.actualizadas);
+    showToast("Revisadas " + j.pendientes_revisadas + " pendientes · " + j.actualizadas + " actualizadas", "success");
     if (j.actualizadas > 0) {
       await cargarMetricas();
       await cargarHistorial(false);
     }
   } catch (e) {
-    alert("Error: " + e.message);
+    showToast("Error: " + e.message, "error");
   } finally {
     btn.disabled = false;
     btn.textContent = "Actualizar automáticos";
@@ -717,6 +900,7 @@ function mostrarTab(tab) {
 function fmtPct(v) { return v === null || v === undefined ? "—" : v + "%"; }
 
 async function cargarPrecisionTenis() {
+  document.getElementById("tenisTablaBody").innerHTML = skeletonRows(12);
   try {
     const r = await fetch("/api/tenis/predicciones");
     const j = await r.json();
@@ -733,7 +917,8 @@ async function cargarPrecisionTenis() {
     renderTablaTenis(j.predicciones || []);
   } catch (e) {
     document.getElementById("tenisTablaBody").innerHTML =
-      '<tr><td colspan="12" class="empty">Error cargando predicciones</td></tr>';
+      '<tr><td colspan="12" class="empty err">⚠️ Error cargando las predicciones — revisá tu conexión e intentá de nuevo</td></tr>';
+    showToast("Error cargando predicciones de tenis", "error");
   }
 }
 
@@ -775,16 +960,16 @@ function renderTablaTenis(rows) {
     cargarHtml += '</div>';
 
     return '<tr>' +
-      '<td style="color:var(--muted)">' + safeText(r.id) + '</td>' +
+      '<td class="mono" style="color:var(--muted)">' + safeText(r.id) + '</td>' +
       '<td style="color:var(--muted);white-space:nowrap">' + safeText((r.fecha_registro || "").slice(0, 16).replace("T", " ")) + '</td>' +
       '<td><b>' + safeText(r.jugador1) + '</b> vs <b>' + safeText(r.jugador2) + '</b></td>' +
       '<td>' + safeText(r.superficie) + ' · ' + safeText(r.formato) + '</td>' +
       '<td>' + safeText(r.favorito) + '</td>' +
-      '<td>' + (r.prob_favorito ? (parseFloat(r.prob_favorito) * 100).toFixed(1) + "%" : "—") + '</td>' +
-      '<td>' + fmtNum(r.total_esp, 1) + '</td>' +
+      '<td class="mono">' + (r.prob_favorito ? (parseFloat(r.prob_favorito) * 100).toFixed(1) + "%" : "—") + '</td>' +
+      '<td class="mono">' + fmtNum(r.total_esp, 1) + '</td>' +
       '<td style="font-size:11px;color:var(--muted)">' + (String(r.tuvo_pick) === "True" ? safeText(r.tipo_pick || "Sí") : "—") + '</td>' +
       '<td>' + (tieneGanador ? safeText(r.ganador_real) : "—") + '</td>' +
-      '<td>' + (tieneTotal ? fmtNum(r.total_games_real, 0) : "—") + '</td>' +
+      '<td class="mono">' + (tieneTotal ? fmtNum(r.total_games_real, 0) : "—") + '</td>' +
       '<td>' + acertoBadge(r.acerto_ganador) + ' ' + acertoBadge(r.acerto_total) + '</td>' +
       '<td>' + cargarHtml + '</td>' +
     '</tr>';
@@ -799,10 +984,10 @@ async function cargarGanador(id, ganador) {
       body: JSON.stringify({id: id, ganador_real: ganador}),
     });
     const j = await r.json();
-    if (j.error) { alert("Error: " + j.error); return; }
+    if (j.error) { showToast("Error: " + j.error, "error"); return; }
     await cargarPrecisionTenis();
   } catch (e) {
-    alert("Error de red: " + e.message);
+    showToast("Error de red: " + e.message, "error");
   }
 }
 
@@ -817,10 +1002,10 @@ async function cargarTotalReal(id) {
       body: JSON.stringify({id: id, total_games_real: parseFloat(val)}),
     });
     const j = await r.json();
-    if (j.error) { alert("Error: " + j.error); return; }
+    if (j.error) { showToast("Error: " + j.error, "error"); return; }
     await cargarPrecisionTenis();
   } catch (e) {
-    alert("Error de red: " + e.message);
+    showToast("Error de red: " + e.message, "error");
   }
 }
 </script>

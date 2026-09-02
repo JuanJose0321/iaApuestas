@@ -8,58 +8,61 @@
 <meta name="color-scheme" content="dark light">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet">
 <style>
 /* ══════════════════════════════════════════════════════════════════════
    1. DESIGN TOKENS
    ══════════════════════════════════════════════════════════════════════ */
 :root{
-  --font-head:'Poppins',system-ui,sans-serif;
+  --font-head:'Inter',system-ui,sans-serif;
   --font-body:'Inter',system-ui,sans-serif;
+  --font-mono:'JetBrains Mono',ui-monospace,'SF Mono',Consolas,monospace;
 
   --sp-1:4px; --sp-2:8px; --sp-3:12px; --sp-4:16px; --sp-5:20px;
   --sp-6:24px; --sp-8:32px; --sp-10:40px; --sp-12:48px; --sp-16:64px;
 
-  --radius-sm:8px; --radius-md:12px; --radius-lg:18px; --radius-full:999px;
+  --radius-sm:7px; --radius-md:10px; --radius-lg:14px; --radius-full:999px;
 
-  --dur:0.3s; --ease:cubic-bezier(.4,0,.2,1);
+  --dur:0.2s; --ease:cubic-bezier(.4,0,.2,1);
 
-  --primary:#3b82f6;
-  --primary-dark:#1e40af;
-  --purple:#8b5cf6;
-  --secondary:#10b981;
-  --accent:#f59e0b;
-  --danger:#ef4444;
-  --grad-primary:linear-gradient(135deg,var(--primary) 0%,var(--purple) 100%);
-  --grad-secondary:linear-gradient(135deg,var(--secondary) 0%,#059669 100%);
+  --primary:#2f6fed;
+  --primary-dark:#1e4fc4;
+  --secondary:#34d399;
+  --accent:#e9a23b;
+  --danger:#e5484d;
+  /* Sin degradé: apps de finanzas serias usan color plano, no dos tonos en
+     diagonal. Se conservan los nombres --grad-* (muchos selectores ya los
+     usan) pero apuntan a un color sólido. */
+  --grad-primary:var(--primary);
+  --grad-secondary:var(--secondary);
 
   --shadow-sm:0 1px 3px rgba(0,0,0,.15);
   --shadow-md:0 6px 20px rgba(0,0,0,.18);
   --shadow-lg:0 16px 40px rgba(0,0,0,.28);
-  --shadow-glow:0 0 0 3px rgba(59,130,246,.18);
+  --shadow-glow:0 0 0 3px rgba(47,111,237,.18);
 }
 :root,[data-theme="dark"]{
-  --bg:#0a0d14;
-  --bg-elev-1:#12161f;
-  --bg-elev-2:#1a1f2c;
-  --bg-elev-3:#232838;
-  --border:#262c3c;
-  --text:#e9ebf2;
-  --text-muted:#8b93a7;
-  --overlay:rgba(4,6,12,.72);
+  --bg:#0d1117;
+  --bg-elev-1:#131820;
+  --bg-elev-2:#1a212c;
+  --bg-elev-3:#212936;
+  --border:#2a3241;
+  --text:#e6e9ef;
+  --text-muted:#838fa3;
+  --overlay:rgba(4,6,10,.72);
 }
 [data-theme="light"]{
-  --bg:#f3f5fa;
+  --bg:#f4f5f8;
   --bg-elev-1:#ffffff;
-  --bg-elev-2:#eef1f8;
-  --bg-elev-3:#e3e8f3;
-  --border:#dde2ee;
-  --text:#171a21;
-  --text-muted:#5b6472;
-  --overlay:rgba(20,24,34,.55);
-  --shadow-sm:0 1px 3px rgba(30,40,70,.08);
-  --shadow-md:0 6px 20px rgba(30,40,70,.10);
-  --shadow-lg:0 16px 40px rgba(30,40,70,.14);
+  --bg-elev-2:#eef0f4;
+  --bg-elev-3:#e4e7ee;
+  --border:#dbdfe8;
+  --text:#161a20;
+  --text-muted:#5c6472;
+  --overlay:rgba(18,22,30,.55);
+  --shadow-sm:0 1px 3px rgba(20,30,50,.07);
+  --shadow-md:0 6px 20px rgba(20,30,50,.09);
+  --shadow-lg:0 16px 40px rgba(20,30,50,.13);
 }
 
 @media (prefers-reduced-motion: reduce){
@@ -151,7 +154,7 @@ a{ color:var(--primary); }
   white-space:nowrap;
 }
 .bankroll-chip .lbl{ color:var(--text-muted); }
-.bankroll-chip .val{ font-weight:800; color:var(--secondary); font-variant-numeric:tabular-nums; }
+.bankroll-chip .val{ font-family:var(--font-mono); font-weight:700; color:var(--secondary); font-variant-numeric:tabular-nums; }
 
 @media (max-width:768px){
   .hamburger{ display:flex; }
@@ -172,17 +175,13 @@ a{ color:var(--primary); }
    ══════════════════════════════════════════════════════════════════════ */
 .app-main{ flex:1; width:100%; max-width:1440px; margin:0 auto; padding:var(--sp-5) var(--sp-4) var(--sp-16); }
 
-.hero{
-  text-align:center; padding:var(--sp-6) var(--sp-4) var(--sp-8);
-  animation:fadeSlideUp .5s var(--ease);
+.page-head{
+  display:flex; align-items:baseline; gap:var(--sp-3); flex-wrap:wrap;
+  padding:var(--sp-5) 0 var(--sp-4);
+  animation:fadeSlideUp .35s var(--ease);
 }
-.hero h1{ font-size:clamp(24px,4vw,36px); margin-bottom:var(--sp-2); }
-.hero p{ color:var(--text-muted); max-width:560px; margin:0 auto; font-size:15px; }
-.hero .badges{ display:flex; gap:var(--sp-2); justify-content:center; flex-wrap:wrap; margin-top:var(--sp-4); }
-.hero .badge{
-  background:var(--bg-elev-2); border:1px solid var(--border); border-radius:var(--radius-full);
-  padding:6px 14px; font-size:12px; font-weight:600; color:var(--text-muted);
-}
+.page-head h1{ font-size:19px; font-weight:700; letter-spacing:-.2px; }
+.page-head p{ color:var(--text-muted); font-size:13px; }
 
 /* Sport tabs */
 .sport-tabs{
@@ -249,11 +248,11 @@ a{ color:var(--primary); }
 .gauge-track{ fill:none; stroke:var(--bg-elev-3); stroke-width:9; }
 .gauge-fill{ fill:none; stroke:var(--secondary); stroke-width:9; stroke-linecap:round; transition:stroke-dashoffset 1s var(--ease), stroke .3s; }
 .gauge-label{ position:absolute; inset:0; display:flex; align-items:center; justify-content:center; flex-direction:column; }
-.gauge-label .pct{ font-weight:800; font-size:17px; font-variant-numeric:tabular-nums; }
+.gauge-label .pct{ font-family:var(--font-mono); font-weight:700; font-size:16px; font-variant-numeric:tabular-nums; }
 .gauge-label .pct.neg{ color:var(--danger); }
 .gauge-label .pct.pos{ color:var(--secondary); }
 .bc-stats{ display:flex; flex-direction:column; gap:4px; }
-.bc-stats .amount{ font-family:var(--font-head); font-weight:800; font-size:24px; }
+.bc-stats .amount{ font-family:var(--font-mono); font-weight:700; font-size:23px; }
 .bc-stats .sub{ font-size:12px; color:var(--text-muted); }
 
 /* ══════════════════════════════════════════════════════════════════════
@@ -432,7 +431,7 @@ a{ color:var(--primary); }
 .leg{ display:flex; justify-content:space-between; align-items:center; gap:8px; padding:8px 0; font-size:13.5px; border-bottom:1px solid var(--border); }
 .leg:last-child{ border-bottom:none; }
 .leg .name{ flex:1; min-width:0; overflow-wrap:break-word; }
-.leg .cuota{ flex-shrink:0; color:var(--primary); font-weight:700; font-variant-numeric:tabular-nums; }
+.leg .cuota{ flex-shrink:0; color:var(--primary); font-family:var(--font-mono); font-weight:700; font-variant-numeric:tabular-nums; }
 
 /* confidence bar */
 .conf-bar-wrap{ margin:10px 0 2px; }
@@ -445,7 +444,7 @@ a{ color:var(--primary); }
 .rc-stats{ display:grid; grid-template-columns:repeat(auto-fit,minmax(76px,1fr)); gap:8px; margin-top:10px; }
 .rc-stat{ min-width:0; background:var(--bg-elev-3); border-radius:10px; padding:8px; text-align:center; }
 .rc-stat .l{ font-size:9.5px; text-transform:uppercase; letter-spacing:.4px; color:var(--text-muted); }
-.rc-stat .v{ font-size:15px; font-weight:800; margin-top:2px; font-variant-numeric:tabular-nums; overflow-wrap:break-word; }
+.rc-stat .v{ font-family:var(--font-mono); font-size:14.5px; font-weight:700; margin-top:2px; font-variant-numeric:tabular-nums; overflow-wrap:break-word; }
 .rc-stat .v.pos{ color:var(--secondary); }
 .rc-stat .v.neg{ color:var(--danger); }
 
@@ -533,31 +532,65 @@ a{ color:var(--primary); }
 /* ══════════════════════════════════════════════════════════════════════
    10. FOOTER
    ══════════════════════════════════════════════════════════════════════ */
-.site-footer{ border-top:1px solid var(--border); background:var(--bg-elev-1); margin-top:var(--sp-12); }
-.footer-inner{ max-width:1440px; margin:0 auto; padding:var(--sp-8) var(--sp-4); display:grid; grid-template-columns:1.4fr 1fr 1fr; gap:var(--sp-8); }
-@media (max-width:768px){ .footer-inner{ grid-template-columns:1fr; gap:var(--sp-6); text-align:center; } }
-.footer-inner h3{ font-size:14px; margin-bottom:var(--sp-3); }
-.footer-inner p,.footer-inner a{ color:var(--text-muted); font-size:13px; text-decoration:none; line-height:1.8; }
-.footer-inner a:hover{ color:var(--primary); }
-.footer-links{ display:flex; flex-direction:column; gap:6px; }
-.footer-disclaimer{ font-size:11.5px; color:var(--text-muted); border-top:1px solid var(--border); padding:var(--sp-4); text-align:center; }
+.site-footer{ border-top:1px solid var(--border); background:var(--bg-elev-1); margin-top:var(--sp-10); }
+.footer-inner{
+  max-width:1440px; margin:0 auto; padding:var(--sp-4);
+  display:flex; align-items:center; justify-content:space-between; gap:var(--sp-4); flex-wrap:wrap;
+}
+.footer-inner .logo{ font-size:14px; }
+.footer-links{ display:flex; gap:var(--sp-4); flex-wrap:wrap; }
+.footer-links a{ color:var(--text-muted); font-size:13px; text-decoration:none; }
+.footer-links a:hover{ color:var(--primary); }
+.footer-disclaimer{ font-size:11.5px; color:var(--text-muted); border-top:1px solid var(--border); padding:var(--sp-3) var(--sp-4); text-align:center; }
+
+/* ══════════════════════════════════════════════════════════════════════
+   10b. LOADING SKELETON + ERROR CARD
+   ══════════════════════════════════════════════════════════════════════ */
+.skeleton-card{
+  align-self:flex-start; width:100%; max-width:100%;
+  background:var(--bg-elev-2); border:1px solid var(--border); border-radius:16px;
+  border-bottom-left-radius:4px; padding:14px 16px; animation:fadeSlideUp .3s var(--ease);
+}
+.skeleton-bar{
+  height:11px; border-radius:5px; margin-bottom:10px;
+  background:linear-gradient(90deg, var(--bg-elev-3) 25%, var(--border) 50%, var(--bg-elev-3) 75%);
+  background-size:200% 100%; animation:shimmer 1.4s ease-in-out infinite;
+}
+.skeleton-bar:last-child{ margin-bottom:0; }
+.skeleton-bar.w-40{ width:40%; } .skeleton-bar.w-60{ width:60%; }
+.skeleton-bar.w-80{ width:80%; } .skeleton-bar.w-100{ width:100%; }
+.skeleton-label{ font-size:11.5px; color:var(--text-muted); margin-top:10px; display:flex; align-items:center; gap:6px; }
+
+.error-card{
+  align-self:flex-start; width:100%; max-width:100%; display:flex; gap:12px;
+  background:color-mix(in srgb, var(--danger) 8%, var(--bg-elev-2));
+  border:1px solid color-mix(in srgb, var(--danger) 35%, var(--border));
+  border-radius:16px; border-bottom-left-radius:4px; padding:14px 16px;
+  animation:fadeSlideUp .3s var(--ease);
+}
+.error-card .ec-ico{ font-size:20px; flex-shrink:0; line-height:1; }
+.error-card .ec-title{ font-weight:700; font-size:14px; color:var(--danger); margin-bottom:2px; }
+.error-card .ec-msg{ font-size:13px; color:var(--text-muted); line-height:1.5; }
+.error-card .ec-retry{ margin-top:10px; min-height:34px; padding:0 14px; font-size:12.5px; }
 
 /* ══════════════════════════════════════════════════════════════════════
    11. UTILITIES / ANIMATIONS
    ══════════════════════════════════════════════════════════════════════ */
 .sr-only{ position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0; }
 .hidden{ display:none !important; }
+.form-pop{ animation:fadeSlideUp .3s var(--ease); }
 
-@keyframes fadeSlideUp{ from{ opacity:0; transform:translateY(14px);} to{ opacity:1; transform:translateY(0);} }
+@keyframes fadeSlideUp{ from{ opacity:0; transform:translateY(9px);} to{ opacity:1; transform:translateY(0);} }
 @keyframes slideInRight{ from{ opacity:0; transform:translateX(60px);} to{ opacity:1; transform:translateX(0);} }
 @keyframes slideOutRight{ to{ opacity:0; transform:translateX(60px);} }
 @keyframes spin{ to{ transform:rotate(360deg); } }
 @keyframes bounce{ 0%,60%,100%{ transform:translateY(0); opacity:.5; } 30%{ transform:translateY(-5px); opacity:1; } }
-@keyframes pulse{ 0%,100%{ box-shadow:0 0 0 0 rgba(59,130,246,.4), var(--shadow-lg);} 50%{ box-shadow:0 0 0 10px rgba(59,130,246,0), var(--shadow-lg);} }
+@keyframes pulse{ 0%,100%{ box-shadow:0 0 0 0 rgba(47,111,237,.4), var(--shadow-lg);} 50%{ box-shadow:0 0 0 10px rgba(47,111,237,0), var(--shadow-lg);} }
+@keyframes shimmer{ 0%{ background-position:-200% 0; } 100%{ background-position:200% 0; } }
 
 /* breakpoint sanity: 320 mobile / 768 tablet / 1024 desktop / 1440 ultra-wide */
 @media (min-width:1440px){ .app-main{ padding-left:0; padding-right:0; } }
-@media (max-width:360px){ .hero h1{ font-size:22px; } .logo{ font-size:16px; } }
+@media (max-width:360px){ .page-head h1{ font-size:17px; } .logo{ font-size:16px; } }
 </style>
 </head>
 <body>
@@ -583,15 +616,10 @@ a{ color:var(--primary); }
 <div class="drawer-backdrop" id="navBackdrop"></div>
 
 <main class="app-main" id="main">
-  <section class="hero">
-    <h1>Picks de valor, con matemática detrás</h1>
-    <p>BetBrain combina Poisson + datos reales de forma/H2H y un modelo entrenado para encontrar apuestas con <b>expected value positivo</b> — no pronósticos, probabilidad.</p>
-    <div class="badges">
-      <span class="badge">✅ Confianza mínima 65%</span>
-      <span class="badge">📐 Kelly fraccional</span>
-      <span class="badge">📈 Tracking automático</span>
-    </div>
-  </section>
+  <div class="page-head">
+    <h1>Nuevo análisis</h1>
+    <p>Elegí el deporte y completá las cuotas del partido.</p>
+  </div>
 
   <div class="sport-tabs" id="sportTabs" role="tablist" aria-label="Deporte" data-active="football">
     <button class="sport-tab active" data-sport="football" role="tab" aria-selected="true">⚽ Fútbol</button>
@@ -774,20 +802,10 @@ a{ color:var(--primary); }
 
 <footer class="site-footer">
   <div class="footer-inner">
-    <div>
-      <div class="logo" style="margin-bottom:8px"><span class="logo-mark" aria-hidden="true">🧠</span>Bet<b>Brain</b></div>
-      <p>Motor de análisis probabilístico para fútbol y tenis. Poisson + xG + modelo entrenado, con gestión de riesgo Kelly fraccional.</p>
-    </div>
+    <div class="logo"><span class="logo-mark" aria-hidden="true">🧠</span>Bet<b>Brain</b></div>
     <div class="footer-links">
-      <h3>Navegación</h3>
-      <a href="/">Inicio</a>
-      <a href="/historial">Historial de apuestas</a>
-    </div>
-    <div class="footer-links">
-      <h3>Cómo funciona</h3>
-      <a href="#" tabindex="-1">Solo picks con confianza ≥ 65%</a>
-      <a href="#" tabindex="-1">Stake sugerido vía Kelly 1/4</a>
-      <a href="#" tabindex="-1">Datos reales cuando hay API disponible</a>
+      <a href="/">Analizar</a>
+      <a href="/historial">Historial</a>
     </div>
   </div>
   <div class="footer-disclaimer">BetBrain es una herramienta de análisis estadístico, no asesoría financiera. Apostar implica riesgo de pérdida de capital.</div>
@@ -881,6 +899,10 @@ sportTabs.querySelectorAll(".sport-tab").forEach(btn => {
     });
     footballFormCard.classList.toggle("hidden", activeSport !== "football");
     tennisFormCard.classList.toggle("hidden", activeSport !== "tennis");
+    const shown = activeSport === "football" ? footballFormCard : tennisFormCard;
+    shown.classList.remove("form-pop");
+    void shown.offsetWidth; // reflow: permite re-disparar la animación
+    shown.classList.add("form-pop");
   });
 });
 
@@ -1110,16 +1132,31 @@ function bubble(text, who){
 function bubbleTyping(){
   const row = document.createElement("div");
   row.className = "msg-row bot";
-  row.innerHTML = '<div class="avatar">🧠</div><div class="bubble bot"><div class="typing"><span></span><span></span><span></span></div></div>';
+  row.innerHTML =
+    '<div class="avatar">🧠</div>' +
+    '<div class="skeleton-card">' +
+      '<div class="skeleton-bar w-60"></div>' +
+      '<div class="skeleton-bar w-100"></div>' +
+      '<div class="skeleton-bar w-80"></div>' +
+      '<div class="skeleton-label"><span class="typing"><span></span><span></span><span></span></span> Analizando…</div>' +
+    '</div>';
   chat.appendChild(row); scrollChatBottom();
   return row;
 }
 
-function bubbleErr(text){
+function bubbleErr(text, retryFn){
   const row = document.createElement("div");
   row.className = "msg-row bot";
-  row.innerHTML = '<div class="avatar">🧠</div><div class="bubble bot error"></div>';
-  row.querySelector(".bubble").textContent = text;
+  const retryBtn = retryFn ? '<button type="button" class="btn btn-ghost ec-retry">↻ Reintentar</button>' : "";
+  row.innerHTML =
+    '<div class="avatar">🧠</div>' +
+    '<div class="error-card">' +
+      '<span class="ec-ico" aria-hidden="true">⚠️</span>' +
+      '<div><div class="ec-title">No se pudo completar el análisis</div>' +
+      '<div class="ec-msg"></div>' + retryBtn + '</div>' +
+    '</div>';
+  row.querySelector(".ec-msg").textContent = text;
+  if (retryFn) row.querySelector(".ec-retry").addEventListener("click", () => { row.remove(); retryFn(); });
   chat.appendChild(row); scrollChatBottom();
 }
 
@@ -1290,6 +1327,7 @@ document.getElementById("footballFormCard").addEventListener("submit", async (e)
   bubble(userTxt, "user");
   closeDrawerIfMobile();
 
+  const retryAnalisisFutbol = () => document.getElementById("footballFormCard").requestSubmit();
   const typing = bubbleTyping();
   sendBtn.disabled = true; sendBtn.innerHTML = '<span class="spinner"></span> Analizando…';
 
@@ -1297,7 +1335,7 @@ document.getElementById("footballFormCard").addEventListener("submit", async (e)
     const r = await fetch("/chat", { method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({home, away, liga, cuotas}) });
     const j = await r.json();
     typing.remove();
-    if (j.error){ showToast("Error: " + j.error, "error"); bubbleErr(j.error); return; }
+    if (j.error){ showToast("Error: " + j.error, "error"); bubbleErr(j.error, retryAnalisisFutbol); return; }
 
     bubble(j.mensaje);
     showToast("Análisis completado", "success");
@@ -1309,7 +1347,7 @@ document.getElementById("footballFormCard").addEventListener("submit", async (e)
     if (j.narrativa) narrativaCard(j.narrativa);
     if (j.bankroll != null){ bankrollEl.textContent = j.bankroll.toFixed(2); bcAmount.textContent = j.bankroll.toFixed(2); cargarMetricas(); }
   } catch(e){
-    typing.remove(); showToast("Error de red: " + e.message, "error"); bubbleErr("Error de red: " + e.message);
+    typing.remove(); showToast("Error de red: " + e.message, "error"); bubbleErr("Error de red: " + e.message, retryAnalisisFutbol);
   } finally {
     sendBtn.disabled = false; sendBtn.innerHTML = "🚀 Analizar partido";
   }
@@ -1410,6 +1448,7 @@ document.getElementById("tennisFormCard").addEventListener("submit", async (e) =
 
   bubble("🎾 " + j1 + " vs " + j2, "user");
   closeDrawerIfMobile();
+  const retryAnalisisTenis = () => document.getElementById("tennisFormCard").requestSubmit();
   const typing = bubbleTyping();
   tSendBtn.disabled = true; tSendBtn.innerHTML = '<span class="spinner"></span> Analizando…';
 
@@ -1417,7 +1456,7 @@ document.getElementById("tennisFormCard").addEventListener("submit", async (e) =
     const r = await fetch("/api/analizar_tenis", { method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify(body) });
     const j = await r.json();
     typing.remove();
-    if (j.error){ showToast(j.error, "error"); bubbleErr(j.error); return; }
+    if (j.error){ showToast(j.error, "error"); bubbleErr(j.error, retryAnalisisTenis); return; }
 
     const mw = (j.modelo && j.modelo.match_winner) || {};
     const tg = (j.modelo && j.modelo.total_games) || {};
@@ -1444,7 +1483,7 @@ document.getElementById("tennisFormCard").addEventListener("submit", async (e) =
     }
     showToast("Análisis de tenis completado", "success");
   } catch(e){
-    typing.remove(); showToast("Error: " + e.message, "error"); bubbleErr("Error: " + e.message);
+    typing.remove(); showToast("Error: " + e.message, "error"); bubbleErr("Error: " + e.message, retryAnalisisTenis);
   } finally {
     tSendBtn.disabled = false; tSendBtn.innerHTML = "🎾 Analizar partido de tenis";
   }
@@ -1469,7 +1508,7 @@ updateFabVisibility();
 /* ══════════════════════════════════════════════════════════════════════
    WELCOME MESSAGE
    ══════════════════════════════════════════════════════════════════════ */
-bubble("👋 Hola, soy **BetBrain**. Analizo cuotas con Poisson + datos reales de forma/H2H y te armo picks de **valor** (directa, dupla, tripleta) en fútbol y tenis.\n\n✅ Solo muestro picks con **confianza ≥ 65%**\n✅ **Kelly fraccional** para el tamaño de la apuesta\n✅ Tracking automático de resultados\n\nElegí el deporte arriba y completá el formulario para empezar.");
+bubble("👋 Elegí el deporte arriba y completá las cuotas para analizar un partido.");
 
 })();
 </script>
