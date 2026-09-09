@@ -51,7 +51,7 @@ logging.basicConfig(
 )
 _log = logging.getLogger("betbrain.app")
 from src.core.confidence import (
-    calcular_confianza, nivel_confianza, verificar_contradicciones_combo,
+    calcular_confianza, calcular_confianza_combo, nivel_confianza, verificar_contradicciones_combo,
     UMBRAL_VERDE, UMBRAL_AMARILLO,
 )
 from src.services.tracking import (
@@ -161,7 +161,14 @@ def _transformar_pick(raw: dict, home: str, away: str,
     ]
     prob      = raw["prob_conjunta"]
     ev        = raw["ev"]
-    confianza = calcular_confianza(prob, ev, factor_datos)
+    # Combinadas (Dupla/Tripleta): la confianza es la probabilidad conjunta
+    # real de que se cumplan TODAS las patas, sin ponderar por EV -- un EV
+    # alto no baja el riesgo de una combinada. Ver calcular_confianza_combo.
+    # Los picks "directa" (una sola pata) siguen con calcular_confianza().
+    if raw["tipo"] == "directa":
+        confianza = calcular_confianza(prob, ev, factor_datos)
+    else:
+        confianza = calcular_confianza_combo(prob, factor_datos)
     contras   = verificar_contradicciones_combo(raw["legs"])
     stake     = round(bankroll * raw["kelly_stake_pct"], 2)
     return {

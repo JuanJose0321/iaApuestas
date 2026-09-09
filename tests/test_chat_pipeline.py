@@ -117,6 +117,95 @@ def test_calcular_confianza_factor_alto():
     )
 
 
+# ── Test 4b: confianza de combinadas (Dupla/Tripleta) ────────────────────
+# Bug real (Barcelona-Feyenoord, 2026-09): una Tripleta con 54.6% de
+# probabilidad conjunta y EV=107.8% mostraba 100% de confianza / "verde"
+# porque calcular_confianza() pondera por EV -- el mismo error conceptual
+# que tenía el filtro de EV en tenis, acá a nivel de picks combinados.
+# calcular_confianza_combo() no debe ponderar por EV en absoluto: la
+# confianza de una combinada es su propia probabilidad conjunta (recortada
+# por factor_datos), sin importar qué tan alto sea el EV.
+
+def _raw_combo(tipo: str, prob: float, ev: float, n_legs: int = 2) -> dict:
+    mercados = [("1X2", "1"), ("OU_2.5", "Over"), ("BTTS", "Yes")][:n_legs]
+    return {
+        "tipo": tipo,
+        "legs": [{"mercado": m, "seleccion": s, "cuota": 1.8} for m, s in mercados],
+        "cuota_total": 1.8 ** n_legs,
+        "prob_conjunta": prob,
+        "ev": ev,
+        "kelly_stake_pct": 0.05,
+    }
+
+
+def test_calcular_confianza_combo_no_tiene_parametro_ev():
+    """La firma en sí ya blinda contra el bug: no hay forma de que el EV
+    entre al cálculo porque la función ni siquiera lo recibe."""
+    import inspect
+    from src.core.confidence import calcular_confianza_combo
+    assert "ev" not in inspect.signature(calcular_confianza_combo).parameters
+
+
+def test_calcular_confianza_combo_no_llega_a_100_por_ciento_con_prob_moderada():
+    from src.core.confidence import calcular_confianza_combo
+    score = calcular_confianza_combo(prob=0.546, factor_datos=1.0)
+    assert score < 1.0
+    assert score == 0.546
+
+
+def test_transformar_pick_tripleta_barcelona_feyenoord_ya_no_es_verde():
+    """Reproduce el caso real reportado: Tripleta prob=54.6%, EV=107.8%
+    ya NO debe salir 'verde'/100% de confianza."""
+    import app as flask_app
+    raw = _raw_combo("tripleta", prob=0.546, ev=1.078, n_legs=3)
+
+    pick = flask_app._transformar_pick(raw, "Barcelona", "Feyenoord", bankroll=1000, factor_datos=1.0)
+
+    assert pick["confianza"] == pytest.approx(0.546, abs=1e-4)
+    assert pick["confianza_nivel"] != "verde"
+    assert pick["confianza"] < 1.0
+
+
+@pytest.mark.parametrize("tipo,n_legs", [("dupla", 2), ("tripleta", 3)])
+@pytest.mark.parametrize("prob,ev,nivel_esperado", [
+    (0.85, 0.05, "verde"),      # combinada muy probable, EV chico -> confianza alta igual
+    (0.60, 2.00, "rojo"),       # EV altísimo pero prob moderada (< UMBRAL_AMARILLO=0.65) -> no debe ser verde/amarillo
+    (0.30, 5.00, "muy_baja"),   # EV altísimo, prob baja -> confianza tiene que ser baja
+])
+def test_confianza_combo_sigue_a_la_probabilidad_no_al_ev(tipo, n_legs, prob, ev, nivel_esperado):
+    import app as flask_app
+    raw = _raw_combo(tipo, prob=prob, ev=ev, n_legs=n_legs)
+
+    pick = flask_app._transformar_pick(raw, "A", "B", bankroll=1000, factor_datos=1.0)
+
+    assert pick["confianza_nivel"] == nivel_esperado, (
+        f"{tipo} prob={prob} ev={ev}: nivel={pick['confianza_nivel']} != {nivel_esperado} "
+        f"(confianza={pick['confianza']})"
+    )
+    assert pick["confianza"] == pytest.approx(prob, abs=1e-4), (
+        "La confianza de una combinada no debe verse afectada por el EV"
+    )
+
+
+def test_directa_no_usa_calcular_confianza_combo():
+    """Los picks 'directa' (una sola pata) siguen usando calcular_confianza()
+    tal como estaba -- este fix es solo para combinadas."""
+    import app as flask_app
+    from src.core.confidence import calcular_confianza
+
+    raw = {
+        "tipo": "directa",
+        "legs": [{"mercado": "1X2", "seleccion": "1", "cuota": 1.9}],
+        "cuota_total": 1.9, "prob_conjunta": 0.55, "ev": 0.15,
+        "kelly_stake_pct": 0.05,
+    }
+    esperado = calcular_confianza(prob=0.55, ev=0.15, factor_datos=1.0)
+
+    pick = flask_app._transformar_pick(raw, "A", "B", bankroll=1000, factor_datos=1.0)
+
+    assert pick["confianza"] == esperado
+
+
 # ── Test 5: contradicciones detectadas correctamente ────────────────────
 def test_contradicciones_btts_no_over():
     from src.core.confidence import verificar_contradicciones_combo

@@ -34,6 +34,29 @@ def calcular_confianza(prob: float, ev: float, factor_datos: float) -> float:
     return round(min(1.0, prob * ev_factor * factor_datos), 4)
 
 
+def calcular_confianza_combo(prob: float, factor_datos: float) -> float:
+    """
+    Score 0.0-1.0 de confianza para una COMBINADA (Dupla/Tripleta).
+
+    A diferencia de calcular_confianza() (picks individuales), acá no se
+    pondera por EV: un EV altísimo en una combinada no la hace menos
+    riesgosa -- la probabilidad de que se cumplan TODAS las patas a la vez
+    es la única medida real de qué tan probable es cobrarla. Ponderar por
+    EV (como hacía antes, reusando calcular_confianza para combos también)
+    dejaba combinadas con ~50% de probabilidad real mostrando 100% de
+    confianza / "Riesgo Bajo" con EV alto -- el mismo error conceptual que
+    ya se había corregido en tenis (EV alto = value bet, no "va a pasar"),
+    pero a nivel de picks combinados en vez del modelo base.
+
+      prob:         probabilidad conjunta de que ocurran todas las patas (0-1)
+      factor_datos: 1.0 si hay datos API reales, 0.6 si solo cuotas -- se
+                    sigue aplicando: menos confianza en la estimación de
+                    prob_conjunta cuando no hay contexto real, aparte de
+                    cuánto valga esa probabilidad.
+    """
+    return round(max(0.0, min(1.0, prob * factor_datos)), 4)
+
+
 def nivel_confianza(score: float) -> str:
     """'verde', 'amarillo', 'rojo' o 'muy_baja' a partir del score."""
     if score >= UMBRAL_VERDE:
