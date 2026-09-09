@@ -1,12 +1,6 @@
 """
 Sistema de confianza y validador anti-contradicciones para picks.
 """
-import sys
-from pathlib import Path
-
-sys.path.append(str(Path(__file__).resolve().parent.parent.parent))
-from config import MIN_EV
-
 UMBRAL_VERDE    = 0.75
 UMBRAL_AMARILLO = 0.65
 UMBRAL_ROJO     = 0.50
@@ -23,15 +17,25 @@ _CONTRADICCIONES_SET = {
 
 def calcular_confianza(prob: float, ev: float, factor_datos: float) -> float:
     """
-    Score 0.0-1.0 de confianza en el pick.
+    Score 0.0-1.0 de confianza en un pick individual ("directa").
+
+    Es directamente la probabilidad (ajustada por factor_datos) -- antes
+    ponderaba por un ev_factor que se saturaba en 2.0 para cualquier
+    EV >= 10%, lo que dejaba picks de probabilidad moderada (~55%) con EV
+    alto mostrando 100% de confianza / badge "verde". Mismo error conceptual
+    que ya se había corregido en tenis y, en la mezcla EV/Poisson de
+    fútbol, en las combinadas (ver calcular_confianza_combo) -- acá se
+    corrige el último lugar donde sobrevivía: los picks de una sola pata.
+
       prob:         probabilidad real del modelo (0-1)
-      ev:           expected value (0.05 = 5%)
+      ev:           expected value (0.05 = 5%) -- solo se usa como guarda:
+                     MIN_EV ya filtra que no lleguen picks con EV <= 0 a
+                     este punto, pero si llegara uno, confianza = 0 igual.
       factor_datos: 1.0 si hay datos API reales, 0.6 si solo cuotas
     """
     if ev <= 0:
         return 0.0
-    ev_factor = min(2.0, ev / max(MIN_EV, 0.01))
-    return round(min(1.0, prob * ev_factor * factor_datos), 4)
+    return round(max(0.0, min(1.0, prob * factor_datos)), 4)
 
 
 def calcular_confianza_combo(prob: float, factor_datos: float) -> float:

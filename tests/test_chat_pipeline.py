@@ -10,7 +10,7 @@ Cubre:
   5. API-Football caída → degradación elegante (factor_datos=0.6)
   6. Formato JSON de /chat: claves obligatorias siempre presentes
   7. Motor ML: equipos desconocidos caen a solo Poisson sin crash
-  8. calcular_confianza: factor_datos bajo hace que picks válidos no pasen umbral
+  8. calcular_confianza: sigue la probabilidad (ajustada por factor_datos), no el EV
   9. /api/teams: Liga MX devuelve Cruz Azul y Tigres UANL
  10. /api/teams: liga inexistente → 404 con cuerpo de error claro
  11. /api/teams: sin ?liga → dict completo con todas las ligas
@@ -96,25 +96,36 @@ def test_umbral_sin_api_es_menor():
     )
 
 
-def test_calcular_confianza_factor_bajo_pasa_umbral_sin_api():
-    from src.core.confidence import calcular_confianza, UMBRAL_CONFIANZA_SIN_API
-    # EV=12%, prob=0.50, sin datos reales → factor=0.6
-    # Con el umbral reducido debe pasar
+def test_calcular_confianza_factor_bajo_descuenta_proporcional():
+    from src.core.confidence import calcular_confianza
+    # factor_datos=0.6 (sin API real) descuenta la probabilidad tal cual,
+    # sin importar el EV -- antes el EV alto "compensaba" el factor bajo
+    # (ese era justo el bug: EV=12% inflaba una prob=0.50 hasta pasar
+    # umbrales que la probabilidad real no ameritaba).
     score = calcular_confianza(prob=0.50, ev=0.12, factor_datos=0.6)
-    assert score >= UMBRAL_CONFIANZA_SIN_API, (
-        f"Con factor=0.6 y EV=12%, score={score:.4f} debería pasar "
-        f"UMBRAL_CONFIANZA_SIN_API={UMBRAL_CONFIANZA_SIN_API}"
+    assert score == pytest.approx(0.30, abs=1e-4), (
+        f"factor_datos=0.6 y prob=0.50 debe dar 0.30 (0.50*0.6), no {score} -- "
+        f"si da más, el EV se está colando de nuevo en el cálculo"
     )
 
 
-def test_calcular_confianza_factor_alto():
+def test_calcular_confianza_factor_alto_prob_alta_pasa_umbral():
     from src.core.confidence import calcular_confianza, UMBRAL_CONFIANZA
-    # EV=15%, prob=0.55, con datos reales → factor=1.0
-    score = calcular_confianza(prob=0.55, ev=0.15, factor_datos=1.0)
-    assert score >= UMBRAL_CONFIANZA, (
-        f"Con factor_datos=1.0 y EV alto, confianza={score:.4f} debería "
-        f"pasar el umbral {UMBRAL_CONFIANZA}"
-    )
+    # Con datos reales (factor=1.0) y probabilidad genuinamente alta, sí
+    # debe pasar el umbral -- pero por la probabilidad, no por el EV.
+    score = calcular_confianza(prob=0.80, ev=0.15, factor_datos=1.0)
+    assert score == pytest.approx(0.80, abs=1e-4)
+    assert score >= UMBRAL_CONFIANZA
+
+
+def test_calcular_confianza_ev_alto_no_compensa_prob_moderada():
+    """El bug original: prob=55% + EV=12% daba confianza=100%/verde. Ahora
+    la confianza tiene que ser la probabilidad, punto -- sin importar EV."""
+    from src.core.confidence import calcular_confianza, nivel_confianza
+    score_ev_bajo = calcular_confianza(prob=0.55, ev=0.06, factor_datos=1.0)
+    score_ev_altisimo = calcular_confianza(prob=0.55, ev=5.00, factor_datos=1.0)
+    assert score_ev_bajo == score_ev_altisimo == 0.55
+    assert nivel_confianza(score_ev_altisimo) != "verde"
 
 
 # ── Test 4b: confianza de combinadas (Dupla/Tripleta) ────────────────────
@@ -187,9 +198,9 @@ def test_confianza_combo_sigue_a_la_probabilidad_no_al_ev(tipo, n_legs, prob, ev
     )
 
 
-def test_directa_no_usa_calcular_confianza_combo():
-    """Los picks 'directa' (una sola pata) siguen usando calcular_confianza()
-    tal como estaba -- este fix es solo para combinadas."""
+def test_directa_usa_calcular_confianza_no_combo():
+    """Los picks 'directa' (una sola pata) usan calcular_confianza() (ya
+    corregida para no ponderar por EV), nunca calcular_confianza_combo()."""
     import app as flask_app
     from src.core.confidence import calcular_confianza
 
@@ -204,6 +215,65 @@ def test_directa_no_usa_calcular_confianza_combo():
     pick = flask_app._transformar_pick(raw, "A", "B", bankroll=1000, factor_datos=1.0)
 
     assert pick["confianza"] == esperado
+
+
+# ── Test 4c: confianza de picks individuales ("directa") ────────────────
+# Mismo bug que las combinadas, un escalón más abajo: un pick de una sola
+# pata con probabilidad moderada (55%) pero EV alto (>=10%) también
+# saturaba calcular_confianza() a 100%/verde -- no se veía en los ejemplos
+# revisados porque tenían probabilidad genuinamente alta. Confirmado antes
+# de corregir (ver commit): calcular_confianza(0.55, 0.12, 1.0) daba 1.0.
+
+def _raw_directa(prob: float, ev: float) -> dict:
+    return {
+        "tipo": "directa",
+        "legs": [{"mercado": "OU_2.5", "seleccion": "Over", "cuota": 1.8}],
+        "cuota_total": 1.8, "prob_conjunta": prob, "ev": ev,
+        "kelly_stake_pct": 0.05,
+    }
+
+
+def test_transformar_pick_directa_prob_moderada_ev_alto_ya_no_es_verde():
+    """Paso 1 del pedido: prob=55%, EV=12% ya no debe dar verde/100%."""
+    import app as flask_app
+    raw = _raw_directa(prob=0.55, ev=0.12)
+
+    pick = flask_app._transformar_pick(raw, "A", "B", bankroll=1000, factor_datos=1.0)
+
+    assert pick["confianza"] == pytest.approx(0.55, abs=1e-4)
+    assert pick["confianza_nivel"] != "verde"
+    assert pick["confianza"] < 1.0
+
+
+def test_transformar_pick_directa_prob_alta_sigue_verde():
+    """Referencia real (Más de 2.5, prob=93.9%, EV=79.3%): con probabilidad
+    genuinamente alta debe seguir dando verde -- el fix no penaliza picks
+    buenos, solo deja de premiar el EV por sí solo."""
+    import app as flask_app
+    raw = _raw_directa(prob=0.939, ev=0.793)
+
+    pick = flask_app._transformar_pick(raw, "A", "B", bankroll=1000, factor_datos=1.0)
+
+    assert pick["confianza"] == pytest.approx(0.939, abs=1e-4)
+    assert pick["confianza_nivel"] == "verde"
+
+
+@pytest.mark.parametrize("prob,ev,nivel_esperado", [
+    (0.80, 0.06, "verde"),      # prob alta, EV chico -> igual verde
+    (0.60, 3.00, "rojo"),       # EV altísimo, prob moderada (<0.65) -> no debe ser verde/amarillo
+    (0.30, 8.00, "muy_baja"),   # EV altísimo, prob baja -> confianza tiene que ser baja
+])
+def test_directa_confianza_sigue_a_la_probabilidad_no_al_ev(prob, ev, nivel_esperado):
+    import app as flask_app
+    raw = _raw_directa(prob=prob, ev=ev)
+
+    pick = flask_app._transformar_pick(raw, "A", "B", bankroll=1000, factor_datos=1.0)
+
+    assert pick["confianza_nivel"] == nivel_esperado, (
+        f"directa prob={prob} ev={ev}: nivel={pick['confianza_nivel']} != {nivel_esperado} "
+        f"(confianza={pick['confianza']})"
+    )
+    assert pick["confianza"] == pytest.approx(prob, abs=1e-4)
 
 
 # ── Test 5: contradicciones detectadas correctamente ────────────────────
