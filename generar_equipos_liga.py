@@ -1,6 +1,16 @@
 #!/usr/bin/env python3
 """
 Script para generar equipos_por_liga.json desde los CSVs descargados.
+
+OJO antes de correrlo: recorre TODOS los CSV de data/raw/ (todas las
+temporadas, 2122 a la actual) y hace la UNION de equipos vistos alguna vez
+en cada liga -- nunca saca a un equipo que ya no juega ahí. Correrlo tal
+cual vuelve a mezclar equipos ya descendidos hace años con los vigentes
+(el mismo problema de fondo que motivó la actualización manual de
+2026-09-08: ver _meta de equipos_por_liga.json). Para regenerar de verdad
+la lista de una temporada, filtrar antes por la temporada actual
+(ej. sufijo "_2627.csv") y de ahí sí completar a mano ascensos/descensos
+que ya se jugaron pero que el CSV en curso todavía no reflejó del todo.
 """
 import json
 import csv
