@@ -26,11 +26,23 @@ jobs:
       - name: Ejecutar actualización de CSVs
         run: python src/scripts/update_daily_csv.py
 
+      # Regenera src/data/equipos_por_liga.json para las 5 ligas domésticas
+      # (LaLiga/Premier/Bundesliga/Serie A/Ligue 1) a partir de la temporada
+      # vigente de los CSV recién actualizados -- no requiere research manual
+      # salvo que aparezca un equipo (código de football-data.co.uk) nunca
+      # visto antes, en cuyo caso el script corta con código de salida 1.
+      # continue-on-error: true para que ESE caso (raro: solo pasa cuando
+      # asciende un equipo nuevo) quede visible como fallo en la pestaña
+      # Actions sin bloquear el commit de los CSV ya descargados.
+      - name: Regenerar equipos vigentes (5 ligas domésticas)
+        continue-on-error: true
+        run: python generar_equipos_liga.py
+
       - name: Commit y push si hay cambios
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add data/raw/*.csv
+          git add data/raw/*.csv src/data/equipos_por_liga.json
           if git diff --cached --quiet; then
             echo "Sin cambios, nada que commitear"
           else
