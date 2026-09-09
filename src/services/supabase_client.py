@@ -46,6 +46,17 @@ def leer_apuestas() -> list[dict]:
     return result.data or []
 
 
+def contar_apuestas() -> int:
+    """Cantidad de filas en `apuestas`, sin bajarse los datos (count exacto
+    del lado del servidor). Usada por el keep-alive de Supabase: es la
+    consulta más barata que sigue contando como actividad del proyecto."""
+    result = (
+        _get_client().table("apuestas")
+        .select("id", count="exact").limit(1).execute()
+    )
+    return result.count or 0
+
+
 def actualizar_apuesta(id_apuesta: int, cambios: dict) -> Optional[dict]:
     """Actualiza columnas de una apuesta por id. None si no existía."""
     result = (

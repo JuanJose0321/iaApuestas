@@ -1,0 +1,41 @@
+name: Keep-alive de Supabase
+
+"on":
+  schedule:
+    # Lunes y jueves 6:00 UTC (1 AM Colombia) -- un ping cada 3-4 días, muy
+    # por debajo de los ~7 días de inactividad tras los que Supabase pausa
+    # los proyectos del plan gratuito. Cron de GitHub no sabe hacer "cada 3
+    # días" de verdad (el día del mes se reinicia cada mes), así que se fijan
+    # dos días de la semana, que sí da un intervalo estable. 6:00 UTC no se
+    # solapa con update-csv (3 AM) ni update-tennis (4 AM).
+    - cron: "0 6 * * 1,4"
+  workflow_dispatch: {}    # permite disparar manualmente desde la pestaña Actions
+
+# Solo lee de Supabase y no commitea nada: no necesita permisos de escritura
+# sobre el repo.
+permissions:
+  contents: read
+
+jobs:
+  keepalive:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Instalar dependencias
+        run: pip install supabase python-dotenv
+
+      # Consulta de solo lectura (count sobre `apuestas`). Si falla, el script
+      # sale con código != 0 y la corrida queda en rojo en Actions, que es
+      # justamente la señal de que el keep-alive dejó de funcionar.
+      - name: Ping a Supabase
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: python src/scripts/supabase_keepalive.py
