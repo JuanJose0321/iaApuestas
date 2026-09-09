@@ -93,7 +93,6 @@ PROMEDIO_GOLES_LIGA = {
     "Europa League": 2.7,
     "Eredivisie": 3.2,
     "Primeira Liga": 2.5,
-    "Championship": 2.5,
     "Default": 2.6,
 }
 

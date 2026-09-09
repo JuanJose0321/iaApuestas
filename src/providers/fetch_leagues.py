@@ -23,7 +23,6 @@ BASE_URL = "https://www.thesportsdb.com/api/v1/json/123"
 # IDs corregidos y verificados en TheSportsDB (abril 2026)
 LIGAS_CONFIG = {
     "Premier League": ("133602", "English Premier League"),
-    "Championship": ("133604", "English Championship"),
     "LaLiga": ("133613", "Spanish La Liga"),
     "Bundesliga": ("133610", "German Bundesliga"),
     "Serie A": ("133612", "Italian Serie A"),

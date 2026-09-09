@@ -23,10 +23,11 @@ sumar una línea a NOMBRES_EQUIPOS a mano esa única vez.
 
 Solo toca las claves de estas 5 ligas dentro del JSON -- preserva intacto
 todo lo demás (Champions League, Europa League, Liga MX, MLS, Brasileirao,
-Eredivisie, Primeira Liga, Championship, Liga Profesional Argentina), que
-no tienen CSV propio en el repo (ver Paso 3 de la investigación de
-2026-09-09: no se encontró una fuente gratuita y confiable para
-automatizarlas también).
+Eredivisie, Primeira Liga, Liga Profesional Argentina), que no tienen CSV
+propio en el repo (ver Paso 3 de la investigación de 2026-09-09: no se
+encontró una fuente gratuita y confiable para automatizarlas también).
+(Championship se sacó de la app el 2026-09-10 -- no tenía CSV propio en
+este pipeline y no valía la pena mantenerla solo con research manual.)
 
 Uso
 ---

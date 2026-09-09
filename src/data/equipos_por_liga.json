@@ -1,8 +1,8 @@
 {
   "_meta": {
     "temporada": "2026-27",
-    "nota": "Datos 2026-27 de las 14 competiciones del archivo. Las 5 ligas domesticas europeas (LaLiga/Premier/Bundesliga/SerieA/Ligue1) se corrigieron el 2026-09-08 (commit 10874e0) cruzando data/raw/*_2627.csv contra Wikipedia/fuentes oficiales. El resto (Championship, Liga MX, MLS, Brasileirao, Eredivisie, Primeira Liga, Liga Profesional Argentina, Champions League, Europa League) se actualizo ahora via busqueda web cruzada con Wikipedia y sitios oficiales de cada liga/UEFA -- sin CSV propio para verificar, asi que el rigor es menor que el de las 5 ligas con datos historicos reales. Champions League y Europa League son las 36 plazas de la fase de liga 2026-27 (formato suizo), no listas de 'todos los equipos de la liga'.",
-    "actualizado": "2026-09-09",
+    "nota": "Datos 2026-27 de las 13 competiciones del archivo (Championship se sacó de la app el 2026-09-10: no tenía CSV propio en el pipeline y no se iba a poder mantener con el mismo rigor que el resto). Las 5 ligas domesticas europeas (LaLiga/Premier/Bundesliga/SerieA/Ligue1) se regeneran automaticamente desde data/raw/*_2627.csv via generar_equipos_liga.py -- no requieren research manual (ver 'ultima_regeneracion_automatica'). El resto (Liga MX, MLS, Brasileirao, Eredivisie, Primeira Liga, Liga Profesional Argentina, Champions League, Europa League) sigue curado a mano via busqueda web cruzada con Wikipedia y sitios oficiales -- sin CSV propio para verificar, asi que el rigor es menor. Champions League y Europa League son las 36 plazas de la fase de liga 2026-27 (formato suizo), no listas de 'todos los equipos de la liga'.",
+    "actualizado": "2026-09-10",
     "verificado": true,
     "ultima_regeneracion_automatica": "Las 5 ligas domesticas (LaLiga/Premier League/Bundesliga/Serie A/Ligue 1) se regeneran automaticamente desde data/raw/*_2627.csv via generar_equipos_liga.py -- no requieren research manual. El resto de las competiciones de este archivo siguen curadas a mano (ver 'nota')."
   },
@@ -301,32 +301,6 @@
     "Alverca",
     "Maritimo",
     "Academico de Viseu"
-  ],
-  "Championship": [
-    "West Bromwich Albion",
-    "Derby",
-    "Sheffield United",
-    "Middlesbrough",
-    "Bristol City",
-    "Stoke",
-    "Norwich",
-    "Watford",
-    "Swansea",
-    "Portsmouth",
-    "Preston",
-    "Blackburn",
-    "QPR",
-    "Millwall",
-    "Southampton",
-    "Birmingham City",
-    "Wrexham",
-    "Charlton Athletic",
-    "Burnley",
-    "West Ham",
-    "Wolves",
-    "Cardiff City",
-    "Lincoln City",
-    "QPR"
   ],
   "Liga Profesional Argentina": [
     "Boca Juniors",
