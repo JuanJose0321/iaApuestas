@@ -1,9 +1,9 @@
 {
-  "fecha": "2026-09-07",
-  "resueltas_totales": 192,
+  "fecha": "2026-09-14",
+  "resueltas_totales": 205,
   "badge_n": {
-    "verde": 8,
-    "amarillo": 20,
-    "manual": 164
+    "manual": 169,
+    "amarillo": 27,
+    "verde": 9
   }
 }
