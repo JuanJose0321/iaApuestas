@@ -25649,7 +25649,7 @@
       "Roberta Vinci": 0
     },
     "Aliaksandra Sasnovich|||Daria Kasatkina": {
-      "Aliaksandra Sasnovich": 3,
+      "Aliaksandra Sasnovich": 4,
       "Daria Kasatkina": 4
     },
     "Margarita Gasparyan|||Victoria Azarenka": {
@@ -32842,7 +32842,7 @@
     },
     "Kristina Mladenovic|||Nao Hibino": {
       "Kristina Mladenovic": 3,
-      "Nao Hibino": 0
+      "Nao Hibino": 1
     },
     "Anastasia Pavlyuchenkova|||Louisa Chirico": {
       "Anastasia Pavlyuchenkova": 1,
@@ -96185,7 +96185,7 @@
       "Pablo Andujar": 1
     },
     "Alex De Minaur|||Kamil Majchrzak": {
-      "Alex De Minaur": 2,
+      "Alex De Minaur": 3,
       "Kamil Majchrzak": 1
     },
     "Sebastian Baez|||Stefanos Tsitsipas": {
@@ -108738,7 +108738,7 @@
     },
     "Bianca Andreescu|||Cristina Bucsa": {
       "Bianca Andreescu": 0,
-      "Cristina Bucsa": 2
+      "Cristina Bucsa": 1
     },
     "Elena Rybakina|||Kaja Juvan": {
       "Elena Rybakina": 2,
@@ -115978,7 +115978,7 @@
     },
     "Grigor Dimitrov|||Holger Rune": {
       "Grigor Dimitrov": 2,
-      "Holger Rune": 2
+      "Holger Rune": 3
     },
     "Daniil Medvedev|||Jiri Lehecka": {
       "Daniil Medvedev": 1,
@@ -116233,7 +116233,7 @@
       "Hamad Medjedovic": 1
     },
     "Jurij Rodionov|||Zizou Bergs": {
-      "Jurij Rodionov": 0,
+      "Jurij Rodionov": 1,
       "Zizou Bergs": 1
     },
     "Dominic Stricker|||Miomir Kecmanovic": {
@@ -118818,7 +118818,7 @@
     },
     "Alex Molcan|||Stefanos Tsitsipas": {
       "Alex Molcan": 1,
-      "Stefanos Tsitsipas": 0
+      "Stefanos Tsitsipas": 1
     },
     "Sho Shimabukuro|||Yshai Oliel": {
       "Sho Shimabukuro": 1,
@@ -123277,7 +123277,7 @@
       "Gregoire Barrere": 0
     },
     "Felix Auger Aliassime|||Quentin Halys": {
-      "Felix Auger Aliassime": 3,
+      "Felix Auger Aliassime": 4,
       "Quentin Halys": 0
     },
     "Giulio Zeppieri|||Zhizhen Zhang": {
@@ -124490,7 +124490,7 @@
     },
     "Ben Shelton|||Jakub Mensik": {
       "Ben Shelton": 2,
-      "Jakub Mensik": 2
+      "Jakub Mensik": 3
     },
     "Alexander Shevchenko|||Francisco Cerundolo": {
       "Alexander Shevchenko": 1,
@@ -127561,7 +127561,7 @@
       "Lucrezia Stefanini": 1
     },
     "Magdalena Frech|||Nao Hibino": {
-      "Magdalena Frech": 2,
+      "Magdalena Frech": 1,
       "Nao Hibino": 0
     },
     "Caroline Dolehide|||Francesca Jones": {
@@ -133734,7 +133734,7 @@
     },
     "Jakub Mensik|||Learner Tien": {
       "Jakub Mensik": 0,
-      "Learner Tien": 2
+      "Learner Tien": 3
     },
     "Jakub Mensik|||Joao Fonseca": {
       "Jakub Mensik": 1,
@@ -139162,7 +139162,7 @@
     },
     "Ben Shelton|||Jiri Lehecka": {
       "Ben Shelton": 3,
-      "Jiri Lehecka": 0
+      "Jiri Lehecka": 1
     },
     "Mark Lajal|||Zizou Bergs": {
       "Mark Lajal": 0,
@@ -139478,7 +139478,7 @@
     },
     "Arthur Rinderknech|||Felix Auger Aliassime": {
       "Arthur Rinderknech": 1,
-      "Felix Auger Aliassime": 2
+      "Felix Auger Aliassime": 3
     },
     "Jenson Brooksby|||Nuno Borges": {
       "Jenson Brooksby": 1,
@@ -140746,7 +140746,7 @@
     },
     "Tatjana Maria|||Taylor Townsend": {
       "Tatjana Maria": 0,
-      "Taylor Townsend": 2
+      "Taylor Townsend": 1
     },
     "Caroline Dolehide|||Mccartney Kessler": {
       "Caroline Dolehide": 1,
@@ -148298,7 +148298,7 @@
     },
     "Daniel Altmaier|||Dino Prizmic": {
       "Daniel Altmaier": 1,
-      "Dino Prizmic": 0
+      "Dino Prizmic": 1
     },
     "Camilo Ugo Carabelli|||Luca Van Assche": {
       "Camilo Ugo Carabelli": 1,
@@ -154256,46 +154256,414 @@
       "Alexander Blockx": 0,
       "Karen Khachanov": 1
     },
-    "Emiliana Arango|||Peyton Stearns": {
-      "Emiliana Arango": 0,
-      "Peyton Stearns": 1
+    "Dhakshineswar Suresh|||Soonwoo Kwon": {
+      "Dhakshineswar Suresh": 0,
+      "Soonwoo Kwon": 1
     },
-    "Alycia Parks|||Varvara Lepchenko": {
-      "Alycia Parks": 1,
-      "Varvara Lepchenko": 0
+    "Hyeon Chung|||Sumit Nagal": {
+      "Hyeon Chung": 1,
+      "Sumit Nagal": 0
     },
-    "Lois Boisson|||Panna Udvardy": {
-      "Lois Boisson": 0,
-      "Panna Udvardy": 1
+    "Gauthier Onclin|||Jurij Rodionov": {
+      "Gauthier Onclin": 0,
+      "Jurij Rodionov": 1
     },
-    "Darja Vidmanova|||Janice Tjen": {
-      "Darja Vidmanova": 0,
-      "Janice Tjen": 1
+    "Lukas Neumayer|||Zizou Bergs": {
+      "Lukas Neumayer": 0,
+      "Zizou Bergs": 1
     },
-    "Elvina Kalieva|||Kayla Day": {
+    "Arthur Rinderknech|||Liam Draxl": {
+      "Arthur Rinderknech": 0,
+      "Liam Draxl": 1
+    },
+    "Lucas Catarina|||Otto Virtanen": {
+      "Lucas Catarina": 0,
+      "Otto Virtanen": 1
+    },
+    "Eero Vasa|||Valentin Vacherot": {
+      "Eero Vasa": 0,
+      "Valentin Vacherot": 1
+    },
+    "Fabian Marozsan|||Louis Van Herck": {
+      "Fabian Marozsan": 1,
+      "Louis Van Herck": 0
+    },
+    "Alex Knaff|||Zsombor Piros": {
+      "Alex Knaff": 0,
+      "Zsombor Piros": 1
+    },
+    "Botic Van De Zandschulp|||Johan Alexander Rodriguez": {
+      "Botic Van De Zandschulp": 1,
+      "Johan Alexander Rodriguez": 0
+    },
+    "Nicolas Mejia|||Tallon Griekspoor": {
+      "Nicolas Mejia": 0,
+      "Tallon Griekspoor": 1
+    },
+    "Casper Ruud|||Rigele Te": {
+      "Casper Ruud": 1,
+      "Rigele Te": 0
+    },
+    "Jie Cui|||Nicolai Budkov Kjaer": {
+      "Jie Cui": 0,
+      "Nicolai Budkov Kjaer": 1
+    },
+    "Elmer Moller|||Grigor Dimitrov": {
+      "Elmer Moller": 0,
+      "Grigor Dimitrov": 1
+    },
+    "Holger Rune|||Iliyan Radulov": {
+      "Holger Rune": 1,
+      "Iliyan Radulov": 0
+    },
+    "Dominic Stricker|||Joao Fonseca": {
+      "Dominic Stricker": 0,
+      "Joao Fonseca": 1
+    },
+    "Gustavo Heide|||Stan Wawrinka": {
+      "Gustavo Heide": 1,
+      "Stan Wawrinka": 0
+    },
+    "Hernando Jose Escurra Isnardi|||Ignacio Buse": {
+      "Hernando Jose Escurra Isnardi": 0,
+      "Ignacio Buse": 1
+    },
+    "Adolfo Daniel Vallejo|||Juan Pablo Varillas": {
+      "Adolfo Daniel Vallejo": 0,
+      "Juan Pablo Varillas": 1
+    },
+    "Cezar Cretu|||Gunawan Trismuwantara": {
+      "Cezar Cretu": 1,
+      "Gunawan Trismuwantara": 0
+    },
+    "Radu Mihai Papoe|||Rafalentino Ali Da Costa": {
+      "Radu Mihai Papoe": 1,
+      "Rafalentino Ali Da Costa": 0
+    },
+    "Alexander Shevchenko|||Maximus Jones": {
+      "Alexander Shevchenko": 1,
+      "Maximus Jones": 0
+    },
+    "Kasidit Samrej|||Timofey Skatov": {
+      "Kasidit Samrej": 0,
+      "Timofey Skatov": 1
+    },
+    "Aziz Dougaz|||Muhammad Shoaib": {
+      "Aziz Dougaz": 1,
+      "Muhammad Shoaib": 0
+    },
+    "Moez Echargui|||Muzammil Murtaza": {
+      "Moez Echargui": 1,
+      "Muzammil Murtaza": 0
+    },
+    "Amit Vales|||Bor Artnak": {
+      "Amit Vales": 0,
+      "Bor Artnak": 1
+    },
+    "Filip Jeff Planinsek|||Orel Kimhi": {
+      "Filip Jeff Planinsek": 1,
+      "Orel Kimhi": 0
+    },
+    "Amr Elsayed|||Roberto Cid Subervi": {
+      "Amr Elsayed": 0,
+      "Roberto Cid Subervi": 1
+    },
+    "Karim Mabrouk|||Nick Hardt": {
+      "Karim Mabrouk": 0,
+      "Nick Hardt": 1
+    },
+    "Joaquin Aguilar Cardozo|||Markus Molder": {
+      "Joaquin Aguilar Cardozo": 1,
+      "Markus Molder": 0
+    },
+    "Franco Roncadelli|||Kristjan Tamm": {
+      "Franco Roncadelli": 1,
+      "Kristjan Tamm": 0
+    },
+    "Fu Wang Choi|||Hugo Dellien": {
+      "Fu Wang Choi": 0,
+      "Hugo Dellien": 1
+    },
+    "Juan Carlos Prado Angelo|||Tsz Fu Wong": {
+      "Juan Carlos Prado Angelo": 1,
+      "Tsz Fu Wong": 0
+    },
+    "Soonwoo Kwon|||Sumit Nagal": {
+      "Soonwoo Kwon": 1,
+      "Sumit Nagal": 0
+    },
+    "Jiri Lehecka|||Learner Tien": {
+      "Jiri Lehecka": 1,
+      "Learner Tien": 0
+    },
+    "Alexander Zverev|||Matej Dodig": {
+      "Alexander Zverev": 1,
+      "Matej Dodig": 0
+    },
+    "Andres Andrade|||Toby Samuel": {
+      "Andres Andrade": 0,
+      "Toby Samuel": 1
+    },
+    "Alvaro Guillen Meza|||Arthur Fery": {
+      "Alvaro Guillen Meza": 0,
+      "Arthur Fery": 1
+    },
+    "Alejandro Tabilo|||Daniel Merida": {
+      "Alejandro Tabilo": 0,
+      "Daniel Merida": 1
+    },
+    "Cristian Garin|||Rafael Jodar": {
+      "Cristian Garin": 0,
+      "Rafael Jodar": 1
+    },
+    "Otto Virtanen|||Valentin Vacherot": {
+      "Otto Virtanen": 0,
+      "Valentin Vacherot": 1
+    },
+    "Matiej Reiter|||Peter Makk": {
+      "Matiej Reiter": 0,
+      "Peter Makk": 1
+    },
+    "Jesper De Jong|||Samuel Heredia": {
+      "Jesper De Jong": 1,
+      "Samuel Heredia": 0
+    },
+    "Casper Ruud|||Fnu Nidunjianzan": {
+      "Casper Ruud": 1,
+      "Fnu Nidunjianzan": 0
+    },
+    "Elmer Moller|||Iliyan Radulov": {
+      "Elmer Moller": 1,
+      "Iliyan Radulov": 0
+    },
+    "Matheus Pucinelli De Almeida|||Remy Bertola": {
+      "Matheus Pucinelli De Almeida": 0,
+      "Remy Bertola": 1
+    },
+    "Adolfo Daniel Vallejo|||Ignacio Buse": {
+      "Adolfo Daniel Vallejo": 1,
+      "Ignacio Buse": 0
+    },
+    "Hernando Jose Escurra Isnardi|||Juan Pablo Varillas": {
+      "Hernando Jose Escurra Isnardi": 0,
+      "Juan Pablo Varillas": 1
+    },
+    "Anton Shepp|||Rei Sakamoto": {
+      "Anton Shepp": 0,
+      "Rei Sakamoto": 1
+    },
+    "James Watt|||Sho Shimabukuro": {
+      "James Watt": 0,
+      "Sho Shimabukuro": 1
+    },
+    "Alex De Minaur|||Maks Kasnikowski": {
+      "Alex De Minaur": 1,
+      "Maks Kasnikowski": 0
+    },
+    "James Duckworth|||Kamil Majchrzak": {
+      "James Duckworth": 0,
+      "Kamil Majchrzak": 1
+    },
+    "Olle Wallin|||Yu Hsiou Hsu": {
+      "Olle Wallin": 1,
+      "Yu Hsiou Hsu": 0
+    },
+    "Chun Hsin Tseng|||Karl Friberg": {
+      "Chun Hsin Tseng": 1,
+      "Karl Friberg": 0
+    },
+    "Alex Molcan|||Stefanos Sakellaridis": {
+      "Alex Molcan": 1,
+      "Stefanos Sakellaridis": 0
+    },
+    "Norbert Gombos|||Stefanos Tsitsipas": {
+      "Norbert Gombos": 0,
+      "Stefanos Tsitsipas": 1
+    },
+    "Edas Butvilas|||Miomir Kecmanovic": {
+      "Edas Butvilas": 0,
+      "Miomir Kecmanovic": 1
+    },
+    "Hamad Medjedovic|||Vilius Gaubas": {
+      "Hamad Medjedovic": 1,
+      "Vilius Gaubas": 0
+    },
+    "Francisco Cerundolo|||Yanki Erel": {
+      "Francisco Cerundolo": 1,
+      "Yanki Erel": 0
+    },
+    "Mert Alkaya|||Thiago Agustin Tirante": {
+      "Mert Alkaya": 0,
+      "Thiago Agustin Tirante": 1
+    },
+    "Gabriel Ghetu|||Lucky Candra Kurniawan": {
+      "Gabriel Ghetu": 1,
+      "Lucky Candra Kurniawan": 0
+    },
+    "Alexander Shevchenko|||Kasidit Samrej": {
+      "Alexander Shevchenko": 0,
+      "Kasidit Samrej": 1
+    },
+    "Maximus Jones|||Timofey Skatov": {
+      "Maximus Jones": 0,
+      "Timofey Skatov": 1
+    },
+    "Ben Weintraub|||Sebastian Dominko": {
+      "Ben Weintraub": 0,
+      "Sebastian Dominko": 1
+    },
+    "Nick Hardt|||Omar Kandil": {
+      "Nick Hardt": 1,
+      "Omar Kandil": 0
+    },
+    "Denis Maijorov|||Francisco Llanes": {
+      "Denis Maijorov": 0,
+      "Francisco Llanes": 1
+    },
+    "Boris Arias|||Sin Hang Tam": {
+      "Boris Arias": 0,
+      "Sin Hang Tam": 1
+    },
+    "Georgii Kravchenko|||Photos Photiades": {
+      "Georgii Kravchenko": 1,
+      "Photos Photiades": 0
+    },
+    "Menelaos Efstathiou|||Oleksii Krutykh": {
+      "Menelaos Efstathiou": 0,
+      "Oleksii Krutykh": 1
+    },
+    "Canice Abua|||Karim Bennani": {
+      "Canice Abua": 0,
+      "Karim Bennani": 1
+    },
+    "Abubakar Yusuf|||Yassine Dlimi": {
+      "Abubakar Yusuf": 0,
+      "Yassine Dlimi": 1
+    },
+    "Andrej Nedic|||Philip Henning": {
+      "Andrej Nedic": 1,
+      "Philip Henning": 0
+    },
+    "Damir Dzumhur|||Khololwam Montsi": {
+      "Damir Dzumhur": 1,
+      "Khololwam Montsi": 0
+    },
+    "Alan Magadan|||Daniel Phillips": {
+      "Alan Magadan": 1,
+      "Daniel Phillips": 0
+    },
+    "Alex Hernandez|||Richard Mallory": {
+      "Alex Hernandez": 1,
+      "Richard Mallory": 0
+    },
+    "Diego Duran|||Nuno Borges": {
+      "Diego Duran": 0,
+      "Nuno Borges": 1
+    },
+    "Cesar Cruz|||Jaime Faria": {
+      "Cesar Cruz": 0,
+      "Jaime Faria": 1
+    },
+    "Alexander Zverev|||Dino Prizmic": {
+      "Alexander Zverev": 1,
+      "Dino Prizmic": 0
+    },
+    "Angel Veliz|||Harry Wendelken": {
+      "Angel Veliz": 0,
+      "Harry Wendelken": 1
+    },
+    "Martin Landaluce|||Matias Soto": {
+      "Martin Landaluce": 1,
+      "Matias Soto": 0
+    },
+    "Anton Shepp|||Sho Shimabukuro": {
+      "Anton Shepp": 0,
+      "Sho Shimabukuro": 1
+    },
+    "Chun Hsin Tseng|||Olle Wallin": {
+      "Chun Hsin Tseng": 1,
+      "Olle Wallin": 0
+    },
+    "Max Dahlin|||Tung Lin Wu": {
+      "Max Dahlin": 0,
+      "Tung Lin Wu": 1
+    },
+    "Norbert Gombos|||Stefanos Sakellaridis": {
+      "Norbert Gombos": 1,
+      "Stefanos Sakellaridis": 0
+    },
+    "Ognjen Milic|||Pijus Vaitiekunas": {
+      "Ognjen Milic": 1,
+      "Pijus Vaitiekunas": 0
+    },
+    "Francisco Cerundolo|||Mert Alkaya": {
+      "Francisco Cerundolo": 1,
+      "Mert Alkaya": 0
+    },
+    "Georgii Kravchenko|||Menelaos Efstathiou": {
+      "Georgii Kravchenko": 1,
+      "Menelaos Efstathiou": 0
+    },
+    "Amine Jamji|||Michael Emmanuel": {
+      "Amine Jamji": 1,
+      "Michael Emmanuel": 0
+    },
+    "Nerman Fatic|||Thando Longwe Smit": {
+      "Nerman Fatic": 1,
+      "Thando Longwe Smit": 0
+    },
+    "Alan Fernando Rubio Fierros|||Tariq Simons": {
+      "Alan Fernando Rubio Fierros": 1,
+      "Tariq Simons": 0
+    },
+    "Fiona Ferro|||Talia Gibson": {
+      "Fiona Ferro": 0,
+      "Talia Gibson": 1
+    },
+    "Maja Chwalinska|||Rebecca Sramkova": {
+      "Maja Chwalinska": 1,
+      "Rebecca Sramkova": 0
+    },
+    "Kyoka Okamura|||Leylah Fernandez": {
+      "Kyoka Okamura": 0,
+      "Leylah Fernandez": 1
+    },
+    "Joanna Garland|||Storm Hunter": {
+      "Joanna Garland": 1,
+      "Storm Hunter": 0
+    },
+    "Maya Joint|||Xinxin Yao": {
+      "Maya Joint": 1,
+      "Xinxin Yao": 0
+    },
+    "Elvina Kalieva|||Katie Volynets": {
       "Elvina Kalieva": 0,
-      "Kayla Day": 1
+      "Katie Volynets": 1
     },
-    "Carole Monnet|||Sloane Stephens": {
-      "Carole Monnet": 0,
-      "Sloane Stephens": 1
+    "Lanlana Tararudee|||Moyuka Uchijima": {
+      "Lanlana Tararudee": 1,
+      "Moyuka Uchijima": 0
     },
-    "Caroline Dolehide|||Renata Zarazua": {
-      "Caroline Dolehide": 1,
-      "Renata Zarazua": 0
+    "Alina Korneeva|||Mananchaya Sawangkaew": {
+      "Alina Korneeva": 1,
+      "Mananchaya Sawangkaew": 0
     },
-    "Iryna Shymanovich|||Zeynep Sonmez": {
-      "Iryna Shymanovich": 0,
-      "Zeynep Sonmez": 1
+    "Kamilla Rakhimova|||Polina Kudermetova": {
+      "Kamilla Rakhimova": 1,
+      "Polina Kudermetova": 0
     },
-    "Elsa Jacquemot|||Liudmila Samsonova": {
-      "Elsa Jacquemot": 0,
-      "Liudmila Samsonova": 1
+    "Dayeon Back|||Yue Yuan": {
+      "Dayeon Back": 1,
+      "Yue Yuan": 0
+    },
+    "Darya Astakhova|||Magda Linette": {
+      "Darya Astakhova": 1,
+      "Magda Linette": 0
     }
   },
   "_meta": {
-    "fecha": "2026-09-16T09:12:01.127766+00:00",
-    "total_pares": 38573,
+    "fecha": "2026-09-22T09:12:13.737276+00:00",
+    "total_pares": 38665,
     "metodo": "Enfrentamientos directos acumulados de todo el histórico real procesado (mismo rango que tennis_elo_ratings.json)."
   }
 }
