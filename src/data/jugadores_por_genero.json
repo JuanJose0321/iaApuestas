@@ -608,6 +608,7 @@
     "Jesse Huta Galung",
     "Jesus Bandres",
     "Ji Sung Nam",
+    "Jia Hu",
     "Jie Cui",
     "Jimmy Wang",
     "Jirat Navasirisomboon",
@@ -1759,6 +1760,7 @@
     "Hao Chen Tang",
     "Harmony Tan",
     "Harriet Dart",
+    "Hayu Kinoshita",
     "Heather Watson",
     "Heydi Doldan",
     "Himeno Sakatsume",
@@ -1809,6 +1811,7 @@
     "Jana Cepelova",
     "Jana Fett",
     "Jana Kovackova",
+    "Jana Otzipka",
     "Janice Tjen",
     "Jaqueline Cristian",
     "Jargal Altansarnai",
@@ -2479,6 +2482,7 @@
     "Virginie Razzano",
     "Vitalia Diatchenko",
     "Vittoria Paganetti",
+    "Vivian Wolff",
     "Vivian Yang",
     "Vlada Ekshibarova",
     "Wakana Sonobe",
@@ -2514,6 +2518,8 @@
     "Yee Loon Goh",
     "Yelyzaveta Kotliar",
     "Yeon Woo Ku",
+    "Yeonwoo Ku",
+    "Yexin Ma",
     "Yi Fan Xu",
     "Ying Ying Duan",
     "Ying Zhang",
@@ -2553,9 +2559,9 @@
   ],
   "_meta": {
     "total_generos": 2,
-    "masculino_count": 1319,
-    "femenino_count": 1229,
-    "generado": "derivado automáticamente de tennis_elo_ratings.json (2026-09-22T09:12:13.930237+00:00)",
+    "masculino_count": 1320,
+    "femenino_count": 1234,
+    "generado": "derivado automáticamente de tennis_elo_ratings.json (2026-09-28T10:44:44.031829+00:00)",
     "nota": "Ya no se mantiene a mano — se regenera en cada recalibración de Elo (ver calibrate_tennis_elo.py, PASO 6)."
   }
 }
