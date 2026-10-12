@@ -541,6 +541,7 @@
     "Ignacio Garcia",
     "Igor Marcondes",
     "Igor Sijsling",
+    "Ilia Simakin",
     "Iliyan Radulov",
     "Illia Biloborodko",
     "Illya Marchenko",
@@ -2563,9 +2564,9 @@
   ],
   "_meta": {
     "total_generos": 2,
-    "masculino_count": 1320,
+    "masculino_count": 1321,
     "femenino_count": 1238,
-    "generado": "derivado automáticamente de tennis_elo_ratings.json (2026-10-05T11:18:56.875889+00:00)",
+    "generado": "derivado automáticamente de tennis_elo_ratings.json (2026-10-12T11:47:46.819062+00:00)",
     "nota": "Ya no se mantiene a mano — se regenera en cada recalibración de Elo (ver calibrate_tennis_elo.py, PASO 6)."
   }
 }
