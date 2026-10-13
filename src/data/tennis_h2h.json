@@ -74417,7 +74417,7 @@
       "Jo-Wilfried Tsonga": 1
     },
     "Stefanos Tsitsipas|||Taylor Fritz": {
-      "Stefanos Tsitsipas": 4,
+      "Stefanos Tsitsipas": 5,
       "Taylor Fritz": 2
     },
     "Amanda Anisimova|||Samantha Stosur": {
@@ -92874,7 +92874,7 @@
     },
     "Clara Tauson|||Marie Bouzkova": {
       "Clara Tauson": 1,
-      "Marie Bouzkova": 1
+      "Marie Bouzkova": 0
     },
     "Jasmine Paolini|||Sorana Cirstea": {
       "Jasmine Paolini": 3,
@@ -95262,7 +95262,7 @@
     },
     "Ekaterina Alexandrova|||Leylah Fernandez": {
       "Ekaterina Alexandrova": 3,
-      "Leylah Fernandez": 2
+      "Leylah Fernandez": 1
     },
     "Daria Saville|||Iga Swiatek": {
       "Daria Saville": 0,
@@ -141178,7 +141178,7 @@
     },
     "Dalibor Svrcina|||Daniil Medvedev": {
       "Dalibor Svrcina": 0,
-      "Daniil Medvedev": 2
+      "Daniil Medvedev": 3
     },
     "Emma Navarro|||Rebecca Marino": {
       "Emma Navarro": 1,
@@ -143166,7 +143166,7 @@
     },
     "Carlos Alcaraz|||Zizou Bergs": {
       "Carlos Alcaraz": 1,
-      "Zizou Bergs": 0
+      "Zizou Bergs": 1
     },
     "Barbora Krejcikova|||Mccartney Kessler": {
       "Barbora Krejcikova": 0,
@@ -153174,7 +153174,7 @@
     },
     "Jiri Lehecka|||Rafael Jodar": {
       "Jiri Lehecka": 0,
-      "Rafael Jodar": 1
+      "Rafael Jodar": 2
     },
     "Arthur Fils|||Cameron Norrie": {
       "Arthur Fils": 1,
@@ -155612,34 +155612,22 @@
       "Alexander Bublik": 1,
       "Brandon Nakashima": 0
     },
-    "Anhelina Kalinina|||Sonay Kartal": {
-      "Anhelina Kalinina": 0,
-      "Sonay Kartal": 1
-    },
-    "Diane Parry|||Lanlana Tararudee": {
-      "Diane Parry": 0,
-      "Lanlana Tararudee": 1
-    },
-    "Aoi Ito|||Janice Tjen": {
-      "Aoi Ito": 0,
-      "Janice Tjen": 1
-    },
-    "Anna Bondar|||Mia Pohankova": {
-      "Anna Bondar": 0,
-      "Mia Pohankova": 1
-    },
-    "Jasmine Paolini|||Sara Bejlek": {
-      "Jasmine Paolini": 1,
-      "Sara Bejlek": 0
-    },
     "Casper Ruud|||Learner Tien": {
       "Casper Ruud": 1,
       "Learner Tien": 0
+    },
+    "Arthur Fils|||Botic Van De Zandschulp": {
+      "Arthur Fils": 0,
+      "Botic Van De Zandschulp": 1
+    },
+    "Tommy Paul|||Valentin Vacherot": {
+      "Tommy Paul": 1,
+      "Valentin Vacherot": 0
     }
   },
   "_meta": {
-    "fecha": "2026-10-12T11:47:46.613582+00:00",
-    "total_pares": 38909,
+    "fecha": "2026-10-13T11:35:39.049250+00:00",
+    "total_pares": 38906,
     "metodo": "Enfrentamientos directos acumulados de todo el histórico real procesado (mismo rango que tennis_elo_ratings.json)."
   }
 }
