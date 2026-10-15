@@ -16213,7 +16213,7 @@
       "Naomi Broady": 1
     },
     "Jelena Ostapenko|||Jessica Pegula": {
-      "Jelena Ostapenko": 2,
+      "Jelena Ostapenko": 3,
       "Jessica Pegula": 3
     },
     "Paula Kania|||Sesil Karatantcheva": {
@@ -66933,7 +66933,7 @@
       "Matteo Berrettini": 2
     },
     "Casper Ruud|||Felix Auger Aliassime": {
-      "Casper Ruud": 3,
+      "Casper Ruud": 4,
       "Felix Auger Aliassime": 5
     },
     "Mischa Zverev|||Nicola Kuhn": {
@@ -84053,7 +84053,7 @@
       "Ons Jabeur": 0
     },
     "Ann Li|||Aryna Sabalenka": {
-      "Ann Li": 0,
+      "Ann Li": 1,
       "Aryna Sabalenka": 3
     },
     "Fiona Ferro|||Iga Swiatek": {
@@ -103337,7 +103337,7 @@
       "Natalia Vikhlyantseva": 0
     },
     "Iga Swiatek|||Magdalena Frech": {
-      "Iga Swiatek": 1,
+      "Iga Swiatek": 2,
       "Magdalena Frech": 0
     },
     "Gabriela Lee|||Raluka Serban": {
@@ -106622,7 +106622,7 @@
     },
     "Caty Mcnally|||Karolina Muchova": {
       "Caty Mcnally": 1,
-      "Karolina Muchova": 0
+      "Karolina Muchova": 1
     },
     "Alycia Parks|||Maria Sakkari": {
       "Alycia Parks": 2,
@@ -118477,7 +118477,7 @@
       "Valeria Savinykh": 1
     },
     "Diana Shnaider|||Yulia Putintseva": {
-      "Diana Shnaider": 0,
+      "Diana Shnaider": 1,
       "Yulia Putintseva": 2
     },
     "Ashlyn Krueger|||Kateryna Baindl": {
@@ -151001,7 +151001,7 @@
       "Xinyu Wang": 1
     },
     "Elina Svitolina|||Liudmila Samsonova": {
-      "Elina Svitolina": 1,
+      "Elina Svitolina": 2,
       "Liudmila Samsonova": 0
     },
     "Ekaterina Alexandrova|||Naomi Osaka": {
@@ -155676,14 +155676,50 @@
       "Mia Pohankova": 1,
       "Xiyu Wang": 0
     },
+    "Belinda Bencic|||Sonay Kartal": {
+      "Belinda Bencic": 0,
+      "Sonay Kartal": 1
+    },
+    "Maja Chwalinska|||Marie Bouzkova": {
+      "Maja Chwalinska": 1,
+      "Marie Bouzkova": 0
+    },
+    "Dayana Yastremska|||Iva Jovic": {
+      "Dayana Yastremska": 0,
+      "Iva Jovic": 1
+    },
+    "Jasmine Paolini|||Nikola Bartunkova": {
+      "Jasmine Paolini": 1,
+      "Nikola Bartunkova": 0
+    },
+    "Daria Snigur|||Janice Tjen": {
+      "Daria Snigur": 0,
+      "Janice Tjen": 1
+    },
+    "Hanyu Guo|||Katie Volynets": {
+      "Hanyu Guo": 1,
+      "Katie Volynets": 0
+    },
+    "Ashlyn Krueger|||Lanlana Tararudee": {
+      "Ashlyn Krueger": 1,
+      "Lanlana Tararudee": 0
+    },
+    "Han Shi|||Leylah Fernandez": {
+      "Han Shi": 0,
+      "Leylah Fernandez": 1
+    },
     "Arthur Gea|||Jakub Mensik": {
       "Arthur Gea": 1,
       "Jakub Mensik": 0
+    },
+    "Botic Van De Zandschulp|||Rafael Jodar": {
+      "Botic Van De Zandschulp": 0,
+      "Rafael Jodar": 1
     }
   },
   "_meta": {
-    "fecha": "2026-10-14T09:23:52.028160+00:00",
-    "total_pares": 38920,
+    "fecha": "2026-10-15T09:02:00.815742+00:00",
+    "total_pares": 38929,
     "metodo": "Enfrentamientos directos acumulados de todo el histórico real procesado (mismo rango que tennis_elo_ratings.json)."
   }
 }
