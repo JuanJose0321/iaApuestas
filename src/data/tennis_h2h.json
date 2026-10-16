@@ -51634,7 +51634,7 @@
     },
     "Alex De Minaur|||Alexander Zverev": {
       "Alex De Minaur": 2,
-      "Alexander Zverev": 8
+      "Alexander Zverev": 9
     },
     "Jan Lennard Struff|||Nick Kyrgios": {
       "Jan Lennard Struff": 1,
@@ -54229,7 +54229,7 @@
       "Evgeny Donskoy": 1
     },
     "Daniil Medvedev|||Stefanos Tsitsipas": {
-      "Daniil Medvedev": 10,
+      "Daniil Medvedev": 11,
       "Stefanos Tsitsipas": 5
     },
     "Frances Tiafoe|||Nicolas Kicker": {
@@ -89497,7 +89497,7 @@
       "Vitalia Diatchenko": 0
     },
     "Jelena Ostapenko|||Leylah Fernandez": {
-      "Jelena Ostapenko": 1,
+      "Jelena Ostapenko": 2,
       "Leylah Fernandez": 0
     },
     "Ajla Tomljanovic|||Greet Minnen": {
@@ -143677,7 +143677,7 @@
       "Zeynep Sonmez": 0
     },
     "Diana Shnaider|||Karolina Muchova": {
-      "Diana Shnaider": 1,
+      "Diana Shnaider": 2,
       "Karolina Muchova": 0
     },
     "Ashlyn Krueger|||Olga Danilovic": {
@@ -147433,7 +147433,7 @@
       "Jannik Sinner": 1
     },
     "Tommy Paul|||Zizou Bergs": {
-      "Tommy Paul": 1,
+      "Tommy Paul": 2,
       "Zizou Bergs": 0
     },
     "Nuno Borges|||Valentin Vacherot": {
@@ -155708,6 +155708,30 @@
       "Han Shi": 0,
       "Leylah Fernandez": 1
     },
+    "Elina Svitolina|||Hanyu Guo": {
+      "Elina Svitolina": 1,
+      "Hanyu Guo": 0
+    },
+    "Iva Jovic|||Maja Chwalinska": {
+      "Iva Jovic": 0,
+      "Maja Chwalinska": 1
+    },
+    "Maria Sakkari|||Mia Pohankova": {
+      "Maria Sakkari": 1,
+      "Mia Pohankova": 0
+    },
+    "Jasmine Paolini|||Sonay Kartal": {
+      "Jasmine Paolini": 0,
+      "Sonay Kartal": 1
+    },
+    "Ashlyn Krueger|||Iga Swiatek": {
+      "Ashlyn Krueger": 0,
+      "Iga Swiatek": 1
+    },
+    "Ann Li|||Janice Tjen": {
+      "Ann Li": 1,
+      "Janice Tjen": 0
+    },
     "Arthur Gea|||Jakub Mensik": {
       "Arthur Gea": 1,
       "Jakub Mensik": 0
@@ -155715,11 +155739,15 @@
     "Botic Van De Zandschulp|||Rafael Jodar": {
       "Botic Van De Zandschulp": 0,
       "Rafael Jodar": 1
+    },
+    "Alejandro Davidovich Fokina|||Arthur Gea": {
+      "Alejandro Davidovich Fokina": 1,
+      "Arthur Gea": 0
     }
   },
   "_meta": {
-    "fecha": "2026-10-15T09:02:00.815742+00:00",
-    "total_pares": 38929,
+    "fecha": "2026-10-16T08:54:30.610057+00:00",
+    "total_pares": 38936,
     "metodo": "Enfrentamientos directos acumulados de todo el histórico real procesado (mismo rango que tennis_elo_ratings.json)."
   }
 }
