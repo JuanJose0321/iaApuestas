@@ -41749,8 +41749,8 @@
       "Jana Cepelova": 1
     },
     "Fiona Ferro|||Sorana Cirstea": {
-      "Fiona Ferro": 1,
-      "Sorana Cirstea": 2
+      "Fiona Ferro": 0,
+      "Sorana Cirstea": 3
     },
     "Alexandra Cadantu Ignatik|||Nao Hibino": {
       "Alexandra Cadantu Ignatik": 2,
@@ -66045,8 +66045,8 @@
       "Tamara Korpatsch": 1
     },
     "Anna Bondar|||Sorana Cirstea": {
-      "Anna Bondar": 1,
-      "Sorana Cirstea": 2
+      "Anna Bondar": 0,
+      "Sorana Cirstea": 3
     },
     "Anastasia Potapova|||Heather Watson": {
       "Anastasia Potapova": 1,
@@ -88413,7 +88413,7 @@
       "Reilly Opelka": 1
     },
     "Daniil Medvedev|||Tommy Paul": {
-      "Daniil Medvedev": 4,
+      "Daniil Medvedev": 5,
       "Tommy Paul": 1
     },
     "Ashleigh Barty|||Magda Linette": {
@@ -94437,8 +94437,8 @@
       "Urszula Radwanska": 0
     },
     "Ann Li|||Kamilla Rakhimova": {
-      "Ann Li": 2,
-      "Kamilla Rakhimova": 1
+      "Ann Li": 3,
+      "Kamilla Rakhimova": 0
     },
     "Dennis Novak|||Jannik Sinner": {
       "Dennis Novak": 0,
@@ -126165,8 +126165,8 @@
       "Xiyu Wang": 0
     },
     "Alexandra Eala|||Sorana Cirstea": {
-      "Alexandra Eala": 0,
-      "Sorana Cirstea": 2
+      "Alexandra Eala": 1,
+      "Sorana Cirstea": 1
     },
     "Elina Svitolina|||Sara Sorribes Tormo": {
       "Elina Svitolina": 0,
@@ -132189,8 +132189,8 @@
       "Taylor Townsend": 0
     },
     "Emma Navarro|||Shuai Zhang": {
-      "Emma Navarro": 2,
-      "Shuai Zhang": 2
+      "Emma Navarro": 1,
+      "Shuai Zhang": 3
     },
     "Anastasia Potapova|||Greet Minnen": {
       "Anastasia Potapova": 0,
@@ -137754,7 +137754,7 @@
     },
     "Elina Svitolina|||Sonay Kartal": {
       "Elina Svitolina": 2,
-      "Sonay Kartal": 0
+      "Sonay Kartal": 1
     },
     "Rebeka Masarova|||Yulia Putintseva": {
       "Rebeka Masarova": 1,
@@ -144357,8 +144357,8 @@
       "Victoria Mboko": 2
     },
     "Anna Blinkova|||Dominika Salkova": {
-      "Anna Blinkova": 2,
-      "Dominika Salkova": 0
+      "Anna Blinkova": 1,
+      "Dominika Salkova": 1
     },
     "Lilli Tagger|||Viktorija Golubic": {
       "Lilli Tagger": 1,
@@ -144828,6 +144828,26 @@
       "Terence Atmane": 1,
       "Ugo Humbert": 1
     },
+    "Dayana Yastremska|||Katerina Siniakova": {
+      "Dayana Yastremska": 0,
+      "Katerina Siniakova": 1
+    },
+    "Emerson Jones|||Emma Navarro": {
+      "Emerson Jones": 0,
+      "Emma Navarro": 1
+    },
+    "Beatriz Haddad Maia|||Victoria Mboko": {
+      "Beatriz Haddad Maia": 0,
+      "Victoria Mboko": 1
+    },
+    "Anna Kalinskaya|||Elena Gabriela Ruse": {
+      "Anna Kalinskaya": 1,
+      "Elena Gabriela Ruse": 1
+    },
+    "Jelena Ostapenko|||Tereza Valentova": {
+      "Jelena Ostapenko": 0,
+      "Tereza Valentova": 1
+    },
     "Elsa Jacquemot|||Magdalena Frech": {
       "Elsa Jacquemot": 0,
       "Magdalena Frech": 2
@@ -144864,25 +144884,17 @@
       "Mccartney Kessler": 0,
       "Olga Danilovic": 1
     },
-    "Dayana Yastremska|||Katerina Siniakova": {
-      "Dayana Yastremska": 0,
-      "Katerina Siniakova": 1
+    "Emma Navarro|||Yulia Putintseva": {
+      "Emma Navarro": 1,
+      "Yulia Putintseva": 0
     },
-    "Emerson Jones|||Emma Navarro": {
-      "Emerson Jones": 0,
-      "Emma Navarro": 1
+    "Kimberly Birrell|||Marketa Vondrousova": {
+      "Kimberly Birrell": 1,
+      "Marketa Vondrousova": 0
     },
-    "Beatriz Haddad Maia|||Victoria Mboko": {
-      "Beatriz Haddad Maia": 0,
-      "Victoria Mboko": 1
-    },
-    "Anna Kalinskaya|||Elena Gabriela Ruse": {
-      "Anna Kalinskaya": 1,
-      "Elena Gabriela Ruse": 1
-    },
-    "Jelena Ostapenko|||Tereza Valentova": {
-      "Jelena Ostapenko": 0,
-      "Tereza Valentova": 1
+    "Madison Keys|||Tereza Valentova": {
+      "Madison Keys": 1,
+      "Tereza Valentova": 0
     },
     "Emma Raducanu|||Magdalena Frech": {
       "Emma Raducanu": 1,
@@ -144900,17 +144912,13 @@
       "Olga Danilovic": 1,
       "Peyton Stearns": 0
     },
-    "Emma Navarro|||Yulia Putintseva": {
-      "Emma Navarro": 1,
-      "Yulia Putintseva": 0
+    "Maya Joint|||Mirra Andreeva": {
+      "Maya Joint": 0,
+      "Mirra Andreeva": 1
     },
-    "Kimberly Birrell|||Marketa Vondrousova": {
-      "Kimberly Birrell": 1,
-      "Marketa Vondrousova": 0
-    },
-    "Madison Keys|||Tereza Valentova": {
+    "Madison Keys|||Victoria Mboko": {
       "Madison Keys": 1,
-      "Tereza Valentova": 0
+      "Victoria Mboko": 1
     },
     "Emma Raducanu|||Taylah Preston": {
       "Emma Raducanu": 0,
@@ -144920,25 +144928,17 @@
       "Antonia Ruzic": 1,
       "Olga Danilovic": 0
     },
-    "Maya Joint|||Mirra Andreeva": {
-      "Maya Joint": 0,
-      "Mirra Andreeva": 1
-    },
-    "Madison Keys|||Victoria Mboko": {
-      "Madison Keys": 1,
-      "Victoria Mboko": 1
-    },
     "Iva Jovic|||Taylah Preston": {
       "Iva Jovic": 1,
       "Taylah Preston": 0
     },
-    "Elisabetta Cocciaretto|||Iva Jovic": {
-      "Elisabetta Cocciaretto": 1,
-      "Iva Jovic": 0
-    },
     "Mirra Andreeva|||Victoria Mboko": {
       "Mirra Andreeva": 1,
       "Victoria Mboko": 2
+    },
+    "Elisabetta Cocciaretto|||Iva Jovic": {
+      "Elisabetta Cocciaretto": 1,
+      "Iva Jovic": 0
     },
     "Alex Michelsen|||Mariano Navone": {
       "Alex Michelsen": 1,
@@ -145588,6 +145588,90 @@
       "Jannik Sinner": 1,
       "Luciano Darderi": 0
     },
+    "Cristina Bucsa|||Sonay Kartal": {
+      "Cristina Bucsa": 0,
+      "Sonay Kartal": 1
+    },
+    "Jelena Ostapenko|||Oksana Selekhmeteva": {
+      "Jelena Ostapenko": 1,
+      "Oksana Selekhmeteva": 0
+    },
+    "Daria Kasatkina|||Simona Waltert": {
+      "Daria Kasatkina": 0,
+      "Simona Waltert": 1
+    },
+    "Anastasia Pavlyuchenkova|||Mccartney Kessler": {
+      "Anastasia Pavlyuchenkova": 0,
+      "Mccartney Kessler": 1
+    },
+    "Chloe Paquet|||Leylah Fernandez": {
+      "Chloe Paquet": 0,
+      "Leylah Fernandez": 1
+    },
+    "Janice Tjen|||Maya Joint": {
+      "Janice Tjen": 1,
+      "Maya Joint": 0
+    },
+    "Hailey Baptiste|||Teodora Kostovic": {
+      "Hailey Baptiste": 1,
+      "Teodora Kostovic": 0
+    },
+    "Alexandra Eala|||Zeynep Sonmez": {
+      "Alexandra Eala": 1,
+      "Zeynep Sonmez": 0
+    },
+    "Beatriz Haddad Maia|||Dayana Yastremska": {
+      "Beatriz Haddad Maia": 0,
+      "Dayana Yastremska": 1
+    },
+    "Emma Raducanu|||Greet Minnen": {
+      "Emma Raducanu": 1,
+      "Greet Minnen": 0
+    },
+    "Elena Ruxandra Bertea|||Kaja Juvan": {
+      "Elena Ruxandra Bertea": 0,
+      "Kaja Juvan": 1
+    },
+    "Ana Bogdan|||Maja Chwalinska": {
+      "Ana Bogdan": 0,
+      "Maja Chwalinska": 1
+    },
+    "Miriam Bianca Bulgaru|||Olga Danilovic": {
+      "Miriam Bianca Bulgaru": 0,
+      "Olga Danilovic": 1
+    },
+    "Kaitlin Quevedo|||Xinyu Wang": {
+      "Kaitlin Quevedo": 0,
+      "Xinyu Wang": 1
+    },
+    "Mayar Sherif|||Oleksandra Oliynykova": {
+      "Mayar Sherif": 1,
+      "Oleksandra Oliynykova": 2
+    },
+    "Anastasia Zakharova|||Karolina Pliskova": {
+      "Anastasia Zakharova": 1,
+      "Karolina Pliskova": 0
+    },
+    "Tamara Zidansek|||Veronika Erjavec": {
+      "Tamara Zidansek": 1,
+      "Veronika Erjavec": 0
+    },
+    "Antonia Ruzic|||Yue Yuan": {
+      "Antonia Ruzic": 0,
+      "Yue Yuan": 1
+    },
+    "Sara Sorribes Tormo|||Viktoriya Tomova": {
+      "Sara Sorribes Tormo": 1,
+      "Viktoriya Tomova": 0
+    },
+    "Daria Snigur|||Tiantsoa Rakotomanga Rajaonah": {
+      "Daria Snigur": 1,
+      "Tiantsoa Rakotomanga Rajaonah": 0
+    },
+    "Jaqueline Cristian|||Lucrezia Stefanini": {
+      "Jaqueline Cristian": 1,
+      "Lucrezia Stefanini": 0
+    },
     "Katie Volynets|||Linda Klimovicova": {
       "Katie Volynets": 1,
       "Linda Klimovicova": 0
@@ -145640,113 +145724,29 @@
       "Anna Siskova": 0,
       "Tamara Korpatsch": 1
     },
-    "Emma Raducanu|||Greet Minnen": {
-      "Emma Raducanu": 1,
-      "Greet Minnen": 0
-    },
-    "Elena Ruxandra Bertea|||Kaja Juvan": {
-      "Elena Ruxandra Bertea": 0,
-      "Kaja Juvan": 1
-    },
-    "Ana Bogdan|||Maja Chwalinska": {
-      "Ana Bogdan": 0,
-      "Maja Chwalinska": 1
-    },
-    "Miriam Bianca Bulgaru|||Olga Danilovic": {
-      "Miriam Bianca Bulgaru": 0,
-      "Olga Danilovic": 1
-    },
-    "Kaitlin Quevedo|||Xinyu Wang": {
-      "Kaitlin Quevedo": 0,
-      "Xinyu Wang": 1
-    },
-    "Mayar Sherif|||Oleksandra Oliynykova": {
-      "Mayar Sherif": 1,
-      "Oleksandra Oliynykova": 2
-    },
-    "Anastasia Zakharova|||Karolina Pliskova": {
-      "Anastasia Zakharova": 1,
-      "Karolina Pliskova": 0
-    },
-    "Tamara Zidansek|||Veronika Erjavec": {
-      "Tamara Zidansek": 1,
-      "Veronika Erjavec": 0
-    },
-    "Antonia Ruzic|||Yue Yuan": {
-      "Antonia Ruzic": 0,
-      "Yue Yuan": 1
-    },
-    "Sara Sorribes Tormo|||Viktoriya Tomova": {
-      "Sara Sorribes Tormo": 1,
-      "Viktoriya Tomova": 0
-    },
-    "Daria Snigur|||Tiantsoa Rakotomanga Rajaonah": {
-      "Daria Snigur": 1,
-      "Tiantsoa Rakotomanga Rajaonah": 0
-    },
-    "Jaqueline Cristian|||Lucrezia Stefanini": {
-      "Jaqueline Cristian": 1,
-      "Lucrezia Stefanini": 0
-    },
-    "Cristina Bucsa|||Sonay Kartal": {
-      "Cristina Bucsa": 0,
+    "Renata Zarazua|||Sonay Kartal": {
+      "Renata Zarazua": 0,
       "Sonay Kartal": 1
     },
-    "Jelena Ostapenko|||Oksana Selekhmeteva": {
-      "Jelena Ostapenko": 1,
-      "Oksana Selekhmeteva": 0
+    "Jelena Ostapenko|||Sara Bejlek": {
+      "Jelena Ostapenko": 0,
+      "Sara Bejlek": 1
     },
-    "Daria Kasatkina|||Simona Waltert": {
-      "Daria Kasatkina": 0,
-      "Simona Waltert": 1
+    "Clara Tauson|||Simona Waltert": {
+      "Clara Tauson": 1,
+      "Simona Waltert": 0
     },
-    "Anastasia Pavlyuchenkova|||Mccartney Kessler": {
-      "Anastasia Pavlyuchenkova": 0,
+    "Leylah Fernandez|||Mccartney Kessler": {
+      "Leylah Fernandez": 0,
       "Mccartney Kessler": 1
     },
-    "Chloe Paquet|||Leylah Fernandez": {
-      "Chloe Paquet": 0,
-      "Leylah Fernandez": 1
+    "Janice Tjen|||Liudmila Samsonova": {
+      "Janice Tjen": 0,
+      "Liudmila Samsonova": 3
     },
-    "Janice Tjen|||Maya Joint": {
-      "Janice Tjen": 1,
-      "Maya Joint": 0
-    },
-    "Hailey Baptiste|||Teodora Kostovic": {
-      "Hailey Baptiste": 1,
-      "Teodora Kostovic": 0
-    },
-    "Alexandra Eala|||Zeynep Sonmez": {
+    "Alexandra Eala|||Aliaksandra Sasnovich": {
       "Alexandra Eala": 1,
-      "Zeynep Sonmez": 0
-    },
-    "Beatriz Haddad Maia|||Dayana Yastremska": {
-      "Beatriz Haddad Maia": 0,
-      "Dayana Yastremska": 1
-    },
-    "Alycia Parks|||Elina Avanesyan": {
-      "Alycia Parks": 1,
-      "Elina Avanesyan": 0
-    },
-    "Linda Fruhvirtova|||Rebecca Sramkova": {
-      "Linda Fruhvirtova": 1,
-      "Rebecca Sramkova": 0
-    },
-    "Diane Parry|||Panna Udvardy": {
-      "Diane Parry": 1,
-      "Panna Udvardy": 0
-    },
-    "Fiona Ferro|||Nikola Bartunkova": {
-      "Fiona Ferro": 0,
-      "Nikola Bartunkova": 1
-    },
-    "Caty Mcnally|||Tereza Martincova": {
-      "Caty Mcnally": 1,
-      "Tereza Martincova": 0
-    },
-    "Emiliana Arango|||Tamara Korpatsch": {
-      "Emiliana Arango": 0,
-      "Tamara Korpatsch": 1
+      "Aliaksandra Sasnovich": 0
     },
     "Emma Raducanu|||Kaja Juvan": {
       "Emma Raducanu": 1,
@@ -145772,53 +145772,29 @@
       "Daria Snigur": 1,
       "Jaqueline Cristian": 0
     },
-    "Renata Zarazua|||Sonay Kartal": {
-      "Renata Zarazua": 0,
-      "Sonay Kartal": 1
+    "Alycia Parks|||Elina Avanesyan": {
+      "Alycia Parks": 1,
+      "Elina Avanesyan": 0
     },
-    "Jelena Ostapenko|||Sara Bejlek": {
-      "Jelena Ostapenko": 0,
-      "Sara Bejlek": 1
+    "Linda Fruhvirtova|||Rebecca Sramkova": {
+      "Linda Fruhvirtova": 1,
+      "Rebecca Sramkova": 0
     },
-    "Clara Tauson|||Simona Waltert": {
-      "Clara Tauson": 1,
-      "Simona Waltert": 0
-    },
-    "Leylah Fernandez|||Mccartney Kessler": {
-      "Leylah Fernandez": 0,
-      "Mccartney Kessler": 1
-    },
-    "Janice Tjen|||Liudmila Samsonova": {
-      "Janice Tjen": 0,
-      "Liudmila Samsonova": 3
-    },
-    "Alexandra Eala|||Aliaksandra Sasnovich": {
-      "Alexandra Eala": 1,
-      "Aliaksandra Sasnovich": 0
-    },
-    "Katie Boulter|||Linda Fruhvirtova": {
-      "Katie Boulter": 1,
-      "Linda Fruhvirtova": 0
-    },
-    "Diane Parry|||Nikola Bartunkova": {
+    "Diane Parry|||Panna Udvardy": {
       "Diane Parry": 1,
-      "Nikola Bartunkova": 0
+      "Panna Udvardy": 0
     },
-    "Caty Mcnally|||Tamara Korpatsch": {
-      "Caty Mcnally": 0,
+    "Fiona Ferro|||Nikola Bartunkova": {
+      "Fiona Ferro": 0,
+      "Nikola Bartunkova": 1
+    },
+    "Caty Mcnally|||Tereza Martincova": {
+      "Caty Mcnally": 1,
+      "Tereza Martincova": 0
+    },
+    "Emiliana Arango|||Tamara Korpatsch": {
+      "Emiliana Arango": 0,
       "Tamara Korpatsch": 1
-    },
-    "Emma Raducanu|||Maja Chwalinska": {
-      "Emma Raducanu": 1,
-      "Maja Chwalinska": 0
-    },
-    "Oleksandra Oliynykova|||Xinyu Wang": {
-      "Oleksandra Oliynykova": 1,
-      "Xinyu Wang": 0
-    },
-    "Daria Snigur|||Yue Yuan": {
-      "Daria Snigur": 1,
-      "Yue Yuan": 0
     },
     "Sara Bejlek|||Sonay Kartal": {
       "Sara Bejlek": 1,
@@ -145832,13 +145808,33 @@
       "Alexandra Eala": 0,
       "Ekaterina Alexandrova": 1
     },
-    "Katie Boulter|||Katie Volynets": {
-      "Katie Boulter": 2,
-      "Katie Volynets": 0
+    "Emma Raducanu|||Maja Chwalinska": {
+      "Emma Raducanu": 1,
+      "Maja Chwalinska": 0
     },
-    "Diane Parry|||Tamara Korpatsch": {
-      "Diane Parry": 0,
+    "Oleksandra Oliynykova|||Xinyu Wang": {
+      "Oleksandra Oliynykova": 1,
+      "Xinyu Wang": 0
+    },
+    "Daria Snigur|||Yue Yuan": {
+      "Daria Snigur": 1,
+      "Yue Yuan": 0
+    },
+    "Katie Boulter|||Linda Fruhvirtova": {
+      "Katie Boulter": 1,
+      "Linda Fruhvirtova": 0
+    },
+    "Diane Parry|||Nikola Bartunkova": {
+      "Diane Parry": 1,
+      "Nikola Bartunkova": 0
+    },
+    "Caty Mcnally|||Tamara Korpatsch": {
+      "Caty Mcnally": 0,
       "Tamara Korpatsch": 1
+    },
+    "Clara Tauson|||Sara Bejlek": {
+      "Clara Tauson": 1,
+      "Sara Bejlek": 1
     },
     "Emma Raducanu|||Oleksandra Oliynykova": {
       "Emma Raducanu": 1,
@@ -145848,17 +145844,21 @@
       "Daria Snigur": 0,
       "Sorana Cirstea": 1
     },
-    "Clara Tauson|||Sara Bejlek": {
-      "Clara Tauson": 1,
-      "Sara Bejlek": 1
+    "Katie Boulter|||Katie Volynets": {
+      "Katie Boulter": 2,
+      "Katie Volynets": 0
     },
-    "Katie Boulter|||Tamara Korpatsch": {
-      "Katie Boulter": 1,
-      "Tamara Korpatsch": 0
+    "Diane Parry|||Tamara Korpatsch": {
+      "Diane Parry": 0,
+      "Tamara Korpatsch": 1
     },
     "Ekaterina Alexandrova|||Sara Bejlek": {
       "Ekaterina Alexandrova": 0,
       "Sara Bejlek": 2
+    },
+    "Katie Boulter|||Tamara Korpatsch": {
+      "Katie Boulter": 1,
+      "Tamara Korpatsch": 0
     },
     "Christopher O'connell|||Roberto Bautista Agut": {
       "Christopher O'connell": 0,
@@ -148536,6 +148536,14 @@
       "Bianca Andreescu": 1,
       "Sonja Zhiyenbayeva": 0
     },
+    "Elina Svitolina|||Katarzyna Kawa": {
+      "Elina Svitolina": 1,
+      "Katarzyna Kawa": 0
+    },
+    "Linda Klimovicova|||Oleksandra Oliynykova": {
+      "Linda Klimovicova": 0,
+      "Oleksandra Oliynykova": 1
+    },
     "Kaitlin Quevedo|||Tamara Zidansek": {
       "Kaitlin Quevedo": 1,
       "Tamara Zidansek": 0
@@ -148555,14 +148563,6 @@
     "Linda Noskova|||Viktorija Golubic": {
       "Linda Noskova": 2,
       "Viktorija Golubic": 0
-    },
-    "Elina Svitolina|||Katarzyna Kawa": {
-      "Elina Svitolina": 1,
-      "Katarzyna Kawa": 0
-    },
-    "Linda Klimovicova|||Oleksandra Oliynykova": {
-      "Linda Klimovicova": 0,
-      "Oleksandra Oliynykova": 1
     },
     "Alexander Zverev|||Joao Fonseca": {
       "Alexander Zverev": 1,
@@ -148616,6 +148616,50 @@
       "Hamad Medjedovic": 1,
       "Marco Trungelliti": 1
     },
+    "Elvina Kalieva|||Kamilla Rakhimova": {
+      "Elvina Kalieva": 0,
+      "Kamilla Rakhimova": 1
+    },
+    "Ann Li|||Daria Kasatkina": {
+      "Ann Li": 1,
+      "Daria Kasatkina": 0
+    },
+    "Hailey Baptiste|||Jessika Ponchet": {
+      "Hailey Baptiste": 1,
+      "Jessika Ponchet": 0
+    },
+    "Iryna Shymanovich|||Linda Fruhvirtova": {
+      "Iryna Shymanovich": 1,
+      "Linda Fruhvirtova": 0
+    },
+    "Alina Charaeva|||Elisabetta Cocciaretto": {
+      "Alina Charaeva": 0,
+      "Elisabetta Cocciaretto": 1
+    },
+    "Sloane Stephens|||Veronika Podrez": {
+      "Sloane Stephens": 0,
+      "Veronika Podrez": 1
+    },
+    "Katie Boulter|||Maria Timofeeva": {
+      "Katie Boulter": 1,
+      "Maria Timofeeva": 0
+    },
+    "Jaqueline Cristian|||Tiantsoa Rakotomanga Rajaonah": {
+      "Jaqueline Cristian": 1,
+      "Tiantsoa Rakotomanga Rajaonah": 0
+    },
+    "Anna Bondar|||Harmony Tan": {
+      "Anna Bondar": 1,
+      "Harmony Tan": 0
+    },
+    "Lilli Tagger|||Oleksandra Oliynykova": {
+      "Lilli Tagger": 0,
+      "Oleksandra Oliynykova": 1
+    },
+    "Chloe Paquet|||Xiyu Wang": {
+      "Chloe Paquet": 0,
+      "Xiyu Wang": 1
+    },
     "Diana Shnaider|||Tamara Korpatsch": {
       "Diana Shnaider": 1,
       "Tamara Korpatsch": 0
@@ -148652,49 +148696,21 @@
       "Antonia Ruzic": 0,
       "Liudmila Samsonova": 1
     },
-    "Elvina Kalieva|||Kamilla Rakhimova": {
-      "Elvina Kalieva": 0,
-      "Kamilla Rakhimova": 1
+    "Caty Mcnally|||Marta Kostyuk": {
+      "Caty Mcnally": 0,
+      "Marta Kostyuk": 2
     },
-    "Ann Li|||Daria Kasatkina": {
-      "Ann Li": 0,
-      "Daria Kasatkina": 1
+    "Hailey Baptiste|||Iryna Shymanovich": {
+      "Hailey Baptiste": 0,
+      "Iryna Shymanovich": 1
     },
-    "Hailey Baptiste|||Jessika Ponchet": {
-      "Hailey Baptiste": 1,
-      "Jessika Ponchet": 0
+    "Dominika Salkova|||Tatjana Maria": {
+      "Dominika Salkova": 0,
+      "Tatjana Maria": 1
     },
-    "Iryna Shymanovich|||Linda Fruhvirtova": {
-      "Iryna Shymanovich": 1,
-      "Linda Fruhvirtova": 0
-    },
-    "Alina Charaeva|||Elisabetta Cocciaretto": {
-      "Alina Charaeva": 0,
-      "Elisabetta Cocciaretto": 1
-    },
-    "Sloane Stephens|||Veronika Podrez": {
-      "Sloane Stephens": 1,
-      "Veronika Podrez": 0
-    },
-    "Katie Boulter|||Maria Timofeeva": {
-      "Katie Boulter": 0,
-      "Maria Timofeeva": 1
-    },
-    "Jaqueline Cristian|||Tiantsoa Rakotomanga Rajaonah": {
-      "Jaqueline Cristian": 0,
-      "Tiantsoa Rakotomanga Rajaonah": 1
-    },
-    "Anna Bondar|||Harmony Tan": {
-      "Anna Bondar": 1,
-      "Harmony Tan": 0
-    },
-    "Lilli Tagger|||Oleksandra Oliynykova": {
-      "Lilli Tagger": 0,
-      "Oleksandra Oliynykova": 1
-    },
-    "Chloe Paquet|||Xiyu Wang": {
-      "Chloe Paquet": 1,
-      "Xiyu Wang": 0
+    "Elisabetta Cocciaretto|||Veronika Podrez": {
+      "Elisabetta Cocciaretto": 0,
+      "Veronika Podrez": 1
     },
     "Diana Shnaider|||Elena Rybakina": {
       "Diana Shnaider": 0,
@@ -148708,25 +148724,9 @@
       "Elina Svitolina": 2,
       "Eva Lys": 0
     },
-    "Caty Mcnally|||Marta Kostyuk": {
-      "Caty Mcnally": 0,
-      "Marta Kostyuk": 2
-    },
-    "Hailey Baptiste|||Iryna Shymanovich": {
-      "Hailey Baptiste": 1,
-      "Iryna Shymanovich": 0
-    },
-    "Dominika Salkova|||Tatjana Maria": {
-      "Dominika Salkova": 1,
-      "Tatjana Maria": 0
-    },
-    "Elisabetta Cocciaretto|||Veronika Podrez": {
-      "Elisabetta Cocciaretto": 1,
-      "Veronika Podrez": 0
-    },
     "Iryna Shymanovich|||Tatjana Maria": {
-      "Iryna Shymanovich": 1,
-      "Tatjana Maria": 0
+      "Iryna Shymanovich": 0,
+      "Tatjana Maria": 1
     },
     "Katie Boulter|||Veronika Podrez": {
       "Katie Boulter": 0,
@@ -148974,7 +148974,7 @@
     },
     "Ann Li|||Iga Swiatek": {
       "Ann Li": 1,
-      "Iga Swiatek": 0
+      "Iga Swiatek": 1
     },
     "Anhelina Kalinina|||Naomi Osaka": {
       "Anhelina Kalinina": 0,
@@ -150217,7 +150217,7 @@
       "Naomi Osaka": 1
     },
     "Maja Chwalinska|||Maria Sakkari": {
-      "Maja Chwalinska": 1,
+      "Maja Chwalinska": 2,
       "Maria Sakkari": 0
     },
     "Diana Shnaider|||Oleksandra Oliynykova": {
@@ -150512,42 +150512,6 @@
       "Elias Ymer": 0,
       "Ugo Humbert": 1
     },
-    "Katie Boulter|||Leylah Fernandez": {
-      "Katie Boulter": 1,
-      "Leylah Fernandez": 1
-    },
-    "Karolina Pliskova|||Mccartney Kessler": {
-      "Karolina Pliskova": 1,
-      "Mccartney Kessler": 0
-    },
-    "Marie Bouzkova|||Polina Kudermetova": {
-      "Marie Bouzkova": 1,
-      "Polina Kudermetova": 0
-    },
-    "Donna Vekic|||Mika Stojsavljevic": {
-      "Donna Vekic": 1,
-      "Mika Stojsavljevic": 0
-    },
-    "Maddison Inglis|||Sorana Cirstea": {
-      "Maddison Inglis": 0,
-      "Sorana Cirstea": 1
-    },
-    "Anna Blinkova|||Emma Raducanu": {
-      "Anna Blinkova": 0,
-      "Emma Raducanu": 1
-    },
-    "Harriet Dart|||Liudmila Samsonova": {
-      "Harriet Dart": 1,
-      "Liudmila Samsonova": 0
-    },
-    "Antonia Ruzic|||Iva Jovic": {
-      "Antonia Ruzic": 0,
-      "Iva Jovic": 1
-    },
-    "Alexandra Eala|||Shuai Zhang": {
-      "Alexandra Eala": 1,
-      "Shuai Zhang": 0
-    },
     "Ekaterina Alexandrova|||Panna Udvardy": {
       "Ekaterina Alexandrova": 1,
       "Panna Udvardy": 1
@@ -150588,21 +150552,41 @@
       "Clara Tauson": 0,
       "Mia Pohankova": 1
     },
-    "Karolina Pliskova|||Victoria Mboko": {
+    "Katie Boulter|||Leylah Fernandez": {
+      "Katie Boulter": 1,
+      "Leylah Fernandez": 1
+    },
+    "Karolina Pliskova|||Mccartney Kessler": {
       "Karolina Pliskova": 1,
-      "Victoria Mboko": 0
+      "Mccartney Kessler": 0
     },
-    "Donna Vekic|||Marie Bouzkova": {
+    "Marie Bouzkova|||Polina Kudermetova": {
+      "Marie Bouzkova": 1,
+      "Polina Kudermetova": 0
+    },
+    "Donna Vekic|||Mika Stojsavljevic": {
       "Donna Vekic": 1,
-      "Marie Bouzkova": 0
+      "Mika Stojsavljevic": 0
     },
-    "Harriet Dart|||Kamilla Rakhimova": {
-      "Harriet Dart": 0,
-      "Kamilla Rakhimova": 1
+    "Maddison Inglis|||Sorana Cirstea": {
+      "Maddison Inglis": 0,
+      "Sorana Cirstea": 1
     },
-    "Amanda Anisimova|||Laura Siegemund": {
-      "Amanda Anisimova": 1,
-      "Laura Siegemund": 0
+    "Anna Blinkova|||Emma Raducanu": {
+      "Anna Blinkova": 0,
+      "Emma Raducanu": 1
+    },
+    "Harriet Dart|||Liudmila Samsonova": {
+      "Harriet Dart": 1,
+      "Liudmila Samsonova": 0
+    },
+    "Antonia Ruzic|||Iva Jovic": {
+      "Antonia Ruzic": 0,
+      "Iva Jovic": 1
+    },
+    "Alexandra Eala|||Shuai Zhang": {
+      "Alexandra Eala": 1,
+      "Shuai Zhang": 0
     },
     "Daria Snigur|||Panna Udvardy": {
       "Daria Snigur": 1,
@@ -150620,6 +150604,26 @@
       "Magda Linette": 1,
       "Mia Pohankova": 0
     },
+    "Karolina Pliskova|||Victoria Mboko": {
+      "Karolina Pliskova": 1,
+      "Victoria Mboko": 0
+    },
+    "Donna Vekic|||Marie Bouzkova": {
+      "Donna Vekic": 1,
+      "Marie Bouzkova": 0
+    },
+    "Harriet Dart|||Kamilla Rakhimova": {
+      "Harriet Dart": 0,
+      "Kamilla Rakhimova": 1
+    },
+    "Amanda Anisimova|||Laura Siegemund": {
+      "Amanda Anisimova": 1,
+      "Laura Siegemund": 0
+    },
+    "Daria Snigur|||Robin Montgomery": {
+      "Daria Snigur": 0,
+      "Robin Montgomery": 1
+    },
     "Emma Raducanu|||Kamilla Rakhimova": {
       "Emma Raducanu": 1,
       "Kamilla Rakhimova": 0
@@ -150628,25 +150632,21 @@
       "Amanda Anisimova": 0,
       "Iva Jovic": 1
     },
-    "Daria Snigur|||Robin Montgomery": {
-      "Daria Snigur": 0,
+    "Ajla Tomljanovic|||Robin Montgomery": {
+      "Ajla Tomljanovic": 0,
       "Robin Montgomery": 1
     },
     "Emma Raducanu|||Iva Jovic": {
       "Emma Raducanu": 1,
       "Iva Jovic": 0
     },
-    "Ajla Tomljanovic|||Robin Montgomery": {
-      "Ajla Tomljanovic": 0,
+    "Barbora Krejcikova|||Robin Montgomery": {
+      "Barbora Krejcikova": 0,
       "Robin Montgomery": 1
     },
     "Donna Vekic|||Emma Raducanu": {
       "Donna Vekic": 1,
       "Emma Raducanu": 0
-    },
-    "Barbora Krejcikova|||Robin Montgomery": {
-      "Barbora Krejcikova": 0,
-      "Robin Montgomery": 1
     },
     "Aleksandar Kovacevic|||Yannick Hanfmann": {
       "Aleksandar Kovacevic": 0,
@@ -150768,6 +150768,26 @@
       "Martin Landaluce": 0,
       "Terence Atmane": 1
     },
+    "Diana Shnaider|||Nikola Bartunkova": {
+      "Diana Shnaider": 0,
+      "Nikola Bartunkova": 1
+    },
+    "Eva Lys|||Magdalena Frech": {
+      "Eva Lys": 1,
+      "Magdalena Frech": 0
+    },
+    "Linda Noskova|||Renata Zarazua": {
+      "Linda Noskova": 1,
+      "Renata Zarazua": 0
+    },
+    "Katerina Siniakova|||Rebeka Masarova": {
+      "Katerina Siniakova": 1,
+      "Rebeka Masarova": 0
+    },
+    "Paula Badosa|||Suzan Lamens": {
+      "Paula Badosa": 1,
+      "Suzan Lamens": 0
+    },
     "Janice Tjen|||Tatjana Maria": {
       "Janice Tjen": 0,
       "Tatjana Maria": 1
@@ -150812,26 +150832,6 @@
       "Karolina Pliskova": 1,
       "Sara Bejlek": 1
     },
-    "Diana Shnaider|||Nikola Bartunkova": {
-      "Diana Shnaider": 0,
-      "Nikola Bartunkova": 1
-    },
-    "Eva Lys|||Magdalena Frech": {
-      "Eva Lys": 1,
-      "Magdalena Frech": 0
-    },
-    "Linda Noskova|||Renata Zarazua": {
-      "Linda Noskova": 1,
-      "Renata Zarazua": 0
-    },
-    "Katerina Siniakova|||Rebeka Masarova": {
-      "Katerina Siniakova": 1,
-      "Rebeka Masarova": 0
-    },
-    "Paula Badosa|||Suzan Lamens": {
-      "Paula Badosa": 1,
-      "Suzan Lamens": 0
-    },
     "Emma Navarro|||Yuliia Starodubtseva": {
       "Emma Navarro": 1,
       "Yuliia Starodubtseva": 0
@@ -150852,10 +150852,6 @@
       "Ann Li": 1,
       "Taylah Preston": 0
     },
-    "Karolina Pliskova|||Talia Gibson": {
-      "Karolina Pliskova": 1,
-      "Talia Gibson": 0
-    },
     "Aryna Sabalenka|||Nikola Bartunkova": {
       "Aryna Sabalenka": 1,
       "Nikola Bartunkova": 1
@@ -150863,6 +150859,10 @@
     "Alexandra Eala|||Elina Svitolina": {
       "Alexandra Eala": 2,
       "Elina Svitolina": 0
+    },
+    "Karolina Pliskova|||Talia Gibson": {
+      "Karolina Pliskova": 1,
+      "Talia Gibson": 0
     },
     "Emma Navarro|||Viktorija Golubic": {
       "Emma Navarro": 1,
@@ -152192,54 +152192,6 @@
       "Henrique Rocha": 0,
       "Pedro Martinez": 1
     },
-    "Alisa Oktiabreva|||Oceane Dodin": {
-      "Alisa Oktiabreva": 0,
-      "Oceane Dodin": 1
-    },
-    "Daria Snigur|||Ella Seidel": {
-      "Daria Snigur": 1,
-      "Ella Seidel": 0
-    },
-    "Jessica Bouzas Maneiro|||Marie Bouzkova": {
-      "Jessica Bouzas Maneiro": 0,
-      "Marie Bouzkova": 1
-    },
-    "Carol Young Suh Lee|||Veronika Podrez": {
-      "Carol Young Suh Lee": 1,
-      "Veronika Podrez": 0
-    },
-    "Alycia Parks|||Lucie Havlickova": {
-      "Alycia Parks": 0,
-      "Lucie Havlickova": 1
-    },
-    "Ayla Aksu|||Sofia Costoulas": {
-      "Ayla Aksu": 1,
-      "Sofia Costoulas": 0
-    },
-    "Antonia Ruzic|||Dominika Salkova": {
-      "Antonia Ruzic": 0,
-      "Dominika Salkova": 1
-    },
-    "Nikola Bartunkova|||Yue Yuan": {
-      "Nikola Bartunkova": 1,
-      "Yue Yuan": 0
-    },
-    "Laura Samson|||Maya Joint": {
-      "Laura Samson": 0,
-      "Maya Joint": 1
-    },
-    "Lilli Tagger|||Xinyu Gao": {
-      "Lilli Tagger": 1,
-      "Xinyu Gao": 0
-    },
-    "Priscilla Hon|||Tereza Valentova": {
-      "Priscilla Hon": 0,
-      "Tereza Valentova": 1
-    },
-    "Jana Kovackova|||Lanlana Tararudee": {
-      "Jana Kovackova": 0,
-      "Lanlana Tararudee": 1
-    },
     "Anhelina Kalinina|||Kaitlin Quevedo": {
       "Anhelina Kalinina": 1,
       "Kaitlin Quevedo": 0
@@ -152292,6 +152244,74 @@
       "Katarzyna Kawa": 0,
       "Paula Badosa": 1
     },
+    "Alisa Oktiabreva|||Oceane Dodin": {
+      "Alisa Oktiabreva": 0,
+      "Oceane Dodin": 1
+    },
+    "Daria Snigur|||Ella Seidel": {
+      "Daria Snigur": 1,
+      "Ella Seidel": 0
+    },
+    "Jessica Bouzas Maneiro|||Marie Bouzkova": {
+      "Jessica Bouzas Maneiro": 0,
+      "Marie Bouzkova": 1
+    },
+    "Carol Young Suh Lee|||Veronika Podrez": {
+      "Carol Young Suh Lee": 1,
+      "Veronika Podrez": 0
+    },
+    "Alycia Parks|||Lucie Havlickova": {
+      "Alycia Parks": 0,
+      "Lucie Havlickova": 1
+    },
+    "Ayla Aksu|||Sofia Costoulas": {
+      "Ayla Aksu": 1,
+      "Sofia Costoulas": 0
+    },
+    "Antonia Ruzic|||Dominika Salkova": {
+      "Antonia Ruzic": 0,
+      "Dominika Salkova": 1
+    },
+    "Nikola Bartunkova|||Yue Yuan": {
+      "Nikola Bartunkova": 1,
+      "Yue Yuan": 0
+    },
+    "Laura Samson|||Maya Joint": {
+      "Laura Samson": 0,
+      "Maya Joint": 1
+    },
+    "Lilli Tagger|||Xinyu Gao": {
+      "Lilli Tagger": 1,
+      "Xinyu Gao": 0
+    },
+    "Priscilla Hon|||Tereza Valentova": {
+      "Priscilla Hon": 0,
+      "Tereza Valentova": 1
+    },
+    "Jana Kovackova|||Lanlana Tararudee": {
+      "Jana Kovackova": 0,
+      "Lanlana Tararudee": 1
+    },
+    "Anhelina Kalinina|||Maria Lourdes Carle": {
+      "Anhelina Kalinina": 1,
+      "Maria Lourdes Carle": 0
+    },
+    "Alina Charaeva|||Sinja Kraus": {
+      "Alina Charaeva": 1,
+      "Sinja Kraus": 0
+    },
+    "Julia Stusek|||Tamara Korpatsch": {
+      "Julia Stusek": 0,
+      "Tamara Korpatsch": 1
+    },
+    "Elsa Jacquemot|||Mayar Sherif": {
+      "Elsa Jacquemot": 0,
+      "Mayar Sherif": 1
+    },
+    "Leyre Romero Gormaz|||Oleksandra Oliynykova": {
+      "Leyre Romero Gormaz": 0,
+      "Oleksandra Oliynykova": 1
+    },
     "Ayla Aksu|||Daria Snigur": {
       "Ayla Aksu": 0,
       "Daria Snigur": 1
@@ -152320,34 +152340,6 @@
       "Barbora Krejcikova": 1,
       "Lucie Havlickova": 0
     },
-    "Anhelina Kalinina|||Maria Lourdes Carle": {
-      "Anhelina Kalinina": 1,
-      "Maria Lourdes Carle": 0
-    },
-    "Alina Charaeva|||Sinja Kraus": {
-      "Alina Charaeva": 1,
-      "Sinja Kraus": 0
-    },
-    "Julia Stusek|||Tamara Korpatsch": {
-      "Julia Stusek": 0,
-      "Tamara Korpatsch": 1
-    },
-    "Elsa Jacquemot|||Mayar Sherif": {
-      "Elsa Jacquemot": 0,
-      "Mayar Sherif": 1
-    },
-    "Leyre Romero Gormaz|||Oleksandra Oliynykova": {
-      "Leyre Romero Gormaz": 0,
-      "Oleksandra Oliynykova": 1
-    },
-    "Daria Snigur|||Lanlana Tararudee": {
-      "Daria Snigur": 1,
-      "Lanlana Tararudee": 0
-    },
-    "Barbora Krejcikova|||Dominika Salkova": {
-      "Barbora Krejcikova": 1,
-      "Dominika Salkova": 0
-    },
     "Alina Charaeva|||Anna Bondar": {
       "Alina Charaeva": 0,
       "Anna Bondar": 2
@@ -152360,6 +152352,18 @@
       "Anhelina Kalinina": 0,
       "Tamara Korpatsch": 1
     },
+    "Daria Snigur|||Lanlana Tararudee": {
+      "Daria Snigur": 1,
+      "Lanlana Tararudee": 0
+    },
+    "Barbora Krejcikova|||Dominika Salkova": {
+      "Barbora Krejcikova": 1,
+      "Dominika Salkova": 0
+    },
+    "Mayar Sherif|||Tamara Korpatsch": {
+      "Mayar Sherif": 0,
+      "Tamara Korpatsch": 1
+    },
     "Daria Snigur|||Tereza Valentova": {
       "Daria Snigur": 1,
       "Tereza Valentova": 0
@@ -152367,10 +152371,6 @@
     "Barbora Krejcikova|||Lilli Tagger": {
       "Barbora Krejcikova": 0,
       "Lilli Tagger": 1
-    },
-    "Mayar Sherif|||Tamara Korpatsch": {
-      "Mayar Sherif": 0,
-      "Tamara Korpatsch": 1
     },
     "Daria Snigur|||Lilli Tagger": {
       "Daria Snigur": 0,
@@ -154796,38 +154796,6 @@
       "Alan Fernando Rubio Fierros": 1,
       "Tariq Simons": 0
     },
-    "Fiona Ferro|||Talia Gibson": {
-      "Fiona Ferro": 0,
-      "Talia Gibson": 1
-    },
-    "Maja Chwalinska|||Rebecca Sramkova": {
-      "Maja Chwalinska": 1,
-      "Rebecca Sramkova": 0
-    },
-    "Kyoka Okamura|||Leylah Fernandez": {
-      "Kyoka Okamura": 0,
-      "Leylah Fernandez": 1
-    },
-    "Joanna Garland|||Storm Hunter": {
-      "Joanna Garland": 1,
-      "Storm Hunter": 0
-    },
-    "Oleksandra Oliynykova|||Vivian Wolff": {
-      "Oleksandra Oliynykova": 1,
-      "Vivian Wolff": 0
-    },
-    "Alycia Parks|||Mei Yamaguchi": {
-      "Alycia Parks": 1,
-      "Mei Yamaguchi": 0
-    },
-    "Sofia Costoulas|||Tatiana Prozorova": {
-      "Sofia Costoulas": 0,
-      "Tatiana Prozorova": 1
-    },
-    "Anna Lena Friedsam|||Barbora Krejcikova": {
-      "Anna Lena Friedsam": 0,
-      "Barbora Krejcikova": 1
-    },
     "Maya Joint|||Xinxin Yao": {
       "Maya Joint": 1,
       "Xinxin Yao": 0
@@ -154888,25 +154856,37 @@
       "Alina Charaeva": 1,
       "Sofia Kenin": 0
     },
-    "Maja Chwalinska|||Oleksandra Oliynykova": {
+    "Fiona Ferro|||Talia Gibson": {
+      "Fiona Ferro": 0,
+      "Talia Gibson": 1
+    },
+    "Maja Chwalinska|||Rebecca Sramkova": {
       "Maja Chwalinska": 1,
-      "Oleksandra Oliynykova": 0
+      "Rebecca Sramkova": 0
     },
-    "Barbora Krejcikova|||Elise Mertens": {
-      "Barbora Krejcikova": 0,
-      "Elise Mertens": 1
+    "Kyoka Okamura|||Leylah Fernandez": {
+      "Kyoka Okamura": 0,
+      "Leylah Fernandez": 1
     },
-    "Talia Gibson|||Viktoria Morvayova": {
-      "Talia Gibson": 1,
-      "Viktoria Morvayova": 0
+    "Joanna Garland|||Storm Hunter": {
+      "Joanna Garland": 1,
+      "Storm Hunter": 0
     },
-    "Joanna Garland|||Xinyu Wang": {
-      "Joanna Garland": 0,
-      "Xinyu Wang": 1
+    "Oleksandra Oliynykova|||Vivian Wolff": {
+      "Oleksandra Oliynykova": 1,
+      "Vivian Wolff": 0
     },
-    "Alexandra Eala|||Tatiana Prozorova": {
-      "Alexandra Eala": 0,
+    "Alycia Parks|||Mei Yamaguchi": {
+      "Alycia Parks": 1,
+      "Mei Yamaguchi": 0
+    },
+    "Sofia Costoulas|||Tatiana Prozorova": {
+      "Sofia Costoulas": 0,
       "Tatiana Prozorova": 1
+    },
+    "Anna Lena Friedsam|||Barbora Krejcikova": {
+      "Anna Lena Friedsam": 0,
+      "Barbora Krejcikova": 1
     },
     "Lanlana Tararudee|||Sohyun Park": {
       "Lanlana Tararudee": 1,
@@ -154932,13 +154912,25 @@
       "Jelena Ostapenko": 0,
       "Taylah Preston": 1
     },
-    "Tatiana Prozorova|||Xinyu Wang": {
-      "Tatiana Prozorova": 1,
-      "Xinyu Wang": 0
+    "Maja Chwalinska|||Oleksandra Oliynykova": {
+      "Maja Chwalinska": 1,
+      "Oleksandra Oliynykova": 0
     },
-    "Maria Sakkari|||Talia Gibson": {
-      "Maria Sakkari": 0,
-      "Talia Gibson": 1
+    "Barbora Krejcikova|||Elise Mertens": {
+      "Barbora Krejcikova": 0,
+      "Elise Mertens": 1
+    },
+    "Talia Gibson|||Viktoria Morvayova": {
+      "Talia Gibson": 1,
+      "Viktoria Morvayova": 0
+    },
+    "Joanna Garland|||Xinyu Wang": {
+      "Joanna Garland": 0,
+      "Xinyu Wang": 1
+    },
+    "Alexandra Eala|||Tatiana Prozorova": {
+      "Alexandra Eala": 0,
+      "Tatiana Prozorova": 1
     },
     "Katie Volynets|||Kimberly Birrell": {
       "Katie Volynets": 1,
@@ -154952,25 +154944,37 @@
       "Alina Korneeva": 1,
       "Taylah Preston": 0
     },
-    "Leylah Fernandez|||Maja Chwalinska": {
-      "Leylah Fernandez": 1,
-      "Maja Chwalinska": 0
+    "Tatiana Prozorova|||Xinyu Wang": {
+      "Tatiana Prozorova": 1,
+      "Xinyu Wang": 0
+    },
+    "Maria Sakkari|||Talia Gibson": {
+      "Maria Sakkari": 0,
+      "Talia Gibson": 1
     },
     "Alina Korneeva|||Maya Joint": {
       "Alina Korneeva": 0,
       "Maya Joint": 1
     },
+    "Leylah Fernandez|||Maja Chwalinska": {
+      "Leylah Fernandez": 1,
+      "Maja Chwalinska": 0
+    },
     "Kaitlin Quevedo|||Nadia Podoroska": {
       "Kaitlin Quevedo": 1,
       "Nadia Podoroska": 0
+    },
+    "Kimberly Birrell|||Maya Joint": {
+      "Kimberly Birrell": 1,
+      "Maya Joint": 0
     },
     "Leylah Fernandez|||Talia Gibson": {
       "Leylah Fernandez": 1,
       "Talia Gibson": 0
     },
-    "Kimberly Birrell|||Maya Joint": {
-      "Kimberly Birrell": 1,
-      "Maya Joint": 0
+    "Jessica Bouzas Maneiro|||Sonja Zhiyenbayeva": {
+      "Jessica Bouzas Maneiro": 1,
+      "Sonja Zhiyenbayeva": 0
     },
     "Jia Hu|||Vit Kopriva": {
       "Jia Hu": 0,
@@ -154984,9 +154988,17 @@
       "Adam Walton": 0,
       "Valentin Royer": 1
     },
-    "Jessica Bouzas Maneiro|||Sonja Zhiyenbayeva": {
-      "Jessica Bouzas Maneiro": 1,
-      "Sonja Zhiyenbayeva": 0
+    "Anhelina Kalinina|||Jana Otzipka": {
+      "Anhelina Kalinina": 1,
+      "Jana Otzipka": 0
+    },
+    "Elina Svitolina|||Greet Minnen": {
+      "Elina Svitolina": 0,
+      "Greet Minnen": 1
+    },
+    "Elisabetta Cocciaretto|||Shuai Zhang": {
+      "Elisabetta Cocciaretto": 0,
+      "Shuai Zhang": 1
     },
     "Jaime Faria|||Terence Atmane": {
       "Jaime Faria": 1,
@@ -155036,21 +155048,17 @@
       "Coleman Wong": 1,
       "Zhizhen Zhang": 0
     },
-    "Anhelina Kalinina|||Jana Otzipka": {
-      "Anhelina Kalinina": 1,
-      "Jana Otzipka": 0
-    },
-    "Elina Svitolina|||Greet Minnen": {
-      "Elina Svitolina": 0,
-      "Greet Minnen": 1
-    },
-    "Elisabetta Cocciaretto|||Shuai Zhang": {
-      "Elisabetta Cocciaretto": 0,
-      "Shuai Zhang": 1
-    },
     "Alexander Bublik|||Rafael Jodar": {
       "Alexander Bublik": 0,
       "Rafael Jodar": 1
+    },
+    "Jessica Bouzas Maneiro|||Karolina Muchova": {
+      "Jessica Bouzas Maneiro": 0,
+      "Karolina Muchova": 1
+    },
+    "Cristina Bucsa|||Linda Noskova": {
+      "Cristina Bucsa": 0,
+      "Linda Noskova": 1
     },
     "Kyrian Jacquet|||Tomas Martin Etcheverry": {
       "Kyrian Jacquet": 1,
@@ -155080,13 +155088,9 @@
       "Hugo Gaston": 1,
       "Jaime Faria": 0
     },
-    "Jessica Bouzas Maneiro|||Karolina Muchova": {
-      "Jessica Bouzas Maneiro": 0,
-      "Karolina Muchova": 1
-    },
-    "Cristina Bucsa|||Linda Noskova": {
-      "Cristina Bucsa": 0,
-      "Linda Noskova": 1
+    "Anhelina Kalinina|||Tyra Caterina Grant": {
+      "Anhelina Kalinina": 1,
+      "Tyra Caterina Grant": 0
     },
     "Quentin Halys|||Roman Safiullin": {
       "Quentin Halys": 0,
@@ -155108,9 +155112,9 @@
       "Adolfo Daniel Vallejo": 0,
       "Coleman Wong": 1
     },
-    "Anhelina Kalinina|||Tyra Caterina Grant": {
-      "Anhelina Kalinina": 1,
-      "Tyra Caterina Grant": 0
+    "Anhelina Kalinina|||Karolina Muchova": {
+      "Anhelina Kalinina": 0,
+      "Karolina Muchova": 1
     },
     "Fabian Marozsan|||Kyrian Jacquet": {
       "Fabian Marozsan": 0,
@@ -155127,10 +155131,6 @@
     "Coleman Wong|||Daniil Medvedev": {
       "Coleman Wong": 0,
       "Daniil Medvedev": 1
-    },
-    "Anhelina Kalinina|||Karolina Muchova": {
-      "Anhelina Kalinina": 0,
-      "Karolina Muchova": 1
     },
     "Andrey Rublev|||Kyrian Jacquet": {
       "Andrey Rublev": 1,
@@ -155732,6 +155732,10 @@
       "Ann Li": 1,
       "Janice Tjen": 0
     },
+    "Diana Shnaider|||Jelena Ostapenko": {
+      "Diana Shnaider": 0,
+      "Jelena Ostapenko": 1
+    },
     "Arthur Gea|||Jakub Mensik": {
       "Arthur Gea": 1,
       "Jakub Mensik": 0
@@ -155743,11 +155747,15 @@
     "Alejandro Davidovich Fokina|||Arthur Gea": {
       "Alejandro Davidovich Fokina": 1,
       "Arthur Gea": 0
+    },
+    "Casper Ruud|||Rafael Jodar": {
+      "Casper Ruud": 0,
+      "Rafael Jodar": 1
     }
   },
   "_meta": {
-    "fecha": "2026-10-16T08:54:30.610057+00:00",
-    "total_pares": 38936,
+    "fecha": "2026-10-17T08:26:01.009735+00:00",
+    "total_pares": 38938,
     "metodo": "Enfrentamientos directos acumulados de todo el histórico real procesado (mismo rango que tennis_elo_ratings.json)."
   }
 }
