@@ -80605,7 +80605,7 @@
       "Jordan Thompson": 1
     },
     "Alejandro Davidovich Fokina|||Alexander Zverev": {
-      "Alejandro Davidovich Fokina": 1,
+      "Alejandro Davidovich Fokina": 2,
       "Alexander Zverev": 6
     },
     "Dominic Thiem|||Felix Auger Aliassime": {
@@ -139466,7 +139466,7 @@
     },
     "Jelena Ostapenko|||Sonay Kartal": {
       "Jelena Ostapenko": 1,
-      "Sonay Kartal": 1
+      "Sonay Kartal": 2
     },
     "Mingge Xu|||Peyton Stearns": {
       "Mingge Xu": 0,
@@ -155736,6 +155736,10 @@
       "Diana Shnaider": 0,
       "Jelena Ostapenko": 1
     },
+    "Iga Swiatek|||Maja Chwalinska": {
+      "Iga Swiatek": 0,
+      "Maja Chwalinska": 1
+    },
     "Arthur Gea|||Jakub Mensik": {
       "Arthur Gea": 1,
       "Jakub Mensik": 0
@@ -155751,11 +155755,15 @@
     "Casper Ruud|||Rafael Jodar": {
       "Casper Ruud": 0,
       "Rafael Jodar": 1
+    },
+    "Daniil Medvedev|||Rafael Jodar": {
+      "Daniil Medvedev": 0,
+      "Rafael Jodar": 1
     }
   },
   "_meta": {
-    "fecha": "2026-10-17T08:26:01.009735+00:00",
-    "total_pares": 38938,
+    "fecha": "2026-10-18T08:44:52.680654+00:00",
+    "total_pares": 38940,
     "metodo": "Enfrentamientos directos acumulados de todo el histórico real procesado (mismo rango que tennis_elo_ratings.json)."
   }
 }

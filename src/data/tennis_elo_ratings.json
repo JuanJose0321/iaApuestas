@@ -3704,8 +3704,8 @@
       "genero": "F"
     },
     "Jelena Ostapenko": {
-      "elo": 1701.1,
-      "games": 542,
+      "elo": 1688.2,
+      "games": 543,
       "forma": {
         "ganados": 6,
         "perdidos": 4,
@@ -3924,14 +3924,14 @@
       "genero": "M"
     },
     "Alexander Zverev": {
-      "elo": 2022.9,
-      "games": 805,
+      "elo": 1999.8,
+      "games": 806,
       "forma": {
-        "ganados": 9,
-        "perdidos": 1,
-        "porcentaje": 90.0
+        "ganados": 8,
+        "perdidos": 2,
+        "porcentaje": 80.0
       },
-      "ultima_fecha": "2026-10-15",
+      "ultima_fecha": "2026-10-17",
       "genero": "M"
     },
     "Jesse Huta Galung": {
@@ -9940,14 +9940,14 @@
       "genero": "M"
     },
     "Daniil Medvedev": {
-      "elo": 1827.3,
-      "games": 667,
+      "elo": 1813.4,
+      "games": 668,
       "forma": {
-        "ganados": 9,
-        "perdidos": 1,
-        "porcentaje": 90.0
+        "ganados": 8,
+        "perdidos": 2,
+        "porcentaje": 80.0
       },
-      "ultima_fecha": "2026-10-16",
+      "ultima_fecha": "2026-10-17",
       "genero": "M"
     },
     "Jil Teichmann": {
@@ -13636,12 +13636,12 @@
       "genero": "F"
     },
     "Iga Swiatek": {
-      "elo": 1948.8,
-      "games": 455,
+      "elo": 1926.5,
+      "games": 456,
       "forma": {
-        "ganados": 8,
-        "perdidos": 2,
-        "porcentaje": 80.0
+        "ganados": 7,
+        "perdidos": 3,
+        "porcentaje": 70.0
       },
       "ultima_fecha": "2026-10-12",
       "genero": "F"
@@ -14978,14 +14978,14 @@
       "genero": "M"
     },
     "Alejandro Davidovich Fokina": {
-      "elo": 1779.0,
-      "games": 350,
+      "elo": 1802.1,
+      "games": 351,
       "forma": {
-        "ganados": 8,
-        "perdidos": 2,
-        "porcentaje": 80.0
+        "ganados": 9,
+        "perdidos": 1,
+        "porcentaje": 90.0
       },
-      "ultima_fecha": "2026-10-15",
+      "ultima_fecha": "2026-10-17",
       "genero": "M"
     },
     "Giulia Gatto Monticone": {
@@ -18575,8 +18575,8 @@
       "genero": "F"
     },
     "Sonay Kartal": {
-      "elo": 1709.7,
-      "games": 63,
+      "elo": 1722.6,
+      "games": 64,
       "forma": {
         "ganados": 7,
         "perdidos": 3,
@@ -18641,12 +18641,12 @@
       "genero": "M"
     },
     "Maja Chwalinska": {
-      "elo": 1656.2,
-      "games": 35,
+      "elo": 1678.5,
+      "games": 36,
       "forma": {
-        "ganados": 7,
-        "perdidos": 3,
-        "porcentaje": 70.0
+        "ganados": 8,
+        "perdidos": 2,
+        "porcentaje": 80.0
       },
       "ultima_fecha": "2026-10-12",
       "genero": "F"
@@ -22777,14 +22777,14 @@
       "genero": "M"
     },
     "Rafael Jodar": {
-      "elo": 1808.0,
-      "games": 58,
+      "elo": 1821.9,
+      "games": 59,
       "forma": {
         "ganados": 7,
         "perdidos": 3,
         "porcentaje": 70.0
       },
-      "ultima_fecha": "2026-10-16",
+      "ultima_fecha": "2026-10-17",
       "genero": "M"
     },
     "Elena Ruxandra Bertea": {
@@ -23821,10 +23821,10 @@
     }
   },
   "_meta": {
-    "fecha": "2026-10-17T08:26:00.971222+00:00",
+    "fecha": "2026-10-18T08:44:52.651384+00:00",
     "total_jugadores": 2559,
-    "matches_procesados": 63556,
-    "rango_fechas": "2015-01-04 a 2026-10-16",
+    "matches_procesados": 63560,
+    "rango_fechas": "2015-01-04 a 2026-10-17",
     "metodo": "Elo dinámico con K-factor adaptativo + forma real (últimos 10 partidos, mínimo 3)",
     "fuente": "LuckyLoser91/TennisCourtLog (mirror activo del formato Jeff Sackmann; JeffSackmann/tennis_atp y tennis_wta ya no existen en GitHub — ver src/providers/tennis_data_loader.py)"
   }
