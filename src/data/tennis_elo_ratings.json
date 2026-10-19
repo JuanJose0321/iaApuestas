@@ -1284,7 +1284,7 @@
       "genero": "F"
     },
     "Taylor Townsend": {
-      "elo": 1712.8,
+      "elo": 1712.9,
       "games": 149,
       "forma": {
         "ganados": 6,
@@ -1724,7 +1724,7 @@
       "genero": "F"
     },
     "Elina Svitolina": {
-      "elo": 1836.5,
+      "elo": 1836.6,
       "games": 611,
       "forma": {
         "ganados": 6,
@@ -1834,7 +1834,7 @@
       "genero": "F"
     },
     "Madison Keys": {
-      "elo": 1801.7,
+      "elo": 1801.6,
       "games": 503,
       "forma": {
         "ganados": 6,
@@ -2992,8 +2992,8 @@
       "genero": "F"
     },
     "Sorana Cirstea": {
-      "elo": 1781.0,
-      "games": 417,
+      "elo": 1782.8,
+      "games": 418,
       "forma": {
         "ganados": 5,
         "perdidos": 5,
@@ -3621,7 +3621,7 @@
       "genero": "F"
     },
     "Anna Bondar": {
-      "elo": 1529.8,
+      "elo": 1529.9,
       "games": 175,
       "forma": {
         "ganados": 4,
@@ -3704,7 +3704,7 @@
       "genero": "F"
     },
     "Jelena Ostapenko": {
-      "elo": 1688.2,
+      "elo": 1688.3,
       "games": 543,
       "forma": {
         "ganados": 6,
@@ -3715,7 +3715,7 @@
       "genero": "F"
     },
     "Julia Grabher": {
-      "elo": 1464.5,
+      "elo": 1464.6,
       "games": 80,
       "forma": {
         "ganados": 3,
@@ -4223,7 +4223,7 @@
       "genero": "F"
     },
     "Danka Kovinic": {
-      "elo": 1468.8,
+      "elo": 1468.5,
       "games": 187,
       "forma": {
         "ganados": 2,
@@ -5653,7 +5653,7 @@
       "genero": "F"
     },
     "Jessica Pegula": {
-      "elo": 1939.3,
+      "elo": 1939.4,
       "games": 448,
       "forma": {
         "ganados": 7,
@@ -6363,7 +6363,7 @@
       "genero": "F"
     },
     "Daria Kasatkina": {
-      "elo": 1556.2,
+      "elo": 1556.1,
       "games": 566,
       "forma": {
         "ganados": 2,
@@ -6671,14 +6671,14 @@
       "genero": "M"
     },
     "Harriet Dart": {
-      "elo": 1493.6,
-      "games": 141,
+      "elo": 1486.5,
+      "games": 142,
       "forma": {
         "ganados": 3,
         "perdidos": 7,
         "porcentaje": 30.0
       },
-      "ultima_fecha": "2026-09-30",
+      "ultima_fecha": "2026-10-19",
       "genero": "F"
     },
     "Matthew Ebden": {
@@ -8127,7 +8127,7 @@
       "genero": "M"
     },
     "Kimberly Birrell": {
-      "elo": 1541.4,
+      "elo": 1541.5,
       "games": 125,
       "forma": {
         "ganados": 7,
@@ -8138,7 +8138,7 @@
       "genero": "F"
     },
     "Maddison Inglis": {
-      "elo": 1493.6,
+      "elo": 1493.7,
       "games": 39,
       "forma": {
         "ganados": 4,
@@ -8199,14 +8199,14 @@
       "genero": "M"
     },
     "Viktorija Golubic": {
-      "elo": 1596.0,
-      "games": 278,
+      "elo": 1601.9,
+      "games": 279,
       "forma": {
-        "ganados": 5,
-        "perdidos": 5,
-        "porcentaje": 50.0
+        "ganados": 6,
+        "perdidos": 4,
+        "porcentaje": 60.0
       },
-      "ultima_fecha": "2026-09-30",
+      "ultima_fecha": "2026-10-19",
       "genero": "F"
     },
     "Victoria Duval": {
@@ -8613,7 +8613,7 @@
       "genero": "F"
     },
     "Camila Osorio": {
-      "elo": 1593.0,
+      "elo": 1593.1,
       "games": 220,
       "forma": {
         "ganados": 3,
@@ -9419,7 +9419,7 @@
       "genero": "F"
     },
     "Ekaterina Alexandrova": {
-      "elo": 1699.6,
+      "elo": 1699.5,
       "games": 460,
       "forma": {
         "ganados": 5,
@@ -9585,7 +9585,7 @@
       "genero": "F"
     },
     "Chloe Paquet": {
-      "elo": 1376.9,
+      "elo": 1379.3,
       "games": 64,
       "forma": {
         "ganados": 0,
@@ -10114,14 +10114,14 @@
       "genero": "F"
     },
     "Elise Mertens": {
-      "elo": 1759.5,
-      "games": 551,
+      "elo": 1744.6,
+      "games": 552,
       "forma": {
-        "ganados": 6,
-        "perdidos": 4,
-        "porcentaje": 60.0
+        "ganados": 5,
+        "perdidos": 5,
+        "porcentaje": 50.0
       },
-      "ultima_fecha": "2026-10-12",
+      "ultima_fecha": "2026-10-19",
       "genero": "F"
     },
     "Alexander Ward": {
@@ -11496,7 +11496,7 @@
       "genero": "F"
     },
     "Aryna Sabalenka": {
-      "elo": 1969.3,
+      "elo": 1969.4,
       "games": 581,
       "forma": {
         "ganados": 7,
@@ -11557,7 +11557,7 @@
       "genero": "M"
     },
     "Tamara Korpatsch": {
-      "elo": 1512.2,
+      "elo": 1512.1,
       "games": 128,
       "forma": {
         "ganados": 6,
@@ -11738,7 +11738,7 @@
       "genero": "F"
     },
     "Hanyu Guo": {
-      "elo": 1486.9,
+      "elo": 1487.0,
       "games": 16,
       "forma": {
         "ganados": 3,
@@ -12894,8 +12894,8 @@
       "genero": "F"
     },
     "Xiyu Wang": {
-      "elo": 1585.1,
-      "games": 169,
+      "elo": 1581.0,
+      "games": 168,
       "forma": {
         "ganados": 4,
         "perdidos": 6,
@@ -12922,7 +12922,7 @@
       "genero": "F"
     },
     "Elena Rybakina": {
-      "elo": 1998.0,
+      "elo": 1997.9,
       "games": 454,
       "forma": {
         "ganados": 8,
@@ -13032,8 +13032,8 @@
       "genero": "F"
     },
     "Xinyu Wang": {
-      "elo": 1596.1,
-      "games": 243,
+      "elo": 1595.6,
+      "games": 245,
       "forma": {
         "ganados": 5,
         "perdidos": 5,
@@ -13043,7 +13043,7 @@
       "genero": "F"
     },
     "Marta Kostyuk": {
-      "elo": 1867.7,
+      "elo": 1867.8,
       "games": 292,
       "forma": {
         "ganados": 6,
@@ -14473,14 +14473,14 @@
       "genero": "F"
     },
     "Leylah Fernandez": {
-      "elo": 1674.2,
-      "games": 303,
+      "elo": 1689.1,
+      "games": 304,
       "forma": {
-        "ganados": 7,
-        "perdidos": 3,
-        "porcentaje": 70.0
+        "ganados": 8,
+        "perdidos": 2,
+        "porcentaje": 80.0
       },
-      "ultima_fecha": "2026-10-12",
+      "ultima_fecha": "2026-10-19",
       "genero": "F"
     },
     "Nicolas Mejia": {
@@ -14889,18 +14889,18 @@
       "genero": "M"
     },
     "Caty Mcnally": {
-      "elo": 1640.1,
-      "games": 137,
+      "elo": 1627.0,
+      "games": 138,
       "forma": {
-        "ganados": 5,
-        "perdidos": 5,
-        "porcentaje": 50.0
+        "ganados": 4,
+        "perdidos": 6,
+        "porcentaje": 40.0
       },
-      "ultima_fecha": "2026-10-12",
+      "ultima_fecha": "2026-10-19",
       "genero": "F"
     },
     "Coco Gauff": {
-      "elo": 1974.3,
+      "elo": 1974.4,
       "games": 404,
       "forma": {
         "ganados": 8,
@@ -14978,14 +14978,14 @@
       "genero": "M"
     },
     "Alejandro Davidovich Fokina": {
-      "elo": 1802.1,
-      "games": 351,
+      "elo": 1817.3,
+      "games": 352,
       "forma": {
         "ganados": 9,
         "perdidos": 1,
         "porcentaje": 90.0
       },
-      "ultima_fecha": "2026-10-17",
+      "ultima_fecha": "2026-10-18",
       "genero": "M"
     },
     "Giulia Gatto Monticone": {
@@ -15098,7 +15098,7 @@
       "genero": "M"
     },
     "Elisabetta Cocciaretto": {
-      "elo": 1540.4,
+      "elo": 1540.3,
       "games": 187,
       "forma": {
         "ganados": 2,
@@ -15143,18 +15143,18 @@
       "genero": "F"
     },
     "Liudmila Samsonova": {
-      "elo": 1666.1,
-      "games": 315,
+      "elo": 1653.8,
+      "games": 316,
       "forma": {
         "ganados": 5,
         "perdidos": 5,
         "porcentaje": 50.0
       },
-      "ultima_fecha": "2026-10-12",
+      "ultima_fecha": "2026-10-19",
       "genero": "F"
     },
     "Diane Parry": {
-      "elo": 1641.4,
+      "elo": 1641.5,
       "games": 146,
       "forma": {
         "ganados": 6,
@@ -15334,7 +15334,7 @@
       "genero": "F"
     },
     "Hailey Baptiste": {
-      "elo": 1715.6,
+      "elo": 1715.4,
       "games": 117,
       "forma": {
         "ganados": 6,
@@ -15945,14 +15945,14 @@
       "genero": "F"
     },
     "Sinja Kraus": {
-      "elo": 1456.1,
-      "games": 38,
+      "elo": 1469.2,
+      "games": 39,
       "forma": {
-        "ganados": 4,
-        "perdidos": 6,
-        "porcentaje": 40.0
+        "ganados": 5,
+        "perdidos": 5,
+        "porcentaje": 50.0
       },
-      "ultima_fecha": "2026-09-30",
+      "ultima_fecha": "2026-10-19",
       "genero": "F"
     },
     "Laura Correia": {
@@ -17130,7 +17130,7 @@
       "genero": "F"
     },
     "Emma Raducanu": {
-      "elo": 1672.5,
+      "elo": 1672.6,
       "games": 167,
       "forma": {
         "ganados": 5,
@@ -17653,14 +17653,14 @@
       "genero": "M"
     },
     "Mai Hontama": {
-      "elo": 1475.2,
-      "games": 53,
+      "elo": 1469.3,
+      "games": 54,
       "forma": {
         "ganados": 2,
         "perdidos": 8,
         "porcentaje": 20.0
       },
-      "ultima_fecha": "2026-09-30",
+      "ultima_fecha": "2026-10-19",
       "genero": "F"
     },
     "Zhibek Kulambayeva": {
@@ -18166,7 +18166,7 @@
       "genero": "F"
     },
     "Solana Sierra": {
-      "elo": 1564.3,
+      "elo": 1564.4,
       "games": 46,
       "forma": {
         "ganados": 3,
@@ -18385,7 +18385,7 @@
       "genero": "M"
     },
     "Nikola Bartunkova": {
-      "elo": 1712.4,
+      "elo": 1712.5,
       "games": 49,
       "forma": {
         "ganados": 7,
@@ -18396,7 +18396,7 @@
       "genero": "F"
     },
     "Eva Lys": {
-      "elo": 1548.3,
+      "elo": 1548.5,
       "games": 100,
       "forma": {
         "ganados": 2,
@@ -18542,7 +18542,7 @@
       "genero": "F"
     },
     "Linda Noskova": {
-      "elo": 1902.7,
+      "elo": 1902.8,
       "games": 211,
       "forma": {
         "ganados": 8,
@@ -18575,8 +18575,8 @@
       "genero": "F"
     },
     "Sonay Kartal": {
-      "elo": 1722.6,
-      "games": 64,
+      "elo": 1706.4,
+      "games": 65,
       "forma": {
         "ganados": 7,
         "perdidos": 3,
@@ -18641,8 +18641,8 @@
       "genero": "M"
     },
     "Maja Chwalinska": {
-      "elo": 1678.5,
-      "games": 36,
+      "elo": 1694.7,
+      "games": 37,
       "forma": {
         "ganados": 8,
         "perdidos": 2,
@@ -18964,7 +18964,7 @@
       "genero": "F"
     },
     "Sara Bejlek": {
-      "elo": 1626.0,
+      "elo": 1625.8,
       "games": 59,
       "forma": {
         "ganados": 5,
@@ -19505,14 +19505,14 @@
       "genero": "M"
     },
     "Talia Gibson": {
-      "elo": 1560.8,
-      "games": 46,
+      "elo": 1567.9,
+      "games": 47,
       "forma": {
         "ganados": 5,
         "perdidos": 5,
         "porcentaje": 50.0
       },
-      "ultima_fecha": "2026-09-30",
+      "ultima_fecha": "2026-10-19",
       "genero": "F"
     },
     "Mattia Bellucci": {
@@ -19571,14 +19571,14 @@
       "genero": "F"
     },
     "Lanlana Tararudee": {
-      "elo": 1538.4,
-      "games": 25,
+      "elo": 1547.5,
+      "games": 26,
       "forma": {
         "ganados": 5,
         "perdidos": 5,
         "porcentaje": 50.0
       },
-      "ultima_fecha": "2026-10-12",
+      "ultima_fecha": "2026-10-19",
       "genero": "F"
     },
     "Juan Carlos Prado Angelo": {
@@ -20488,7 +20488,7 @@
       "genero": "M"
     },
     "Maria Timofeeva": {
-      "elo": 1524.4,
+      "elo": 1524.3,
       "games": 36,
       "forma": {
         "ganados": 4,
@@ -21029,7 +21029,7 @@
       "genero": "M"
     },
     "Yuliia Starodubtseva": {
-      "elo": 1548.7,
+      "elo": 1548.6,
       "games": 75,
       "forma": {
         "ganados": 4,
@@ -22010,7 +22010,7 @@
       "genero": "M"
     },
     "Tyra Caterina Grant": {
-      "elo": 1491.5,
+      "elo": 1491.6,
       "games": 9,
       "forma": {
         "ganados": 3,
@@ -22044,7 +22044,7 @@
       "genero": "F"
     },
     "Julieta Pareja": {
-      "elo": 1498.9,
+      "elo": 1498.8,
       "games": 8,
       "forma": {
         "ganados": 4,
@@ -22597,14 +22597,14 @@
       "genero": "F"
     },
     "Lilli Tagger": {
-      "elo": 1525.4,
-      "games": 29,
+      "elo": 1537.6,
+      "games": 30,
       "forma": {
         "ganados": 5,
         "perdidos": 5,
         "porcentaje": 50.0
       },
-      "ultima_fecha": "2026-10-12",
+      "ultima_fecha": "2026-10-19",
       "genero": "F"
     },
     "Chenting Zhu": {
@@ -22655,7 +22655,7 @@
       "genero": "F"
     },
     "Mia Pohankova": {
-      "elo": 1539.1,
+      "elo": 1538.9,
       "games": 8,
       "forma": {
         "ganados": 5,
@@ -22689,14 +22689,14 @@
       "genero": "F"
     },
     "Kaitlin Quevedo": {
-      "elo": 1550.2,
-      "games": 18,
+      "elo": 1541.1,
+      "games": 19,
       "forma": {
         "ganados": 6,
         "perdidos": 4,
         "porcentaje": 60.0
       },
-      "ultima_fecha": "2026-09-21",
+      "ultima_fecha": "2026-10-19",
       "genero": "F"
     },
     "James Watt": {
@@ -22777,14 +22777,14 @@
       "genero": "M"
     },
     "Rafael Jodar": {
-      "elo": 1821.9,
-      "games": 59,
+      "elo": 1806.7,
+      "games": 60,
       "forma": {
         "ganados": 7,
         "perdidos": 3,
         "porcentaje": 70.0
       },
-      "ultima_fecha": "2026-10-17",
+      "ultima_fecha": "2026-10-18",
       "genero": "M"
     },
     "Elena Ruxandra Bertea": {
@@ -23144,7 +23144,7 @@
       "genero": "F"
     },
     "Veronika Podrez": {
-      "elo": 1533.6,
+      "elo": 1533.7,
       "games": 6,
       "forma": {
         "ganados": 4,
@@ -23202,7 +23202,7 @@
       "genero": "F"
     },
     "Ksenia Efremova": {
-      "elo": 1494.5,
+      "elo": 1494.6,
       "games": 1,
       "ultima_fecha": "2026-05-24",
       "genero": "F"
@@ -23821,10 +23821,10 @@
     }
   },
   "_meta": {
-    "fecha": "2026-10-18T08:44:52.651384+00:00",
+    "fecha": "2026-10-19T09:45:08.494188+00:00",
     "total_jugadores": 2559,
-    "matches_procesados": 63560,
-    "rango_fechas": "2015-01-04 a 2026-10-17",
+    "matches_procesados": 63569,
+    "rango_fechas": "2015-01-04 a 2026-10-19",
     "metodo": "Elo dinámico con K-factor adaptativo + forma real (últimos 10 partidos, mínimo 3)",
     "fuente": "LuckyLoser91/TennisCourtLog (mirror activo del formato Jeff Sackmann; JeffSackmann/tennis_atp y tennis_wta ya no existen en GitHub — ver src/providers/tennis_data_loader.py)"
   }

@@ -83726,7 +83726,7 @@
     },
     "Elise Mertens|||Leylah Fernandez": {
       "Elise Mertens": 2,
-      "Leylah Fernandez": 1
+      "Leylah Fernandez": 2
     },
     "Jelena Ostapenko|||Karolina Muchova": {
       "Jelena Ostapenko": 0,
@@ -97334,7 +97334,7 @@
     },
     "Mai Hontama|||Viktorija Golubic": {
       "Mai Hontama": 0,
-      "Viktorija Golubic": 1
+      "Viktorija Golubic": 2
     },
     "Irina Bara|||Jasmine Paolini": {
       "Irina Bara": 0,
@@ -148493,7 +148493,7 @@
       "Alexander Blockx": 0
     },
     "Lilli Tagger|||Liudmila Samsonova": {
-      "Lilli Tagger": 1,
+      "Lilli Tagger": 2,
       "Liudmila Samsonova": 0
     },
     "Anhelina Kalinina|||Donna Vekic": {
@@ -148656,9 +148656,9 @@
       "Lilli Tagger": 0,
       "Oleksandra Oliynykova": 1
     },
-    "Chloe Paquet|||Xiyu Wang": {
+    "Chloe Paquet|||Xinyu Wang": {
       "Chloe Paquet": 0,
-      "Xiyu Wang": 1
+      "Xinyu Wang": 1
     },
     "Diana Shnaider|||Tamara Korpatsch": {
       "Diana Shnaider": 1,
@@ -148711,6 +148711,10 @@
     "Elisabetta Cocciaretto|||Veronika Podrez": {
       "Elisabetta Cocciaretto": 0,
       "Veronika Podrez": 1
+    },
+    "Sorana Cirstea|||Xinyu Wang": {
+      "Sorana Cirstea": 1,
+      "Xinyu Wang": 0
     },
     "Diana Shnaider|||Elena Rybakina": {
       "Diana Shnaider": 0,
@@ -155740,6 +155744,10 @@
       "Iga Swiatek": 0,
       "Maja Chwalinska": 1
     },
+    "Maja Chwalinska|||Sonay Kartal": {
+      "Maja Chwalinska": 1,
+      "Sonay Kartal": 0
+    },
     "Arthur Gea|||Jakub Mensik": {
       "Arthur Gea": 1,
       "Jakub Mensik": 0
@@ -155759,11 +155767,27 @@
     "Daniil Medvedev|||Rafael Jodar": {
       "Daniil Medvedev": 0,
       "Rafael Jodar": 1
+    },
+    "Alejandro Davidovich Fokina|||Rafael Jodar": {
+      "Alejandro Davidovich Fokina": 1,
+      "Rafael Jodar": 0
+    },
+    "Kaitlin Quevedo|||Lanlana Tararudee": {
+      "Kaitlin Quevedo": 0,
+      "Lanlana Tararudee": 1
+    },
+    "Caty Mcnally|||Sinja Kraus": {
+      "Caty Mcnally": 0,
+      "Sinja Kraus": 1
+    },
+    "Harriet Dart|||Talia Gibson": {
+      "Harriet Dart": 0,
+      "Talia Gibson": 1
     }
   },
   "_meta": {
-    "fecha": "2026-10-18T08:44:52.680654+00:00",
-    "total_pares": 38940,
+    "fecha": "2026-10-19T09:45:08.530953+00:00",
+    "total_pares": 38946,
     "metodo": "Enfrentamientos directos acumulados de todo el histórico real procesado (mismo rango que tennis_elo_ratings.json)."
   }
 }
