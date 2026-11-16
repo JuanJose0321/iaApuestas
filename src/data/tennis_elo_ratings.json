@@ -40,14 +40,14 @@
       "genero": "M"
     },
     "James Duckworth": {
-      "elo": 1537.9,
-      "games": 205,
+      "elo": 1531.4,
+      "games": 206,
       "forma": {
-        "ganados": 4,
-        "perdidos": 6,
-        "porcentaje": 40.0
+        "ganados": 3,
+        "perdidos": 7,
+        "porcentaje": 30.0
       },
-      "ultima_fecha": "2026-10-23",
+      "ultima_fecha": "2026-11-09",
       "genero": "M"
     },
     "Gilles Simon": {
@@ -1724,14 +1724,14 @@
       "genero": "F"
     },
     "Elina Svitolina": {
-      "elo": 1835.2,
-      "games": 611,
+      "elo": 1854.8,
+      "games": 616,
       "forma": {
         "ganados": 6,
         "perdidos": 4,
         "porcentaje": 60.0
       },
-      "ultima_fecha": "2026-10-12",
+      "ultima_fecha": "2026-11-08",
       "genero": "F"
     },
     "Magdalena Rybarikova": {
@@ -2098,14 +2098,14 @@
       "genero": "M"
     },
     "Adrian Mannarino": {
-      "elo": 1618.6,
-      "games": 597,
+      "elo": 1607.5,
+      "games": 598,
       "forma": {
         "ganados": 6,
         "perdidos": 4,
         "porcentaje": 60.0
       },
-      "ultima_fecha": "2026-10-30",
+      "ultima_fecha": "2026-11-10",
       "genero": "M"
     },
     "Federico Delbonis": {
@@ -3924,14 +3924,14 @@
       "genero": "M"
     },
     "Alexander Zverev": {
-      "elo": 1957.3,
-      "games": 812,
+      "elo": 1962.2,
+      "games": 813,
       "forma": {
         "ganados": 7,
         "perdidos": 3,
         "porcentaje": 70.0
       },
-      "ultima_fecha": "2026-11-04",
+      "ultima_fecha": "2026-11-15",
       "genero": "M"
     },
     "Jesse Huta Galung": {
@@ -4373,12 +4373,12 @@
       "genero": "F"
     },
     "Magda Linette": {
-      "elo": 1590.4,
-      "games": 479,
+      "elo": 1599.5,
+      "games": 480,
       "forma": {
-        "ganados": 6,
-        "perdidos": 4,
-        "porcentaje": 60.0
+        "ganados": 7,
+        "perdidos": 3,
+        "porcentaje": 70.0
       },
       "ultima_fecha": "2026-11-03",
       "genero": "F"
@@ -5653,12 +5653,12 @@
       "genero": "F"
     },
     "Jessica Pegula": {
-      "elo": 1922.2,
-      "games": 450,
+      "elo": 1936.4,
+      "games": 452,
       "forma": {
-        "ganados": 5,
-        "perdidos": 5,
-        "porcentaje": 50.0
+        "ganados": 6,
+        "perdidos": 4,
+        "porcentaje": 60.0
       },
       "ultima_fecha": "2026-11-08",
       "genero": "F"
@@ -6448,14 +6448,14 @@
       "genero": "M"
     },
     "Quentin Halys": {
-      "elo": 1663.6,
-      "games": 182,
+      "elo": 1652.4,
+      "games": 183,
       "forma": {
         "ganados": 5,
         "perdidos": 5,
         "porcentaje": 50.0
       },
-      "ultima_fecha": "2026-11-05",
+      "ultima_fecha": "2026-11-10",
       "genero": "M"
     },
     "Virginie Razzano": {
@@ -6660,14 +6660,14 @@
       "genero": "F"
     },
     "Taylor Fritz": {
-      "elo": 1823.0,
-      "games": 608,
+      "elo": 1846.8,
+      "games": 612,
       "forma": {
-        "ganados": 7,
-        "perdidos": 3,
-        "porcentaje": 70.0
+        "ganados": 8,
+        "perdidos": 2,
+        "porcentaje": 80.0
       },
-      "ultima_fecha": "2026-11-06",
+      "ultima_fecha": "2026-11-14",
       "genero": "M"
     },
     "Harriet Dart": {
@@ -9021,14 +9021,14 @@
       "genero": "M"
     },
     "Casper Ruud": {
-      "elo": 1798.6,
-      "games": 504,
+      "elo": 1782.9,
+      "games": 505,
       "forma": {
-        "ganados": 7,
-        "perdidos": 3,
-        "porcentaje": 70.0
+        "ganados": 6,
+        "perdidos": 4,
+        "porcentaje": 60.0
       },
-      "ultima_fecha": "2026-11-07",
+      "ultima_fecha": "2026-11-11",
       "genero": "M"
     },
     "Wilfredo Gonzalez": {
@@ -9906,14 +9906,14 @@
       "genero": "M"
     },
     "Lorenzo Sonego": {
-      "elo": 1564.4,
-      "games": 383,
+      "elo": 1567.4,
+      "games": 385,
       "forma": {
         "ganados": 4,
         "perdidos": 6,
         "porcentaje": 40.0
       },
-      "ultima_fecha": "2026-11-02",
+      "ultima_fecha": "2026-11-11",
       "genero": "M"
     },
     "Salvatore Caruso": {
@@ -11496,14 +11496,14 @@
       "genero": "F"
     },
     "Aryna Sabalenka": {
-      "elo": 1969.0,
-      "games": 581,
+      "elo": 1952.2,
+      "games": 584,
       "forma": {
-        "ganados": 7,
-        "perdidos": 3,
-        "porcentaje": 70.0
+        "ganados": 5,
+        "perdidos": 5,
+        "porcentaje": 50.0
       },
-      "ultima_fecha": "2026-10-12",
+      "ultima_fecha": "2026-11-08",
       "genero": "F"
     },
     "Stefanos Tsitsipas": {
@@ -11895,14 +11895,14 @@
       "genero": "M"
     },
     "Yannick Hanfmann": {
-      "elo": 1601.8,
-      "games": 222,
+      "elo": 1595.8,
+      "games": 223,
       "forma": {
-        "ganados": 4,
-        "perdidos": 6,
-        "porcentaje": 40.0
+        "ganados": 3,
+        "perdidos": 7,
+        "porcentaje": 30.0
       },
-      "ultima_fecha": "2026-10-28",
+      "ultima_fecha": "2026-11-09",
       "genero": "M"
     },
     "Daniel Masur": {
@@ -12063,14 +12063,14 @@
       "genero": "F"
     },
     "Cameron Norrie": {
-      "elo": 1630.2,
-      "games": 470,
+      "elo": 1632.2,
+      "games": 472,
       "forma": {
         "ganados": 3,
         "perdidos": 7,
         "porcentaje": 30.0
       },
-      "ultima_fecha": "2026-11-03",
+      "ultima_fecha": "2026-11-11",
       "genero": "M"
     },
     "Stefano Travaglia": {
@@ -12844,14 +12844,14 @@
       "genero": "F"
     },
     "Karolina Muchova": {
-      "elo": 1901.7,
-      "games": 281,
+      "elo": 1883.2,
+      "games": 283,
       "forma": {
-        "ganados": 7,
-        "perdidos": 3,
-        "porcentaje": 70.0
+        "ganados": 6,
+        "perdidos": 4,
+        "porcentaje": 60.0
       },
-      "ultima_fecha": "2026-10-12",
+      "ultima_fecha": "2026-11-08",
       "genero": "F"
     },
     "Nicola Kuhn": {
@@ -13043,12 +13043,12 @@
       "genero": "F"
     },
     "Marta Kostyuk": {
-      "elo": 1838.2,
-      "games": 295,
+      "elo": 1833.1,
+      "games": 296,
       "forma": {
-        "ganados": 4,
-        "perdidos": 6,
-        "porcentaje": 40.0
+        "ganados": 3,
+        "perdidos": 7,
+        "porcentaje": 30.0
       },
       "ultima_fecha": "2026-11-08",
       "genero": "F"
@@ -13736,14 +13736,14 @@
       "genero": "M"
     },
     "Miomir Kecmanovic": {
-      "elo": 1521.7,
-      "games": 386,
+      "elo": 1529.8,
+      "games": 388,
       "forma": {
         "ganados": 4,
         "perdidos": 6,
         "porcentaje": 40.0
       },
-      "ultima_fecha": "2026-10-19",
+      "ultima_fecha": "2026-11-11",
       "genero": "M"
     },
     "Whitney Osuigwe": {
@@ -13797,14 +13797,14 @@
       "genero": "M"
     },
     "Holger Rune": {
-      "elo": 1716.9,
-      "games": 289,
+      "elo": 1722.0,
+      "games": 292,
       "forma": {
         "ganados": 5,
         "perdidos": 5,
         "porcentaje": 50.0
       },
-      "ultima_fecha": "2026-11-03",
+      "ultima_fecha": "2026-11-12",
       "genero": "M"
     },
     "Chun Hun Wong": {
@@ -14412,25 +14412,25 @@
       "genero": "M"
     },
     "Borna Gojo": {
-      "elo": 1541.1,
-      "games": 49,
+      "elo": 1544.9,
+      "games": 51,
       "forma": {
-        "ganados": 2,
-        "perdidos": 8,
-        "porcentaje": 20.0
+        "ganados": 3,
+        "perdidos": 7,
+        "porcentaje": 30.0
       },
-      "ultima_fecha": "2026-10-22",
+      "ultima_fecha": "2026-11-11",
       "genero": "M"
     },
     "Ugo Humbert": {
-      "elo": 1610.5,
-      "games": 366,
+      "elo": 1619.6,
+      "games": 369,
       "forma": {
-        "ganados": 2,
-        "perdidos": 8,
-        "porcentaje": 20.0
+        "ganados": 4,
+        "perdidos": 6,
+        "porcentaje": 40.0
       },
-      "ultima_fecha": "2026-11-04",
+      "ultima_fecha": "2026-11-12",
       "genero": "M"
     },
     "Collin Altamirano": {
@@ -14900,12 +14900,12 @@
       "genero": "F"
     },
     "Coco Gauff": {
-      "elo": 1989.9,
-      "games": 406,
+      "elo": 1976.7,
+      "games": 407,
       "forma": {
-        "ganados": 8,
-        "perdidos": 2,
-        "porcentaje": 80.0
+        "ganados": 7,
+        "perdidos": 3,
+        "porcentaje": 70.0
       },
       "ultima_fecha": "2026-11-08",
       "genero": "F"
@@ -15470,14 +15470,14 @@
       "genero": "M"
     },
     "Adolfo Daniel Vallejo": {
-      "elo": 1548.9,
-      "games": 39,
+      "elo": 1541.6,
+      "games": 40,
       "forma": {
         "ganados": 5,
         "perdidos": 5,
         "porcentaje": 50.0
       },
-      "ultima_fecha": "2026-11-03",
+      "ultima_fecha": "2026-11-09",
       "genero": "M"
     },
     "Ajeet Rai": {
@@ -15683,14 +15683,14 @@
       "genero": "M"
     },
     "Alejandro Tabilo": {
-      "elo": 1625.0,
-      "games": 198,
+      "elo": 1635.8,
+      "games": 201,
       "forma": {
         "ganados": 3,
         "perdidos": 7,
         "porcentaje": 30.0
       },
-      "ultima_fecha": "2026-11-02",
+      "ultima_fecha": "2026-11-13",
       "genero": "M"
     },
     "Andrew Harris": {
@@ -16133,14 +16133,14 @@
       "genero": "F"
     },
     "Lorenzo Musetti": {
-      "elo": 1785.0,
-      "games": 355,
+      "elo": 1785.8,
+      "games": 358,
       "forma": {
-        "ganados": 8,
-        "perdidos": 2,
-        "porcentaje": 80.0
+        "ganados": 7,
+        "perdidos": 3,
+        "porcentaje": 70.0
       },
-      "ultima_fecha": "2026-11-05",
+      "ultima_fecha": "2026-11-13",
       "genero": "M"
     },
     "Rutuja Bhosale": {
@@ -16177,12 +16177,12 @@
       "genero": "F"
     },
     "Janice Tjen": {
-      "elo": 1574.0,
-      "games": 62,
+      "elo": 1564.9,
+      "games": 63,
       "forma": {
-        "ganados": 7,
-        "perdidos": 3,
-        "porcentaje": 70.0
+        "ganados": 6,
+        "perdidos": 4,
+        "porcentaje": 60.0
       },
       "ultima_fecha": "2026-11-03",
       "genero": "F"
@@ -16527,25 +16527,25 @@
       "genero": "F"
     },
     "Arthur Rinderknech": {
-      "elo": 1647.4,
-      "games": 256,
+      "elo": 1634.5,
+      "games": 257,
       "forma": {
         "ganados": 4,
         "perdidos": 6,
         "porcentaje": 40.0
       },
-      "ultima_fecha": "2026-11-05",
+      "ultima_fecha": "2026-11-10",
       "genero": "M"
     },
     "Tomas Machac": {
-      "elo": 1631.5,
-      "games": 165,
+      "elo": 1620.5,
+      "games": 166,
       "forma": {
         "ganados": 3,
         "perdidos": 7,
         "porcentaje": 30.0
       },
-      "ultima_fecha": "2026-11-04",
+      "ultima_fecha": "2026-11-09",
       "genero": "M"
     },
     "Elsa Jacquemot": {
@@ -16604,14 +16604,14 @@
       "genero": "M"
     },
     "Zizou Bergs": {
-      "elo": 1630.6,
-      "games": 163,
+      "elo": 1623.9,
+      "games": 164,
       "forma": {
         "ganados": 5,
         "perdidos": 5,
         "porcentaje": 50.0
       },
-      "ultima_fecha": "2026-11-02",
+      "ultima_fecha": "2026-11-10",
       "genero": "M"
     },
     "Timofey Skatov": {
@@ -16637,14 +16637,14 @@
       "genero": "M"
     },
     "Tomas Martin Etcheverry": {
-      "elo": 1588.0,
-      "games": 243,
+      "elo": 1587.1,
+      "games": 245,
       "forma": {
         "ganados": 3,
         "perdidos": 7,
         "porcentaje": 30.0
       },
-      "ultima_fecha": "2026-11-05",
+      "ultima_fecha": "2026-11-10",
       "genero": "M"
     },
     "Hugo Grenier": {
@@ -16794,14 +16794,14 @@
       "genero": "F"
     },
     "Juan Manuel Cerundolo": {
-      "elo": 1562.3,
-      "games": 104,
+      "elo": 1557.3,
+      "games": 105,
       "forma": {
         "ganados": 3,
         "perdidos": 7,
         "porcentaje": 30.0
       },
-      "ultima_fecha": "2026-11-08",
+      "ultima_fecha": "2026-11-10",
       "genero": "M"
     },
     "Shintaro Mochizuki": {
@@ -16816,14 +16816,14 @@
       "genero": "M"
     },
     "Thiago Agustin Tirante": {
-      "elo": 1640.2,
-      "games": 72,
+      "elo": 1658.3,
+      "games": 76,
       "forma": {
-        "ganados": 4,
-        "perdidos": 6,
-        "porcentaje": 40.0
+        "ganados": 5,
+        "perdidos": 5,
+        "porcentaje": 50.0
       },
-      "ultima_fecha": "2026-11-08",
+      "ultima_fecha": "2026-11-14",
       "genero": "M"
     },
     "Lukas Klein": {
@@ -17731,14 +17731,14 @@
       "genero": "M"
     },
     "Leo Borg": {
-      "elo": 1470.3,
-      "games": 13,
+      "elo": 1462.7,
+      "games": 14,
       "forma": {
         "ganados": 2,
         "perdidos": 8,
         "porcentaje": 20.0
       },
-      "ultima_fecha": "2025-10-15",
+      "ultima_fecha": "2026-11-09",
       "genero": "M"
     },
     "Thabo Ncube": {
@@ -18542,12 +18542,12 @@
       "genero": "F"
     },
     "Linda Noskova": {
-      "elo": 1916.7,
-      "games": 213,
+      "elo": 1900.7,
+      "games": 215,
       "forma": {
-        "ganados": 8,
-        "perdidos": 2,
-        "porcentaje": 80.0
+        "ganados": 7,
+        "perdidos": 3,
+        "porcentaje": 70.0
       },
       "ultima_fecha": "2026-11-08",
       "genero": "F"
@@ -18713,14 +18713,14 @@
       "genero": "M"
     },
     "Ben Shelton": {
-      "elo": 1854.5,
-      "games": 252,
+      "elo": 1863.2,
+      "games": 253,
       "forma": {
-        "ganados": 6,
-        "perdidos": 4,
-        "porcentaje": 60.0
+        "ganados": 7,
+        "perdidos": 3,
+        "porcentaje": 70.0
       },
-      "ultima_fecha": "2026-11-08",
+      "ultima_fecha": "2026-11-15",
       "genero": "M"
     },
     "Hernan Casanova": {
@@ -18747,14 +18747,14 @@
       "genero": "M"
     },
     "Alexander Shevchenko": {
-      "elo": 1523.8,
-      "games": 113,
+      "elo": 1543.6,
+      "games": 116,
       "forma": {
-        "ganados": 5,
-        "perdidos": 5,
-        "porcentaje": 50.0
+        "ganados": 6,
+        "perdidos": 4,
+        "porcentaje": 60.0
       },
-      "ultima_fecha": "2025-10-15",
+      "ultima_fecha": "2026-11-12",
       "genero": "M"
     },
     "Dino Prizmic": {
@@ -19383,14 +19383,14 @@
       "genero": "M"
     },
     "Mirra Andreeva": {
-      "elo": 1881.4,
-      "games": 197,
+      "elo": 1924.1,
+      "games": 202,
       "forma": {
-        "ganados": 7,
-        "perdidos": 3,
-        "porcentaje": 70.0
+        "ganados": 9,
+        "perdidos": 1,
+        "porcentaje": 90.0
       },
-      "ultima_fecha": "2026-09-30",
+      "ultima_fecha": "2026-11-08",
       "genero": "F"
     },
     "Yasmine Mansouri": {
@@ -19444,14 +19444,14 @@
       "genero": "M"
     },
     "Arthur Fils": {
-      "elo": 1821.8,
-      "games": 198,
+      "elo": 1813.1,
+      "games": 199,
       "forma": {
-        "ganados": 6,
-        "perdidos": 4,
-        "porcentaje": 60.0
+        "ganados": 5,
+        "perdidos": 5,
+        "porcentaje": 50.0
       },
-      "ultima_fecha": "2026-11-05",
+      "ultima_fecha": "2026-11-15",
       "genero": "M"
     },
     "Stefanos Sakellaridis": {
@@ -19560,14 +19560,14 @@
       "genero": "F"
     },
     "Diana Shnaider": {
-      "elo": 1823.1,
-      "games": 205,
+      "elo": 1816.2,
+      "games": 206,
       "forma": {
-        "ganados": 8,
-        "perdidos": 2,
-        "porcentaje": 80.0
+        "ganados": 7,
+        "perdidos": 3,
+        "porcentaje": 70.0
       },
-      "ultima_fecha": "2026-10-26",
+      "ultima_fecha": "2026-11-08",
       "genero": "F"
     },
     "Lanlana Tararudee": {
@@ -20438,14 +20438,14 @@
       "genero": "F"
     },
     "Alex Michelsen": {
-      "elo": 1716.0,
-      "games": 183,
+      "elo": 1715.9,
+      "games": 186,
       "forma": {
-        "ganados": 4,
-        "perdidos": 6,
-        "porcentaje": 40.0
+        "ganados": 6,
+        "perdidos": 4,
+        "porcentaje": 60.0
       },
-      "ultima_fecha": "2026-11-04",
+      "ultima_fecha": "2026-11-12",
       "genero": "M"
     },
     "George Loffhagen": {
@@ -22803,14 +22803,14 @@
       "genero": "M"
     },
     "Rafael Jodar": {
-      "elo": 1789.7,
-      "games": 64,
+      "elo": 1784.8,
+      "games": 65,
       "forma": {
-        "ganados": 7,
-        "perdidos": 3,
-        "porcentaje": 70.0
+        "ganados": 6,
+        "perdidos": 4,
+        "porcentaje": 60.0
       },
-      "ultima_fecha": "2026-11-03",
+      "ultima_fecha": "2026-11-15",
       "genero": "M"
     },
     "Elena Ruxandra Bertea": {
@@ -23227,14 +23227,14 @@
       "genero": "F"
     },
     "Toby Samuel": {
-      "elo": 1517.8,
-      "games": 10,
+      "elo": 1522.2,
+      "games": 12,
       "forma": {
-        "ganados": 4,
-        "perdidos": 6,
-        "porcentaje": 40.0
+        "ganados": 5,
+        "perdidos": 5,
+        "porcentaje": 50.0
       },
-      "ultima_fecha": "2026-10-20",
+      "ultima_fecha": "2026-11-10",
       "genero": "M"
     },
     "Thomas Faurel": {
@@ -23377,9 +23377,14 @@
       "genero": "M"
     },
     "Max Dahlin": {
-      "elo": 1483.2,
-      "games": 2,
-      "ultima_fecha": "2026-09-20",
+      "elo": 1476.4,
+      "games": 3,
+      "forma": {
+        "ganados": 0,
+        "perdidos": 3,
+        "porcentaje": 0.0
+      },
+      "ultima_fecha": "2026-11-09",
       "genero": "M"
     },
     "Ziga Sesko": {
@@ -23827,10 +23832,10 @@
     }
   },
   "_meta": {
-    "fecha": "2026-11-09T12:41:36.857044+00:00",
+    "fecha": "2026-11-16T12:33:30.033796+00:00",
     "total_jugadores": 2555,
-    "matches_procesados": 63944,
-    "rango_fechas": "2015-01-04 a 2026-11-08",
+    "matches_procesados": 63983,
+    "rango_fechas": "2015-01-04 a 2026-11-15",
     "metodo": "Elo dinámico con K-factor adaptativo + forma real (últimos 10 partidos, mínimo 3)",
     "fuente": "LuckyLoser91/TennisCourtLog (mirror activo del formato Jeff Sackmann; JeffSackmann/tennis_atp y tennis_wta ya no existen en GitHub — ver src/providers/tennis_data_loader.py)"
   }

@@ -2562,7 +2562,7 @@
     "total_generos": 2,
     "masculino_count": 1320,
     "femenino_count": 1235,
-    "generado": "derivado automáticamente de tennis_elo_ratings.json (2026-11-09T12:41:37.099372+00:00)",
+    "generado": "derivado automáticamente de tennis_elo_ratings.json (2026-11-16T12:33:30.244733+00:00)",
     "nota": "Ya no se mantiene a mano — se regenera en cada recalibración de Elo (ver calibrate_tennis_elo.py, PASO 6)."
   }
 }
