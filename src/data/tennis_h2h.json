@@ -33881,7 +33881,7 @@
       "Milos Raonic": 1
     },
     "Alexander Zverev|||Daniil Medvedev": {
-      "Alexander Zverev": 8,
+      "Alexander Zverev": 9,
       "Daniil Medvedev": 14
     },
     "Andrey Kuznetsov|||Tomas Berdych": {
@@ -72421,7 +72421,7 @@
       "Marin Cilic": 3
     },
     "Daniil Medvedev|||Frances Tiafoe": {
-      "Daniil Medvedev": 6,
+      "Daniil Medvedev": 7,
       "Frances Tiafoe": 2
     },
     "Milos Raonic|||Peter Gojowczyk": {
@@ -85334,7 +85334,7 @@
     },
     "Alexander Zverev|||Carlos Alcaraz": {
       "Alexander Zverev": 6,
-      "Carlos Alcaraz": 7
+      "Carlos Alcaraz": 8
     },
     "Laslo Djere|||Steve Johnson": {
       "Laslo Djere": 1,
@@ -86749,7 +86749,7 @@
       "Dominik Koepfer": 0
     },
     "Carlos Alcaraz|||Frances Tiafoe": {
-      "Carlos Alcaraz": 2,
+      "Carlos Alcaraz": 3,
       "Frances Tiafoe": 1
     },
     "Pierre Hugues Herbert|||Sumit Nagal": {
@@ -89697,7 +89697,7 @@
       "Marin Cilic": 1
     },
     "Carlos Alcaraz|||Daniil Medvedev": {
-      "Carlos Alcaraz": 7,
+      "Carlos Alcaraz": 8,
       "Daniil Medvedev": 3
     },
     "Anna Blinkova|||Ashleigh Barty": {
@@ -101817,7 +101817,7 @@
       "Yuliya Hatouka": 0
     },
     "Ann Li|||Anna Bondar": {
-      "Ann Li": 1,
+      "Ann Li": 2,
       "Anna Bondar": 0
     },
     "Kaja Juvan|||Lucia Bronzetti": {
@@ -108546,7 +108546,7 @@
     },
     "Clara Burel|||Talia Gibson": {
       "Clara Burel": 1,
-      "Talia Gibson": 0
+      "Talia Gibson": 1
     },
     "Anhelina Kalinina|||Coco Vandeweghe": {
       "Anhelina Kalinina": 1,
@@ -114069,7 +114069,7 @@
       "Elina Svitolina": 2
     },
     "Carlos Alcaraz|||Flavio Cobolli": {
-      "Carlos Alcaraz": 1,
+      "Carlos Alcaraz": 2,
       "Flavio Cobolli": 0
     },
     "Christopher Oconnell|||Taro Daniel": {
@@ -116925,7 +116925,7 @@
       "Ugo Humbert": 0
     },
     "Alexander Zverev|||Arthur Fils": {
-      "Alexander Zverev": 5,
+      "Alexander Zverev": 6,
       "Arthur Fils": 2
     },
     "Laslo Djere|||Zhizhen Zhang": {
@@ -117422,7 +117422,7 @@
     },
     "Ben Shelton|||Carlos Alcaraz": {
       "Ben Shelton": 1,
-      "Carlos Alcaraz": 4
+      "Carlos Alcaraz": 5
     },
     "Hubert Hurkacz|||Miomir Kecmanovic": {
       "Hubert Hurkacz": 1,
@@ -123730,7 +123730,7 @@
     },
     "Flavio Cobolli|||Frances Tiafoe": {
       "Flavio Cobolli": 1,
-      "Frances Tiafoe": 4
+      "Frances Tiafoe": 5
     },
     "Andrea Vavassori|||Carlos Alcaraz": {
       "Andrea Vavassori": 0,
@@ -130305,7 +130305,7 @@
       "Qinwen Zheng": 1
     },
     "Alexander Zverev|||Ben Shelton": {
-      "Alexander Zverev": 6,
+      "Alexander Zverev": 7,
       "Ben Shelton": 0
     },
     "Holger Rune|||Jack Draper": {
@@ -131045,7 +131045,7 @@
       "Nuno Borges": 2
     },
     "Daniil Medvedev|||Flavio Cobolli": {
-      "Daniil Medvedev": 2,
+      "Daniil Medvedev": 3,
       "Flavio Cobolli": 1
     },
     "Botic Van De Zandschulp|||Jack Draper": {
@@ -148869,7 +148869,7 @@
       "Hamad Medjedovic": 0
     },
     "Arthur Fils|||Rafael Jodar": {
-      "Arthur Fils": 1,
+      "Arthur Fils": 2,
       "Rafael Jodar": 2
     },
     "Laura Samson|||Tatjana Maria": {
@@ -156679,11 +156679,99 @@
     "Lorenzo Musetti|||Ugo Humbert": {
       "Lorenzo Musetti": 1,
       "Ugo Humbert": 0
+    },
+    "Ben Shelton|||Rafael Jodar": {
+      "Ben Shelton": 1,
+      "Rafael Jodar": 0
+    },
+    "Bianca Andreescu|||Nauhany Vitoria Leme Da Silva": {
+      "Bianca Andreescu": 1,
+      "Nauhany Vitoria Leme Da Silva": 0
+    },
+    "Gabriela Ce|||Kayla Cross": {
+      "Gabriela Ce": 1,
+      "Kayla Cross": 0
+    },
+    "Gina Feistel|||Kajsa Rinaldo Persson": {
+      "Gina Feistel": 0,
+      "Kajsa Rinaldo Persson": 1
+    },
+    "Caijsa Wilda Hennemann|||Martyna Kubka": {
+      "Caijsa Wilda Hennemann": 0,
+      "Martyna Kubka": 1
+    },
+    "Dalila Jakupovic|||Mischka Sinclaire Goenadi": {
+      "Dalila Jakupovic": 1,
+      "Mischka Sinclaire Goenadi": 0
+    },
+    "Lulwa Naswardhani|||Tamara Zidansek": {
+      "Lulwa Naswardhani": 0,
+      "Tamara Zidansek": 1
+    },
+    "Diane Parry|||Storm Hunter": {
+      "Diane Parry": 0,
+      "Storm Hunter": 1
+    },
+    "Bianca Andreescu|||Gabriela Ce": {
+      "Bianca Andreescu": 1,
+      "Gabriela Ce": 0
+    },
+    "Clemence Mercier|||Nauhany Vitoria Leme Da Silva": {
+      "Clemence Mercier": 0,
+      "Nauhany Vitoria Leme Da Silva": 1
+    },
+    "Justina Maria Gonzalez Daniele|||Mai Hontama": {
+      "Justina Maria Gonzalez Daniele": 0,
+      "Mai Hontama": 1
+    },
+    "Himeno Sakatsume|||Maria Florencia Urrutia": {
+      "Himeno Sakatsume": 1,
+      "Maria Florencia Urrutia": 0
+    },
+    "Lisa Zaar|||Martyna Kubka": {
+      "Lisa Zaar": 1,
+      "Martyna Kubka": 0
+    },
+    "Caijsa Wilda Hennemann|||Linda Klimovicova": {
+      "Caijsa Wilda Hennemann": 0,
+      "Linda Klimovicova": 1
+    },
+    "Alja Senica|||Meydiana Laviola Reinnamah": {
+      "Alja Senica": 1,
+      "Meydiana Laviola Reinnamah": 0
+    },
+    "Mananchaya Sawangkaew|||Simona Waltert": {
+      "Mananchaya Sawangkaew": 1,
+      "Simona Waltert": 0
+    },
+    "Jil Teichmann|||Lanlana Tararudee": {
+      "Jil Teichmann": 0,
+      "Lanlana Tararudee": 1
+    },
+    "Coco Gauff|||Dalma Galfi": {
+      "Coco Gauff": 1,
+      "Dalma Galfi": 0
+    },
+    "Elsa Jacquemot|||Maya Joint": {
+      "Elsa Jacquemot": 0,
+      "Maya Joint": 1
+    },
+    "Ena Shibahara|||Luciana Moyano": {
+      "Ena Shibahara": 1,
+      "Luciana Moyano": 0
+    },
+    "Anchisa Chanta|||Susan Bandecchi": {
+      "Anchisa Chanta": 0,
+      "Susan Bandecchi": 1
+    },
+    "Adrienn Nagy|||Ashlyn Krueger": {
+      "Adrienn Nagy": 0,
+      "Ashlyn Krueger": 1
     }
   },
   "_meta": {
-    "fecha": "2026-11-16T12:33:30.057251+00:00",
-    "total_pares": 39170,
+    "fecha": "2026-11-23T14:15:46.875652+00:00",
+    "total_pares": 39192,
     "metodo": "Enfrentamientos directos acumulados de todo el histórico real procesado (mismo rango que tennis_elo_ratings.json)."
   }
 }
